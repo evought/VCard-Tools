@@ -8,136 +8,162 @@
  * @version 0.4.8
  * Modified by Eric Vought November 2014
 */
-	class vCard implements Countable, Iterator
+class vCard implements Countable, Iterator
+{
+    const MODE_SINGLE = 'single';
+    const MODE_MULTIPLE = 'multiple';
+
+    const endl = "\n";
+
+    /**
+     * @var string Current object mode - single or multiple
+     * (for a single vCard within a file and multiple combined vCards)
+     */
+    private $Mode;  //single, multiple
+
+    private $Path = '';
+
+    /**
+     * @var array Internal options container. Options:
+     *	bool Collapse: If true, elements that can have multiple values but have only a single value are returned as that value instead of an array
+     *		If false, an array is returned even if it has only one value.
+     */
+    private $Options = array( 'Collapse' => false );
+
+    /**
+     * @var array Internal data container. Contains vCard objects for
+     * multiple vCards and just the data for single vCards.
+     */
+    private $Data = array();
+
+    /**
+     * @static Parts of structured elements according to the spec.
+     */
+    private static $Spec_StructuredElements
+        = array(
+            'n' => array(
+                    'LastName', 'FirstName', 'AdditionalNames',
+                    'Prefixes', 'Suffixes' ),
+
+	    'adr' => array( 'POBox', 'ExtendedAddress', 'StreetAddress', 
+                            'Locality', 'Region', 'PostalCode', 'Country' ),
+
+	    'geo' => array('Latitude', 'Longitude'),
+
+	    'org' => array('Name', 'Unit1', 'Unit2')
+		);
+
+    private static $Spec_MultipleValueElements = array('nickname', 'categories');
+
+    private static $Spec_ElementTypes
+        = array(
+	    'email' => array('internet', 'x400', 'pref'),
+
+	    'adr' => array( 'dom', 'intl', 'postal', 'parcel',
+                            'home', 'work', 'pref' ),
+
+	    'label' => array(
+                              'dom', 'intl', 'postal', 'parcel',
+			      'home', 'work', 'pref' ),
+
+	    'tel' => array( 'home', 'msg', 'work', 'pref', 'voice', 'fax', 
+                            'cell', 'video', 'pager', 'bbs', 'modem', 'car', 
+                            'isdn', 'pcs' ),
+
+	    'impp' => array( 'personal', 'business', 'home', 'work', 'mobile', 
+                             'pref' ),
+
+	    'note' => array( 'home', 'work'),
+
+            'url'  => array('home', 'work')
+        );
+
+	private static $Spec_FileElements = array('photo', 'logo', 'sound');
+
+	/**
+         * @static Elements with only one value according to spec
+         */
+	private static $Spec_SingleElements
+            = array('fn', 'kind', 'bday', 'anniversary', 'prodid', 'rev');
+
+	/**
+	 * vCard constructor
+	 *
+	 * @param string Path to file, optional.
+	 * @param string Raw data, optional.
+	 * @param array Additional options, optional. Currently supported options:
+	 * bool Collapse: If true, elements that can have multiple values but 
+         * have only a single value are returned as that value instead of an array
+	 * If false, an array is returned even if it has only one value.
+	 *
+	 * One of these parameters must be provided, otherwise an exception
+         * is thrown.
+	 */
+	public function __construct( $Path = false, $RawData = false,
+                                     array $Options = null )
 	{
-		const MODE_SINGLE = 'single';
-		const MODE_MULTIPLE = 'multiple';
+	    // Checking preconditions for the parser.
+	    // If path is given, the file should be accessible.
+	    // If raw data is given, it is taken as it is.
+	    if ($Path)
+	    {
+		if (!is_readable($Path))
+		    throw new Exception( 'vCard: Path not accessible ('
+                                         . $Path . ')' );
 
-		const endl = "\n";
+		$this -> Path = $Path;
+		$RawData = file_get_contents($this -> Path);
+	    }
 
-		/**
-		 * @var string Current object mode - single or multiple (for a single vCard within a file and multiple combined vCards)
-		 */
-		private $Mode;  //single, multiple
+            if (!$RawData) return true;
 
-		private $Path = '';
+            if ($Options)
+                $this -> Options = array_merge($this -> Options, $Options);
 
-		/**
-		 * @var array Internal options container. Options:
-		 *	bool Collapse: If true, elements that can have multiple values but have only a single value are returned as that value instead of an array
-		 *		If false, an array is returned even if it has only one value.
-		 */
-		private $Options = array(
-			'Collapse' => false
-		);
+	    $RawData = $this->checkRawDataAndSetMode($RawData);
 
-		/**
-		 * @var array Internal data container. Contains vCard objects for multiple vCards and just the data for single vCards.
-		 */
-		private $Data = array();
+            // In multiple card mode the raw text is split at card 
+            // beginning markers and each
+            // fragment is parsed in a separate vCard object.
+            if ($this -> Mode == self::MODE_MULTIPLE)
+	        $this->processMultipleRawCards($RawData);
+	    else
+                $this->processSingleRawCard($RawData);
+	} // --construct()
 
-		/**
-		 * @static Parts of structured elements according to the spec.
-		 */
-		private static $Spec_StructuredElements = array(
-			'n' => array('LastName', 'FirstName', 'AdditionalNames', 'Prefixes', 'Suffixes'),
-			'adr' => array('POBox', 'ExtendedAddress', 'StreetAddress', 'Locality', 'Region', 'PostalCode', 'Country'),
-			'geo' => array('Latitude', 'Longitude'),
-			'org' => array('Name', 'Unit1', 'Unit2')
-		);
-		private static $Spec_MultipleValueElements = array('nickname', 'categories');
+	/**
+         * Checks the raw VCard data for major errors (such as BEGIN and
+	 * END markers) and throws an exception if malformed.
+	 * Sets mode to single or multiple.
+	 */
+	protected function checkRawDataAndSetMode($rawData)
+	{
+            // Counting the begin/end separators.
+            // If there aren't any or the count doesn't match,
+            // there is a problem with the file.
+            // If there is only one, this is a single vCard, if more,
+            // multiple vCards are combined.
+	    $Matches = array();
+	    $vCardBeginCount = preg_match_all( '{^BEGIN\:VCARD}miS',
+                                               $rawData, $Matches );
+            $vCardEndCount = preg_match_all( '{^END\:VCARD}miS',
+                                             $rawData, $Matches );
 
-		private static $Spec_ElementTypes = array(
-			'email' => array('internet', 'x400', 'pref'),
-			'adr' => array('dom', 'intl', 'postal', 'parcel', 'home', 'work', 'pref'),
-			'label' => array('dom', 'intl', 'postal', 'parcel', 'home', 'work', 'pref'),
-			'tel' => array('home', 'msg', 'work', 'pref', 'voice', 'fax', 'cell', 'video', 'pager', 'bbs', 'modem', 'car', 'isdn', 'pcs'),
-			'impp' => array('personal', 'business', 'home', 'work', 'mobile', 'pref'),
-			'note' => array('home', 'work'),
-			'url'  => array('home', 'work')
-		);
+            if (($vCardBeginCount != $vCardEndCount) || !$vCardBeginCount)
+	    {
+		throw new Exception('vCard: invalid vCard');
+	    }
 
-		private static $Spec_FileElements = array('photo', 'logo', 'sound');
-		/**
-                 * @static Elements with only one value according to spec
-                 */
-		private static $Spec_SingleElements = array('fn', 'kind', 'bday', 'anniversary', 'prodid', 'rev');
 
-		/**
-		 * vCard constructor
-		 *
-		 * @param string Path to file, optional.
-		 * @param string Raw data, optional.
-		 * @param array Additional options, optional. Currently supported options:
-		 *	bool Collapse: If true, elements that can have multiple values but have only a single value are returned as that value instead of an array
-		 *		If false, an array is returned even if it has only one value.
-		 *
-		 * One of these parameters must be provided, otherwise an exception is thrown.
-		 */
-		public function __construct($Path = false, $RawData = false, array $Options = null)
-		{
-		    // Checking preconditions for the parser.
-		    // If path is given, the file should be accessible.
-		    // If raw data is given, it is taken as it is.
-		    if ($Path)
-		    {
-			if (!is_readable($Path))
-			    throw new Exception( 'vCard: Path not accessible ('
-                                .    $Path.')' );
+            $this->Mode = ($vCardBeginCount == 1)
+                              ? vCard::MODE_SINGLE : vCard::MODE_MULTIPLE;
 
-			$this -> Path = $Path;
-			$RawData = file_get_contents($this -> Path);
-		     }
-
-		     if (!$RawData)
-			return true;
-
-		     if ($Options)
-			$this -> Options
-                            = array_merge($this -> Options, $Options);
-
-		     $RawData
-                         = $this->checkRawDataAndSetMode($RawData);
-
-		     // In multiple card mode the raw text is split at card 
-                     // beginning markers and each
-		     // fragment is parsed in a separate vCard object.
-		     if ($this -> Mode == self::MODE_MULTIPLE)
-		         $this->processMultipleRawCards($RawData);
-		     else
-                         $this->processSingleRawCard($RawData);
-		} // --construct()
-
-		/**
-                 * Checks the raw VCard data for major errors (such as BEGIN and
-		 * END markers) and throws an exception if malformed.
-		 * Sets mode to single or multiple.
-		 */
-		protected function checkRawDataAndSetMode($rawData)
-		{
-		    // Counting the begin/end separators.
-                    // If there aren't any or the count doesn't match,
-                    // there is a problem with the file.
-		    // If there is only one, this is a single vCard, if more,
-                    // multiple vCards are combined.
-		    $Matches = array();
-		    $vCardBeginCount = preg_match_all( '{^BEGIN\:VCARD}miS',
-                            $rawData, $Matches );
-		    $vCardEndCount = preg_match_all( '{^END\:VCARD}miS',
-                            $rawData, $Matches );
-
-		    if (($vCardBeginCount != $vCardEndCount) || !$vCardBeginCount)
-		    {
-			throw new Exception('vCard: invalid vCard');
-		    }
-
-		    $this->Mode = $vCardBeginCount == 1 ? vCard::MODE_SINGLE : vCard::MODE_MULTIPLE;
-
-		    // Removing/changing inappropriate newlines, i.e., all CRs or multiple newlines are changed to a single newline
-		    $rawData = str_replace("\r", "\n", $rawData);
-		    $rawData = preg_replace('{(\n+)}', "\n", $rawData);
-		    return $rawData;
-		} // checkRawDataAndSetMode()
+            // Removing/changing inappropriate newlines, i.e., all CRs or 
+            // multiple newlines are changed to a single newline
+            $rawData = str_replace("\r", "\n", $rawData);
+            $rawData = preg_replace('{(\n+)}', "\n", $rawData);
+	    return $rawData;
+	} // checkRawDataAndSetMode()
 
 		/**
                  * If there are multiple VCards in the raw input, process them
