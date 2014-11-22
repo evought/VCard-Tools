@@ -641,11 +641,15 @@
 
 		/**
 		 * @access private
+		 * Split multiple element values by commas, except that RFC6350
+		 * allowed escaping is handled (comma and backslash).
 		 */
 		private static function ParseMultipleTextValue($Text)
 		{
+			// split by commas, except that a comma escaped by
+			// a backslash does not count except that a backslash
+			// escaped by a backslash does not count...
 			return preg_split(preg_quote('/(?<![^\\]\\),/'), $Text);
-			// return explode(',', $Text);
 		}
 
 		/**
