@@ -644,7 +644,8 @@
 		 */
 		private static function ParseMultipleTextValue($Text)
 		{
-			return explode(',', $Text);
+			return preg_split(preg_quote('/(?<![^\\]\\),/'), $Text);
+			// return explode(',', $Text);
 		}
 
 		/**
