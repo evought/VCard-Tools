@@ -605,13 +605,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @covers VCard::__construct
      * @depends testImportEmptyVCard
+     * @dataProvider stringEscapeProvider
      */
-    public function testImportVCardOneCategory()
+    public function testImportVCardOneCategory($unescaped, $escaped)
     {
-	$category = "farrier";
 	$input =	self::$vcard_begin . "\n"
 			. self::$vcard_version . "\n"
-			. "CATEGORIES:" . $category . "\n"
+			. "CATEGORIES:" . $escaped . "\n"
 			. self::$vcard_end . "\n";
 
 	$vcard = new VCard(false, $input);
@@ -620,7 +620,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
 	$this->assertCount(1, $vcard->categories);
-	$this->assertContains( $category, $vcard->categories,
+	$this->assertContains( $unescaped, $vcard->categories,
 				print_r($vcard->categories, true) );
    }
 
@@ -687,13 +687,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @covers VCard::__construct
      * @depends testImportEmptyVCard
+     * @dataProvider stringEscapeProvider
      */
-    public function testImportVCardOneURL()
+    public function testImportVCardOneURL($unescaped, $escaped)
     {
-	$url = "plorp";
 	$input =	self::$vcard_begin . "\n"
 			. self::$vcard_version . "\n"
-			. "URL:" . $url . "\n"
+			. "URL:" . $escaped . "\n"
 			. self::$vcard_end . "\n";
 
 	$vcard = new VCard(false, $input);
@@ -702,7 +702,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
 	$this->assertCount(1, $vcard->url);
-	$this->assertContains( $url, $vcard->url,
+	$this->assertContains( $unescaped, $vcard->url,
 				print_r($vcard->url, true) );
    }
 
