@@ -156,6 +156,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertCount(1, $vcard->categories);
 	$this->assertContains($category_expected, $vcard->categories);
 
+	$vcard->clearElement("categories");
+	$this->assertEmpty($vcard->categories);
 	return $vcard;
     }
 
@@ -168,8 +170,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$category1 = "computers";
 	$category2 = "electronics";
 
-	$this->assertNotEmpty( $vcard->categories,
-		print_r($vcard, true) );
+	$vcard->categories($category1);
 	$vcard->categories($category2);
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
@@ -181,19 +182,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	return $vcard;
     }
 
-    /**
-     * @covers VCard::__call
-     * @covers VCard::clearElement
-     * @depends testSetSingleCategory
-     */
-    public function testClearCategories(VCard $vcard)
-    {
-	$vcard->categories("party supplies");
-	$vcard->clearElement("categories");
-	$this->assertEmpty($vcard->categories);
-
-	return $vcard;
-    }
     /**
      * @covers VCard::__construct
      * @covers VCARD::__get
