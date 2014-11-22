@@ -22,7 +22,6 @@
 		private $Mode;  //single, multiple, error
 
 		private $Path = '';
-		private $RawData = '';
 
 		/**
 		 * @var array Internal options container. Options:
@@ -81,7 +80,6 @@
 		    // Checking preconditions for the parser.
 		    // If path is given, the file should be accessible.
 		    // If raw data is given, it is taken as it is.
-		    // In both cases the real content is put in $this -> RawData
 		    if ($Path)
 		    {
 			if (!is_readable($Path))
