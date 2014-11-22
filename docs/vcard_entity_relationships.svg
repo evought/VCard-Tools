@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="555.85718"
+   height="367.64337"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="vcard_entity_relationships.svg">
+  <title
+     id="title4076">Entity Relationships In VCARD Schema</title>
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="299.35715"
+     inkscape:cy="190.71397"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1024"
+     inkscape:window-height="702"
+     inkscape:window-x="0"
+     inkscape:window-y="747"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Entity Relationships In VCARD Schema</dc:title>
+        <dc:date>2014-11-16</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Eric Vought</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:language>en</dc:language>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>vcard</rdf:li>
+            <rdf:li>vcard-tools.php</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>A model relationship from the vcard.sql schema used by vcard-tools.php.</dc:description>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/3.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/3.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-75.642853,-17.218802)">
+    <g
+       id="g3059"
+       transform="translate(-143,10)">
+      <rect
+         y="74.647903"
+         x="219.14285"
+         height="115.85715"
+         width="86"
+         id="rect2985"
+         style="fill:none;stroke:#000000;stroke-opacity:1" />
+      <flowRoot
+         transform="translate(-10,27)"
+         style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot2987"
+         xml:space="preserve"><flowRegion
+           id="flowRegion2989"><rect
+             style="font-size:12px;font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="48.362183"
+             x="236"
+             height="38"
+             width="108"
+             id="rect2991" /></flowRegion><flowPara
+           id="flowPara2997">Contact</flowPara></flowRoot>      <flowRoot
+         transform="translate(-10,0)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot3003"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3005"><rect
+             y="98.362183"
+             x="236"
+             height="92"
+             width="79"
+             id="rect3007" /></flowRegion><flowPara
+           id="flowPara3009">Contact_ID</flowPara><flowPara
+           id="flowPara3011">Kind</flowPara><flowPara
+           id="flowPara3013">FN</flowPara><flowPara
+           id="flowPara3015">N Given Name</flowPara><flowPara
+           id="flowPara3017">N Addit Name</flowPara><flowPara
+           id="flowPara3019">N Family Name</flowPara><flowPara
+           id="flowPara3021">...</flowPara></flowRoot>      <path
+         inkscape:connector-curvature="0"
+         id="path3023"
+         d="m 220,96.362183 84,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3077"
+       style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"><flowRegion
+         id="flowRegion3079"><rect
+           id="rect3081"
+           width="96"
+           height="54"
+           x="318"
+           y="46.362183"
+           style="font-size:12px;font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+         id="flowPara3083" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3085"
+       style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"><flowRegion
+         id="flowRegion3087"><rect
+           id="rect3089"
+           width="129"
+           height="58"
+           x="275"
+           y="63.362183"
+           style="font-size:12px;font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+         id="flowPara3091" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3101"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"><flowRegion
+         id="flowRegion3103"><rect
+           id="rect3105"
+           width="110"
+           height="172"
+           x="308"
+           y="143.36218"
+           style="font-size:10px;font-weight:normal;-inkscape-font-specification:Sans" /></flowRegion><flowPara
+         id="flowPara3107" /></flowRoot>    <g
+       id="g3131"
+       transform="translate(54,23)">
+      <flowRoot
+         style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot3093"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3095"><rect
+             y="110.36218"
+             x="306"
+             height="84"
+             width="114"
+             id="rect3097" /></flowRegion><flowPara
+           id="flowPara3099">Contact Address</flowPara></flowRoot>      <flowRoot
+         transform="translate(4,-28)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+         id="flowRoot3109"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3111"><rect
+             style="font-size:10px;font-weight:normal;-inkscape-font-specification:Sans"
+             y="164.36218"
+             x="302"
+             height="172"
+             width="137"
+             id="rect3113" /></flowRegion><flowPara
+           id="flowPara3115">Mail Address ID</flowPara><flowPara
+           id="flowPara3117">Street</flowPara><flowPara
+           id="flowPara3119">Locality</flowPara><flowPara
+           id="flowPara3121">Region</flowPara><flowPara
+           id="flowPara3123">Postal Code</flowPara><flowPara
+           id="flowPara3125">...</flowPara></flowRoot>      <rect
+         y="105.36218"
+         x="301"
+         height="110"
+         width="121"
+         id="rect3127"
+         style="fill:none;stroke:#000000;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3129"
+         d="m 301,132.36218 120,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <g
+       id="g3172"
+       transform="translate(-90,56)">
+      <flowRoot
+         transform="translate(0,3)"
+         style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot3150"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3152"><rect
+             y="177.36218"
+             x="256"
+             height="60"
+             width="143"
+             id="rect3154" /></flowRegion><flowPara
+           id="flowPara3156">Contact Rel Address</flowPara></flowRoot>      <flowRoot
+         transform="translate(1,-1)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+         id="flowRoot3158"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3160"><rect
+             style="font-size:10px;font-weight:normal;-inkscape-font-specification:Sans"
+             y="203.36218"
+             x="256"
+             height="158"
+             width="138"
+             id="rect3162" /></flowRegion><flowPara
+           id="flowPara3164">Contact ID</flowPara><flowPara
+           id="flowPara3166">Mail Address ID</flowPara></flowRoot>      <rect
+         y="177.36218"
+         x="251"
+         height="55"
+         width="148"
+         id="rect3168"
+         style="fill:none;stroke:#000000;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3170"
+         d="m 250,200.36218 147,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <g
+       id="g3233"
+       transform="translate(96,30)">
+      <flowRoot
+         transform="translate(150,15)"
+         style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot3185"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3187"><rect
+             y="282.36218"
+             x="224"
+             height="51"
+             width="178"
+             id="rect3189" /></flowRegion><flowPara
+           id="flowPara3191">Mail Address Rel Types</flowPara></flowRoot>      <flowRoot
+         transform="translate(299,122)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+         id="flowRoot3193"
+         xml:space="preserve"><flowRegion
+           id="flowRegion3195"><rect
+             style="font-size:10px;font-weight:normal;-inkscape-font-specification:Sans"
+             y="201.36218"
+             x="74"
+             height="119"
+             width="110"
+             id="rect3197" /></flowRegion><flowPara
+           id="flowPara3199">Mail Address ID</flowPara><flowPara
+           id="flowPara3201">Type Name</flowPara></flowRoot>      <rect
+         y="294.36218"
+         x="371"
+         height="60"
+         width="164"
+         id="rect3203"
+         style="fill:none;stroke:#000000;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3205"
+         d="m 370.0942,317.36218 162.8116,0"
+         style="fill:none;stroke:#000000;stroke-width:1.09014022px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1"
+       id="rect3246"
+       width="26"
+       height="26"
+       x="513.09155"
+       y="-244.70097"
+       transform="matrix(0.72499943,0.68874946,-0.68874946,0.72499943,0,0)" />
+    <rect
+       transform="matrix(0.72499943,0.68874946,-0.68874946,0.72499943,0,0)"
+       y="-69.251122"
+       x="265.97546"
+       height="26"
+       width="26"
+       id="rect3248"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 223,152.36218 -62,0"
+       id="path3250"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 258,151.36218 94,-1"
+       id="path3252"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 521,194.36218 -44,-1"
+       id="path3254"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 540,214.36218 0,108"
+       id="path3256"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
+       d="m 240,169.36218 0,62"
+       id="path3258"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4028"
+       style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       transform="translate(42,-160)"><flowRegion
+         id="flowRegion4030"><rect
+           id="rect4032"
+           width="29"
+           height="35"
+           x="124"
+           y="290.36218" /></flowRegion><flowPara
+         id="flowPara4034">0..n</flowPara></flowRoot>    <flowRoot
+       transform="translate(357,-117)"
+       style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       id="flowRoot4036"
+       xml:space="preserve"><flowRegion
+         id="flowRegion4038"><rect
+           y="290.36218"
+           x="124"
+           height="35"
+           width="29"
+           id="rect4040" /></flowRegion><flowPara
+         id="flowPara4042">0..n</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4044"
+       style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       transform="translate(448,12)"><flowRegion
+         id="flowRegion4046"><rect
+           id="rect4048"
+           width="29"
+           height="25"
+           x="98"
+           y="292.36218" /></flowRegion><flowPara
+         id="flowPara4050">1</flowPara></flowRoot>    <flowRoot
+       transform="translate(243,-162)"
+       style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       id="flowRoot4052"
+       xml:space="preserve"><flowRegion
+         id="flowRegion4054"><rect
+           y="292.36218"
+           x="98"
+           height="25"
+           width="29"
+           id="rect4056" /></flowRegion><flowPara
+         id="flowPara4058">1</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4060"
+       style="font-size:14px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"><flowRegion
+         id="flowRegion4062"><rect
+           id="rect4064"
+           width="301"
+           height="38"
+           x="155"
+           y="14.362183"
+           style="font-size:14px" /></flowRegion><flowPara
+         id="flowPara4066" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4068"
+       style="font-size:12px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       transform="translate(-131,-5)"><flowRegion
+         id="flowRegion4070"><rect
+           id="rect4072"
+           width="374"
+           height="78"
+           x="208"
+           y="19.362183" /></flowRegion><flowPara
+         id="flowPara4074">Entity Relationships In VCARD schema</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3392"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(116.64285,71.218802)"><flowRegion
+         id="flowRegion3394"><rect
+           id="rect3396"
+           width="92"
+           height="30"
+           x="303"
+           y="29.643372" /></flowRegion><flowPara
+         id="flowPara3398">VCARD ADR</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3400"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-9.357147,174.2188)"><flowRegion
+         id="flowRegion3402"><rect
+           id="rect3404"
+           width="78"
+           height="46"
+           x="458"
+           y="97.643372" /></flowRegion><flowPara
+         id="flowPara3406">VCARD TYPE</flowPara><flowPara
+         id="flowPara3408">(work, home, etc.)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3410"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(88.642853,31.218802)"><flowRegion
+         id="flowRegion3412"><rect
+           id="rect3414"
+           width="72"
+           height="28"
+           x="24"
+           y="30.643372" /></flowRegion><flowPara
+         id="flowPara3416">VCARD</flowPara></flowRoot>  </g>
+</svg>
