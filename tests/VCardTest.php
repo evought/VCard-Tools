@@ -99,18 +99,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertNotEmpty($vcard->fn);
 	$this->assertEquals($expected, $vcard->fn);
 
-	return $vcard;
-    }
-
-    /**
-     * @covers VCard::clearElement
-     * @depends testSetFN
-     */
-    public function testClearFN(VCard $vcard)
-    {
 	$vcard->clearElement("fn");
 	$this->assertEmpty($vcard->fn);
-
 	return $vcard;
     }
 
@@ -122,13 +112,16 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testResetFN(VCard $vcard)
     {
-	$fn = "New FN";
+	$fn1 = "First FN";
+	$fn2 = "New FN";
 
-	$vcard->fn($fn);
+	$vcard->fn($fn1);
+	$vcard->fn($fn2);
 	$this->assertNotEmpty($vcard->fn);
 	$this->assertNotInternalType("array", $vcard->fn);
-	$this->assertEquals($fn, $vcard->fn);
+	$this->assertEquals($fn2, $vcard->fn);
 
+	$vcard->clearElement("fn");
 	return $vcard;
     }
 
@@ -178,6 +171,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 		print_r($vcard->categories, true) );
 	$this->assertContains($category1, $vcard->categories);
 	$this->assertContains($category2, $vcard->categories);
+
+	$vcard->clearElement("categories");
 
 	return $vcard;
     }
