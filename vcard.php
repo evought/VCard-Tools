@@ -165,29 +165,28 @@ class vCard implements Countable, Iterator
 	    return $rawData;
 	} // checkRawDataAndSetMode()
 
-		/**
-                 * If there are multiple VCards in the raw input, process them
-		 * recursively by construction new VCard objects.
-		 */
-		protected function processMultipleRawCards($rawData)
-		{
-		    $rawData = explode('BEGIN:VCARD', $rawData);
-		    $rawData = array_filter($rawData);
+	/**
+         * If there are multiple VCards in the raw input, process them
+	 * recursively by construction new VCard objects.
+	 */
+	protected function processMultipleRawCards($rawData)
+	{
+	    $rawData = explode('BEGIN:VCARD', $rawData);
+	    $rawData = array_filter($rawData);
 
-		    foreach ($rawData as $SinglevCardRawData)
-		    {
-		        // Prepending "BEGIN:VCARD" to the raw string because
-                        // we exploded on that one.
-			// If there won't be the BEGIN marker in the new object, 
-                        // it will fail.
-			$SinglevCardRawData = 'BEGIN:VCARD' . "\n"
+	    foreach ($rawData as $SinglevCardRawData)
+	    {
+	        // Prepending "BEGIN:VCARD" to the raw string because
+                // we exploded on that one.
+		// If there won't be the BEGIN marker in the new object, 
+                // it will fail.
+		$SinglevCardRawData = 'BEGIN:VCARD' . "\n"
                                               . $SinglevCardRawData;
 
-			$ClassName = get_class($this);
-			$this->Data[] = new $ClassName( false,
-                                                        $SinglevCardRawData );
-		    }
-		} // processMultipleRawCards()
+		$ClassName = get_class($this);
+		$this->Data[] = new $ClassName(false, $SinglevCardRawData);
+	    }
+	} // processMultipleRawCards()
 
                 protected function processSingleRawCard($rawData)
                 {
