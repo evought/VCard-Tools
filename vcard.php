@@ -10,16 +10,15 @@
 */
 	class vCard implements Countable, Iterator
 	{
-		const MODE_ERROR = 'error';
 		const MODE_SINGLE = 'single';
 		const MODE_MULTIPLE = 'multiple';
 
 		const endl = "\n";
 
 		/**
-		 * @var string Current object mode - error, single or multiple (for a single vCard within a file and multiple combined vCards)
+		 * @var string Current object mode - single or multiple (for a single vCard within a file and multiple combined vCards)
 		 */
-		private $Mode;  //single, multiple, error
+		private $Mode;  //single, multiple
 
 		private $Path = '';
 
@@ -129,7 +128,6 @@
 
 		    if (($vCardBeginCount != $vCardEndCount) || !$vCardBeginCount)
 		    {
-			$this -> Mode = vCard::MODE_ERROR;
 			throw new Exception('vCard: invalid vCard');
 		    }
 
@@ -779,9 +777,6 @@
 		{
 			switch ($this -> Mode)
 			{
-				case self::MODE_ERROR:
-					return 0;
-					break;
 				case self::MODE_SINGLE:
 					return 1;
 					break;
