@@ -56,7 +56,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	    array ( 'Com,ma',			'Com\,ma' ),
 	    array ( 'Col:on',			'Col\:on' ),
 	    array ( 'Semi;colon',		'Semi\;colon' ),
-	    array ( "\newline",			'\newline' ),
+	    array ( "A \newline",			'A \newline' ),
 	    array ( 'backs\\ash',		'backs\\\\ash' ),
 	    array ( 's/ash',			's/ash' ),
 	    array ( 'angle bra<ket',		'angle bra<ket' ),
