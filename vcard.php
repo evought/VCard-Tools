@@ -455,9 +455,17 @@ class vCard implements Countable, Iterator
     public function __unset($key)
     {
         if (array_key_exists($key, $this->Data))
-	    $this->Data["$key"] = false;
+	    unset($this->Data["$key"]);
 	    return $this;
     } // __unset()
+
+    /**
+     * Return true if the named element has at least one value, false otherwise.
+     */
+    public function __isset($key)
+    {
+        return isset($this->Data[$key]);
+    } // __isset()
 
     /**
      * Magic method for adding data to the vCard

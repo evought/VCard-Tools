@@ -125,7 +125,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__call, VCard->fn
+     * @covers VCard::__call, VCard::__unset
      * @depends testNoFN
      */
     public function testSetFN(VCard $vcard)
@@ -138,6 +138,19 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	unset($vcard->fn);
 	$this->assertEmpty($vcard->fn);
 	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__call, VCard::__unset, VCard::isset
+     * @depends testSetFN
+     */
+    public function testIsSet(VCard $vcard)
+    {
+        $this->assertFalse(isset($vcard->fn), print_r($vcard, true));
+	$vcard->fn("foo");
+	$this->assertTrue(isset($vcard->fn));
+        unset($vcard->fn);
+        $this->assertFalse(isset($vcard->fn));
     }
 
     /**
