@@ -449,202 +449,194 @@ class vCard implements Countable, Iterator
 	return false;
     }
 
-		/**
-                 * Clear all values of the named element.
-		 */
- 		public function clearElement($Key)
+    /**
+     * Clear all values of the named element.
+     */
+    public function clearElement($Key)
+    {
+        if (array_key_exists($Key, $this->Data))
+	    $this->Data["$Key"] = false;
+	    return $this;
+    } // clearElement()
+
+    /**
+     * Magic method for adding data to the vCard
+     *
+     * @param string Key
+     * @param string Method call arguments. First element is value.
+     *
+     * @return vCard Current object for method chaining
+     */
+    public function __call($Key, $Arguments)
+    {
+	$Key = strtolower($Key);
+
+	$Value = isset($Arguments[0]) ? $Arguments[0] : false;
+
+	if (in_array($Key, self::$Spec_SingleElements))
+	{
+	    $this -> Data[$Key] = $Value;
+	    return $this;
+	}
+
+	if (!isset($this -> Data[$Key]))
+	{
+	    $this -> Data[$Key] = array();
+	}
+
+	if (count($Arguments) > 1)
+	{
+	    $Types = array_values(array_slice($Arguments, 1));
+
+	    if ( isset(self::$Spec_StructuredElements[$Key])
+                 && in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
+	       )
+	    {
+		$LastElementIndex = 0;
+
+		if (count($this -> Data[$Key]))
 		{
-		    if (array_key_exists($Key, $this->Data))
-			$this->Data["$Key"] = false;
-		    return $this;
-		} // clearElement()
+		    $LastElementIndex = count($this -> Data[$Key]) - 1;
+		}
 
-		/**
-		 * Magic method for adding data to the vCard
-		 *
-		 * @param string Key
-		 * @param string Method call arguments. First element is value.
-		 *
-		 * @return vCard Current object for method chaining
-		 */
-		public function __call($Key, $Arguments)
+		if (isset($this -> Data[$Key][$LastElementIndex]))
 		{
-			$Key = strtolower($Key);
+		    if (empty($this -> Data[$Key][$LastElementIndex][$Types[0]]))
+		    {
+			$this->Data[$Key][$LastElementIndex][$Types[0]] = $Value;
+		    } else {
+			$LastElementIndex++;
+		    }
+		}
 
-			$Value = isset($Arguments[0]) ? $Arguments[0] : false;
-
-			if (in_array($Key, self::$Spec_SingleElements))
-			{
-				$this -> Data[$Key] = $Value;
-				return $this;
-			}
-
-			if (!isset($this -> Data[$Key]))
-			{
-				$this -> Data[$Key] = array();
-			}
-
-			if (count($Arguments) > 1)
-			{
-				$Types = array_values(array_slice($Arguments, 1));
-
-				if (isset(self::$Spec_StructuredElements[$Key]) &&
-					in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
-				)
-				{
-					$LastElementIndex = 0;
-
-					if (count($this -> Data[$Key]))
-					{
-						$LastElementIndex = count($this -> Data[$Key]) - 1;
-					}
-
-					if (isset($this -> Data[$Key][$LastElementIndex]))
-					{
-						if (empty($this -> Data[$Key][$LastElementIndex][$Types[0]]))
-						{
-							$this -> Data[$Key][$LastElementIndex][$Types[0]] = $Value;
-						}
-						else
-						{
-							$LastElementIndex++;
-						}
-					}
-
-					if (!isset($this -> Data[$Key][$LastElementIndex]))
-					{
-						$this -> Data[$Key][$LastElementIndex] = array(
+		if (!isset($this -> Data[$Key][$LastElementIndex]))
+		{
+		    $this->Data[$Key][$LastElementIndex] = array(
 							$Types[0] => $Value
 						);
-					}
-				}
-				elseif (isset(self::$Spec_ElementTypes[$Key]))
-				{
-					$this -> Data[$Key][] = array(
-						'Value' => $Value,
-						'Type' => $Types
+		}
+            } elseif (isset(self::$Spec_ElementTypes[$Key])) {
+                $this -> Data[$Key][] = array(
+					'Value' => $Value,
+					'Type' => $Types
 					);
-				}
-			}
-			elseif ($Value)
-			{
-				$this -> Data[$Key][] = $Value;
-			}
+            }
+	} elseif ($Value) {
+	    $this -> Data[$Key][] = $Value;
+	}
 
-			return $this;
-		}
+	return $this;
+    } // __call()
 
-		/**
-		 * If FN is not set, set it appropriately from either the
-		 * individual or organization name (RFC says FN should not
-		 * be empty).
-		 * Use this just before saving or displaying the record using
-		 * anything other than the toString() method.
-		 * Returns $this for method chaining.
-		 */
-		public function setFNAppropriately()
-		{
-		    if (!array_key_exists("fn", $this->Data) || empty($this->Data["fn"]))
-		    {
-			if ( array_key_exists("kind", $this->Data)
-				&& $this->Data["kind"] == "organization" )
-			{
-			    $fullname = (isset($this->Data["org"])) ?
-				implode(" ", $this->Data["org"][0]) : "";
-			} else {
-			    $fullname = (isset($this->Data["n"])) ?
-				implode(" ", $this->Data["n"][0]) : "";
-			}
-			$this->Data["fn"] = trim($fullname);
-		    }
-		    return $this;
-	 	} // setFNAppropriately()
+    /**
+     * If FN is not set, set it appropriately from either the
+     * individual or organization name (RFC says FN should not
+     * be empty).
+     * Use this just before saving or displaying the record using
+     * anything other than the toString() method.
+     * Returns $this for method chaining.
+     */
+    public function setFNAppropriately()
+    {
+        if (!array_key_exists("fn", $this->Data) || empty($this->Data["fn"]))
+        {
+	    if ( array_key_exists("kind", $this->Data)
+		 && $this->Data["kind"] == "organization" )
+	    {
+	        $fullname = (isset($this->Data["org"]))
+			? implode(" ", $this->Data["org"][0]) : "";
+            } else {
+                $fullname = (isset($this->Data["n"])) ?
+		    implode(" ", $this->Data["n"][0]) : "";
+            }
+            $this->Data["fn"] = trim($fullname);
+        }
+        return $this;
+    } // setFNAppropriately()
 
-		/**
-		 * Magic method for getting vCard content out
-		 *
-		 * @return string Raw vCard content
-		 */
-		public function __toString()
-		{
-			$this->setFNAppropriately();
+    /**
+     * Magic method for getting vCard content out
+     *
+     * @return string Raw vCard content
+     */
+    public function __toString()
+    {
+        $this->setFNAppropriately();
 
-			$Text = 'BEGIN:VCARD'.self::endl;
-			$Text .= 'VERSION:4.0'.self::endl;
+	$Text = 'BEGIN:VCARD'.self::endl;
+	$Text .= 'VERSION:4.0'.self::endl;
 
-			foreach ($this -> Data as $Key => $Values)
-			{
-				$KeyUC = strtoupper($Key);
-				$Key = strtolower($Key);
+	foreach ($this -> Data as $Key => $Values)
+	{
+	    $KeyUC = strtoupper($Key);
+	    $Key = strtolower($Key);
 
-				if ($KeyUC === 'VERSION')
-				{
-					continue;
-				}
+	    if ($KeyUC === 'VERSION')
+	    {
+                continue;
+	    }
 
-				if (in_array($Key, self::$Spec_SingleElements))
- 				{
-					$Text .= $KeyUC . ":" . self::Escape($Values);
-					$Text .= self::endl;
-					continue;
-				}
+	    if (in_array($Key, self::$Spec_SingleElements))
+ 	    {
+                $Text .= $KeyUC . ":" . self::Escape($Values);
+		$Text .= self::endl;
+		continue;
+	    }
  
-				foreach ($Values as $Index => $Value)
-				{
-					$Text .= $KeyUC;
-					if (is_array($Value) && isset($Value['Type']))
-					{
-						$Text .= ';TYPE='.self::PrepareTypeStrForOutput($Value['Type']);
-					}
-					$Text .= ':';
+	    foreach ($Values as $Index => $Value)
+	    {
+		$Text .= $KeyUC;
+		if (is_array($Value) && isset($Value['Type']))
+                {
+                    $Text .= ';TYPE='
+                             . self::PrepareTypeStrForOutput($Value['Type']);
+		}
+		$Text .= ':';
 
-					if (isset(self::$Spec_StructuredElements[$Key]))
-					{
-						$PartArray = array();
-						foreach (self::$Spec_StructuredElements[$Key] as $Part)
-						{
-							$PartArray[] = isset($Value[$Part]) ? self::Escape($Value[$Part]) : '';
-						}
+		if (isset(self::$Spec_StructuredElements[$Key]))
+		{
+		    $PartArray = array();
+                    foreach (self::$Spec_StructuredElements[$Key] as $Part)
+                    {
+                        $PartArray[] = isset($Value[$Part])
+                                       ? self::Escape($Value[$Part]) : '';
+                    }
 						$Text .= implode(';', $PartArray);
-					}
-					elseif (is_array($Value) && isset(self::$Spec_ElementTypes[$Key]))
-					{
-						$Text .= self::Escape($Value['Value']);
-					}
-					else
-					{
-						$Text .= self::Escape($Value);
-					}
-
-					$Text .= self::endl;
-				}
-			}
-
-			$Text .= 'END:VCARD'.self::endl;
-			return $Text;
+		} elseif ( is_array($Value)
+                           && isset(self::$Spec_ElementTypes[$Key]) ) {
+		    $Text .= self::Escape($Value['Value']);
+		} else {
+                    $Text .= self::Escape($Value);
 		}
 
-		// !Helper methods
+		$Text .= self::endl;
+            } // foreach
+        }
 
-		private static function PrepareTypeStrForOutput($Type)
-		{
-			return implode(',', array_map('strtoupper', $Type));
-		}
+	$Text .= 'END:VCARD'.self::endl;
+	return $Text;
+    } // __toString()
 
-	 	/**
-		 * Removes the escaping slashes from the text.
-		 *
-		 * @access private
-		 *
-		 * @param string Text to prepare.
-		 *
-		 * @return string Resulting text.
-		 */
-		private static function Unescape($Text)
-		{
-			return stripcslashes($Text);
-//			return str_replace(array('\:', '\;', '\,', "\n"), array(':', ';', ',', ''), $Text);
-		}
+    // !Helper methods
+
+    private static function PrepareTypeStrForOutput($Type)
+    {
+        return implode(',', array_map('strtoupper', $Type));
+    }
+
+    /**
+     * Removes the escaping slashes from the text.
+     *
+     * @access private
+     *
+     * @param string Text to prepare.
+     *
+     * @return string Resulting text.
+     */
+    private static function Unescape($Text)
+    {
+        return stripcslashes($Text);
+    }
 
 		/**
 		 * Adds escaping slashes to text to conform with RFC6350.
