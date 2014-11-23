@@ -452,12 +452,12 @@ class vCard implements Countable, Iterator
     /**
      * Clear all values of the named element.
      */
-    public function clearElement($Key)
+    public function __unset($key)
     {
-        if (array_key_exists($Key, $this->Data))
-	    $this->Data["$Key"] = false;
+        if (array_key_exists($key, $this->Data))
+	    $this->Data["$key"] = false;
 	    return $this;
-    } // clearElement()
+    } // __unset()
 
     /**
      * Magic method for adding data to the vCard

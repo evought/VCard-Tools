@@ -135,7 +135,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertNotEmpty($vcard->fn);
 	$this->assertEquals($expected, $vcard->fn);
 
-	$vcard->clearElement("fn");
+	unset($vcard->fn);
 	$this->assertEmpty($vcard->fn);
 	return $vcard;
     }
@@ -157,7 +157,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertNotInternalType("array", $vcard->fn);
 	$this->assertEquals($fn2, $vcard->fn);
 
-	$vcard->clearElement("fn");
+	unset($vcard->fn);
 	return $vcard;
     }
 
@@ -185,7 +185,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertCount(1, $vcard->categories);
 	$this->assertContains($category_expected, $vcard->categories);
 
-	$vcard->clearElement("categories");
+	unset($vcard->categories);
 	$this->assertEmpty($vcard->categories);
 	return $vcard;
     }
@@ -208,7 +208,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertContains($category1, $vcard->categories);
 	$this->assertContains($category2, $vcard->categories);
 
-	$vcard->clearElement("categories");
+	unset($vcard->categories);
 
 	return $vcard;
     }
@@ -239,7 +239,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertCount(1, $vcard->url);
 	$this->assertContains($url_expected, $vcard->url);
 
-	$vcard->clearElement("url");
+	unset($vcard->url);
 	$this->assertEmpty($vcard->url);
 	return $vcard;
     }
@@ -263,7 +263,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertContains($url1, $vcard->url);
 	$this->assertContains($url2, $vcard->url);
 
-	$vcard->clearElement("url");
+	unset($vcard->url);
 	$this->assertEmpty($vcard->url);
 	return $vcard;
     }
@@ -294,7 +294,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
 	$this->assertContains($expected, $vcard->adr, print_r($vcard->adr, true));
 
-	$vcard->clearElement("adr");
+	unset($vcard->adr);
 	$this->assertEmpty($vcard->adr);
 	return $vcard;
     }
@@ -322,7 +322,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
 	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
 
-	$vcard->clearElement("adr");
+	unset($vcard->adr);
 	$this->assertEmpty($vcard->adr);
 	return $vcard;
     }
@@ -354,7 +354,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
 	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
 
-	$vcard->clearElement("adr");
+	unset($vcard->adr);
 	$this->assertEmpty($vcard->adr);
 	return $vcard;
     }
