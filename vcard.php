@@ -402,48 +402,52 @@ class vCard implements Countable, Iterator
 	return array();
     } // __get()
 
-		/**
-		 * Saves an embedded file
-		 *
-		 * @param string Key
-		 * @param int Index of the file, defaults to 0
-		 * @param string Target path where the file should be saved, including the filename
-		 *
-		 * @return bool Operation status
-		 */
-		public function SaveFile($Key, $Index = 0, $TargetPath = '')
-		{
-			if (!isset($this -> Data[$Key]))
-			{
-				return false;
-			}
-			if (!isset($this -> Data[$Key][$Index]))
-			{
-				return false;
-			}
+    /**
+     * Saves an embedded file
+     *
+     * @param string Key
+     * @param int Index of the file, defaults to 0
+     * @param string Target path where the file should be saved, including
+     * the filename
+     *
+     * @return bool Operation status
+     */
+    public function SaveFile($Key, $Index = 0, $TargetPath = '')
+    {
+	if (!isset($this -> Data[$Key]))
+	{
+	    return false;
+	}
+        if (!isset($this -> Data[$Key][$Index]))
+        {
+	    return false;
+        }
 
-			// Returing false if it is an image URL
-			if (stripos($this -> Data[$Key][$Index]['Value'], 'uri:') === 0)
-			{
-				return false;
-			}
+	// Returing false if it is an image URL
+	if (stripos($this -> Data[$Key][$Index]['Value'], 'uri:') === 0)
+	{
+	    return false;
+	}
 
-			if (is_writable($TargetPath) || (!file_exists($TargetPath) && is_writable(dirname($TargetPath))))
-			{
-				$RawContent = $this -> Data[$Key][$Index]['Value'];
-				if (isset($this -> Data[$Key][$Index]['Encoding']) && $this -> Data[$Key][$Index]['Encoding'] == 'b')
-				{
-					$RawContent = base64_decode($RawContent);
-				}
-				$Status = file_put_contents($TargetPath, $RawContent);
-				return (bool)$Status;
-			}
-			else
-			{
-				throw new Exception('vCard: Cannot save file ('.$Key.'), target path not writable ('.$TargetPath.')');
-			}
-			return false;
-		}
+	if ( is_writable($TargetPath)
+	     || ( !file_exists($TargetPath)
+                  && is_writable(dirname($TargetPath)) ) )
+	{
+	    $RawContent = $this -> Data[$Key][$Index]['Value'];
+	    if ( isset($this -> Data[$Key][$Index]['Encoding'])
+                 && $this -> Data[$Key][$Index]['Encoding'] == 'b' )
+	    {
+	        $RawContent = base64_decode($RawContent);
+	    }
+	    $Status = file_put_contents($TargetPath, $RawContent);
+	    return (bool)$Status;
+        } else {
+	    throw new Exception( 'vCard: Cannot save file ('
+                                 . $Key . '), target path not writable ('
+                                 . $TargetPath.')' );
+	}
+	return false;
+    }
 
 		/**
                  * Clear all values of the named element.
