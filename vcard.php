@@ -638,179 +638,181 @@ class vCard implements Countable, Iterator
         return stripcslashes($Text);
     }
 
-		/**
-		 * Adds escaping slashes to text to conform with RFC6350.
-		 * Must be done prior to raw vcard output.
-		 * @access private
-		 *
-		 * @param string Text to prepare.
-		 *
-		 * @return string Resulting text.
-		 */
-		private static function Escape($text)
-	        {
-		    return addcslashes($text, "\\\n,:;");
-		}
+    /**
+     * Adds escaping slashes to text to conform with RFC6350.
+     * Must be done prior to raw vcard output.
+     * @access private
+     *
+     * @param string Text to prepare.
+     *
+     * @return string Resulting text.
+     */
+    private static function Escape($text)
+    {
+        return addcslashes($text, "\\\n,:;");
+    }
 
-		/**
-		 * Separates the various parts of a structured value according to the spec.
-		 *
-		 * @access private
-		 *
-		 * @param string Raw text string
-		 * @param string Key (e.g., N, ADR, ORG, etc.)
-		 *
-		 * @return array Parts in an associative array.
-		 */
-		private static function ParseStructuredValue($Text, $Key)
-		{
-			$Text = array_map('trim', explode(';', $Text));
+    /**
+     * Separates the various parts of a structured value according to the spec.
+     *
+     * @access private
+     *
+     * @param string Raw text string
+     * @param string Key (e.g., N, ADR, ORG, etc.)
+     *
+     * @return array Parts in an associative array.
+     */
+    private static function ParseStructuredValue($Text, $Key)
+    {
+        $Text = array_map('trim', explode(';', $Text));
 
-			$Result = array();
-			$Ctr = 0;
+	$Result = array();
+	$Ctr = 0;
 
-			foreach (self::$Spec_StructuredElements[$Key] as $Index => $StructurePart)
-			{
-				$Result[$StructurePart] = isset($Text[$Index]) ? $Text[$Index] : null;
-			}
-			return $Result;
-		}
-
-		/**
-		 * @access private
-		 * Split multiple element values by commas, except that RFC6350
-		 * allowed escaping is handled (comma and backslash).
-		 */
-		private static function ParseMultipleTextValue($Text)
-		{
-			// split by commas, except that a comma escaped by
-			// a backslash does not count except that a backslash
-			// escaped by a backslash does not count...
-			return preg_split(preg_quote('/(?<![^\\]\\),/'), $Text);
-		}
-
-		/**
-		 * @access private
-		 */
-		private static function ParseParameters($Key, array $RawParams = null)
-		{
-			if (!$RawParams)
-			{
-				return array();
-			}
-
-			// Parameters are split into (key, value) pairs
-			$Parameters = array();
-			foreach ($RawParams as $Item)
-			{
-				$Parameters[] = explode('=', strtolower($Item));
-			}
-
-			$Type = array();
-			$Result = array();
-
-			// And each parameter is checked whether anything can/should be done because of it
-			foreach ($Parameters as $Index => $Parameter)
-			{
-				// Skipping empty elements
-				if (!$Parameter)
-				{
-					continue;
-				}
-
-				// Handling type parameters without the explicit TYPE parameter name (2.1 valid)
-				if (count($Parameter) == 1)
-				{
-					// Checks if the type value is allowed for the specific element
-					// The second part of the "if" statement means that email elements can have non-standard types (see the spec)
-					if (
-						(isset(self::$Spec_ElementTypes[$Key]) && in_array($Parameter[0], self::$Spec_ElementTypes[$Key])) ||
-						($Key == 'email' && is_scalar($Parameter[0]))
-					)
-					{
-						$Type[] = $Parameter[0];
-					}
-				}
-				elseif (count($Parameter) > 2)
-				{
-					$TempTypeParams = self::ParseParameters($Key, explode(',', $RawParams[$Index]));
-					if ($TempTypeParams['type'])
-					{
-						$Type = array_merge($Type, $TempTypeParams['type']);
-					}
-				}
-				else
-				{
-					switch ($Parameter[0])
-					{
-						case 'encoding':
-							if (in_array($Parameter[1], array('quoted-printable', 'b', 'base64')))
-							{
-								$Result['encoding'] = $Parameter[1] == 'base64' ? 'b' : $Parameter[1];
-							}
-							break;
-						case 'charset':
-							$Result['charset'] = $Parameter[1];
-							break;
-						case 'type':
-							$Type = array_merge($Type, explode(',', $Parameter[1]));
-							break;
-						case 'value':
-							if (strtolower($Parameter[1]) == 'url')
-							{
-								$Result['encoding'] = 'uri';
-							}
-							break;
-					}
-				}
-			}
-
-			$Result['type'] = $Type;
-
-			return $Result;
-		}
-
-		// !Interface methods
-
-		// Countable interface
-		public function count()
-		{
-			switch ($this -> Mode)
-			{
-				case self::MODE_SINGLE:
-					return 1;
-					break;
-				case self::MODE_MULTIPLE:
-					return count($this -> Data);
-					break;
-			}
-			return 0;
-		}
-
-		// Iterator interface
-		public function rewind()
-		{
-			reset($this -> Data);
-		}
-
-		public function current()
-		{
-			return current($this -> Data);
-		}
-
-		public function next()
-		{
-			return next($this -> Data);
-		}
-
-		public function valid()
-		{
-			return ($this -> current() !== false);
-		}
-
-		public function key()
-		{
-			return key($this -> Data);
-		}
+	foreach (self::$Spec_StructuredElements[$Key] as $Index => $StructurePart)
+	{
+	    $Result[$StructurePart] = isset($Text[$Index]) ? $Text[$Index] : null;
 	}
+	return $Result;
+    } // ParseStructuredValue(
+
+    /**
+     * @access private
+     * Split multiple element values by commas, except that RFC6350
+     * allowed escaping is handled (comma and backslash).
+     */
+    private static function ParseMultipleTextValue($Text)
+    {
+	// split by commas, except that a comma escaped by
+	// a backslash does not count except that a backslash
+	// escaped by a backslash does not count...
+	return preg_split(preg_quote('/(?<![^\\]\\),/'), $Text);
+    }
+
+    /**
+     * @access private
+     */
+    private static function ParseParameters($Key, array $RawParams = null)
+    {
+        if (!$RawParams)
+	{
+	    return array();
+	}
+
+	// Parameters are split into (key, value) pairs
+	$Parameters = array();
+	foreach ($RawParams as $Item)
+	{
+	    $Parameters[] = explode('=', strtolower($Item));
+	}
+
+	$Type = array();
+	$Result = array();
+
+	// And each parameter is checked whether anything can/should be done 
+        // because of it
+	foreach ($Parameters as $Index => $Parameter)
+	{
+	    // Skipping empty elements
+	    if (!$Parameter)
+            {
+                continue;
+            }
+
+            // Handling type parameters without the explicit TYPE parameter name 
+            // (2.1 valid)
+            if (count($Parameter) == 1)
+            {
+		// Checks if the type value is allowed for the specific element
+		// The second part of the "if" statement means that email 
+                // elements can have non-standard types (see the spec)
+		if ( ( isset(self::$Spec_ElementTypes[$Key])
+                       && in_array( $Parameter[0],
+                           self::$Spec_ElementTypes[$Key] ) )
+                     || ($Key == 'email' && is_scalar($Parameter[0])) )
+                {
+		    $Type[] = $Parameter[0];
+                }
+            } elseif (count($Parameter) > 2) {
+		$TempTypeParams = self::ParseParameters( $Key,
+                    explode(',', $RawParams[$Index]) );
+		if ($TempTypeParams['type'])
+		{
+		    $Type = array_merge($Type, $TempTypeParams['type']);
+		}
+            } else {
+                switch ($Parameter[0])
+		{
+		    case 'encoding':
+                        if ( in_array( $Parameter[1],
+                                array('quoted-printable', 'b', 'base64') ) )
+                        {
+                            $Result['encoding'] = $Parameter[1] == 'base64'
+                                                  ? 'b' : $Parameter[1];
+			}
+			break;
+                    case 'charset':
+                        $Result['charset'] = $Parameter[1];
+                        break;
+                    case 'type':
+                        $Type = array_merge($Type, explode(',', $Parameter[1]));
+                        break;
+                    case 'value':
+                        if (strtolower($Parameter[1]) == 'url')
+                        {
+                            $Result['encoding'] = 'uri';
+                        }
+			break;
+                } // switch
+            } // else
+        } // foreach
+
+        $Result['type'] = $Type;
+
+	return $Result;
+    } // ParseParameters()
+
+    // !Interface methods
+
+    // Countable interface
+    public function count()
+    {
+        switch ($this -> Mode)
+	{
+            case self::MODE_SINGLE:
+                return 1;
+		break;
+            case self::MODE_MULTIPLE:
+                return count($this -> Data);
+		break;
+        }
+            return 0;
+    }
+
+    // Iterator interface
+    public function rewind()
+    {
+        reset($this -> Data);
+    }
+
+    public function current()
+    {
+        return current($this -> Data);
+    }
+
+    public function next()
+    {
+        return next($this -> Data);
+    }
+
+    public function valid()
+    {
+        return ($this -> current() !== false);
+    }
+
+    public function key()
+    {
+        return key($this -> Data);
+    }
+} // VCard
 ?>
