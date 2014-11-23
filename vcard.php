@@ -298,7 +298,7 @@ class vCard implements Countable, Iterator
             // Checking files for colon-separated additional parameters 
             // (Apple's Address Book does this), for example,
             // "X-ABCROP-RECTANGLE" for photos
-            if ( in_array($Key, self::$Spec_FileElements)
+            if ( $this->keyIsFileElement($Key)
                      && isset($Parameters['encoding'])
                      && in_array($Parameters['encoding'], array('b', 'base64')) )
             {
@@ -313,7 +313,7 @@ class vCard implements Countable, Iterator
 	    }
 
 	    // Values are parsed according to their type
-            if (isset(self::$Spec_StructuredElements[$Key]))
+            if ($this->keyIsStructuredElement($Key))
 	    {
 	        $Value = self::ParseStructuredValue($Value, $Key);
                 if ($Type)
@@ -321,7 +321,7 @@ class vCard implements Countable, Iterator
                     $Value['Type'] = $Type;
                 }
             } else {
-		if (in_array($Key, self::$Spec_MultipleValueElements))
+		if ($this->keyIsMultipleValueElement($Key))
                 {
                     $Value = self::ParseMultipleTextValue($Value, $Key);
                 }
@@ -338,7 +338,7 @@ class vCard implements Countable, Iterator
 	    }
 
 
-	    if (in_array($Key, self::$Spec_SingleElements))
+	    if ($this->keyIsSingleValueElement($Key))
             {
 	        $this -> Data[$Key] = $Value;
 	    } else {
@@ -347,7 +347,7 @@ class vCard implements Countable, Iterator
 		    $this -> Data[$Key] = array();
 	        }
 
-                if (in_array($Key, self::$Spec_MultipleValueElements))
+                if ($this->keyIsMultipleValueElement($Key))
                     $this->Data[$Key]
                                     = array_merge($this -> Data[$Key], $Value);
 		else
@@ -369,10 +369,10 @@ class vCard implements Countable, Iterator
         $Key = strtolower($Key);
         if (isset($this -> Data[$Key]))
         {
-            if ($Key == 'agent' || in_array($Key, self::$Spec_SingleElements))
+            if ($Key == 'agent' || $this->keyIsSingleValueElement($Key))
 	    {
 	        return $this -> Data[$Key];
-	    } elseif (in_array($Key, self::$Spec_FileElements)) {
+	    } elseif ($this->keyIsFileElement($Key)) {
 	        $Value = $this -> Data[$Key];
 
 		foreach ($Value as $K => $V)
@@ -473,7 +473,7 @@ class vCard implements Countable, Iterator
 
 	$Value = isset($Arguments[0]) ? $Arguments[0] : false;
 
-	if (in_array($Key, self::$Spec_SingleElements))
+	if ($this->keyIsSingleValueElement($Key))
 	{
 	    $this -> Data[$Key] = $Value;
 	    return $this;
@@ -488,7 +488,7 @@ class vCard implements Countable, Iterator
 	{
 	    $Types = array_values(array_slice($Arguments, 1));
 
-	    if ( isset(self::$Spec_StructuredElements[$Key])
+	    if ( $this->keyIsStructuredElement($Key)
                  && in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
 	       )
 	    {
@@ -576,7 +576,7 @@ class vCard implements Countable, Iterator
                 continue;
 	    }
 
-	    if (in_array($Key, self::$Spec_SingleElements))
+	    if ($this->keyIsSingleValueElement($Key))
  	    {
                 $Text .= $KeyUC . ":" . self::Escape($Values);
 		$Text .= self::endl;
@@ -593,7 +593,7 @@ class vCard implements Countable, Iterator
 		}
 		$Text .= ':';
 
-		if (isset(self::$Spec_StructuredElements[$Key]))
+		if ($this->keyIsStructuredElement($Key))
 		{
 		    $PartArray = array();
                     foreach (self::$Spec_StructuredElements[$Key] as $Part)
@@ -813,6 +813,39 @@ class vCard implements Countable, Iterator
     public function key()
     {
         return key($this -> Data);
+    }
+
+    /**
+     * @return true if the specified key is a single value VCard element,
+     * false otherwise.
+     */
+    public function keyIsSingleValueElement($key)
+    {
+	return in_array($key, self::$Spec_SingleElements);
+    }
+
+    /**
+     * @return true if the specified key is a multiple-value VCard element,
+     * (is able to contain multiple values on the same line separated by commas) 
+     * false otherwise.
+     */
+    public function keyIsMultipleValueElement($key)
+    {
+	return in_array($key, self::$Spec_MultipleValueElements);
+    }
+
+    /**
+     * @return true if the specified key is a structured VCard element,
+     * false otherwise.
+     */
+    public function keyIsStructuredElement($key)
+    {
+        return isset(self::$Spec_StructuredElements[$key]);
+    }
+
+    public function keyIsFileElement($key)
+    {
+	return in_array($key, self::$Spec_FileElements);
     }
 } // VCard
 ?>

@@ -78,6 +78,42 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testKeyIsStructuredElement($vcard)
+    {
+	$this->assertTrue($vcard->keyIsStructuredElement('org'));
+	$this->assertFalse($vcard->keyIsStructuredElement('fn'));
+    }
+
+    /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testKeyIsSingleValueElement($vcard)
+    {
+        $this->assertTrue($vcard->keyIsSingleValueElement('fn'));
+	$this->assertFalse($vcard->keyIsSingleValueElement('url'));
+    }
+
+    /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testKeyIsMultipleValueElement($vcard)
+    {
+        $this->assertTrue($vcard->keyIsMultipleValueElement('categories'));
+	$this->assertFalse($vcard->keyIsMultipleValueElement('n'));
+    }
+
+    /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testKeyIsFileElement($vcard)
+    {
+        $this->assertTrue($vcard->keyIsFileElement('photo'));
+	$this->assertFalse($vcard->keyIsFileElement('email'));
+    }
+
+    /**
      * @covers VCard::__construct
      * @covers VCARD::__get
      * @depends testConstructEmptyVCard
