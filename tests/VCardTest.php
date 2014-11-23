@@ -154,6 +154,117 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     */
+    public function testAssignSingleValueElement(VCard $vcard)
+    {
+        $expected = 'foo';
+        $this->assertEmpty($vcard->fn);
+        $vcard->fn = $expected;
+	$this->assertNotEmpty($vcard->fn);
+	$this->assertEquals($expected, $vcard->fn);
+
+	unset($vcard->fn);
+	$this->assertEmpty($vcard->fn);
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     */
+    public function testAssignNoValue(VCard $vcard)
+    {
+        $expected = 'foo';
+        $this->assertEmpty($vcard->fn);
+        $vcard->fn = $expected;
+	$this->assertNotEmpty($vcard->fn);
+
+	$vcard->fn = "";
+	$this->assertEmpty($vcard->fn);
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     */
+    public function testAssignElement(VCard $vcard)
+    {
+        $expected = array('foo');
+        $this->assertEmpty($vcard->fn);
+        $vcard->url = $expected;
+	$this->assertNotEmpty($vcard->url);
+	$this->assertEquals($expected, $vcard->url);
+
+	unset($vcard->url);
+	$this->assertEmpty($vcard->url);
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     */
+    public function testAssignStructuredElement(VCard $vcard)
+    {
+        $expected = array(array("StreetAddress" => 'foo'));
+        $this->assertEmpty($vcard->adr);
+        $vcard->adr = $expected;
+	$this->assertNotEmpty($vcard->adr);
+	$this->assertEquals($expected, $vcard->adr);
+
+	unset($vcard->adr);
+	$this->assertEmpty($vcard->adr);
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     * @expectedException DomainException
+     */
+    public function testAssignBadSingleValueElement(VCard $vcard)
+    {
+        $vcard->fn = array("foo");
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     * @expectedException DomainException
+     */
+    public function testAssignBadElement(VCard $vcard)
+    {
+        $vcard->url = "foo";
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     * @expectedException DomainException
+     */
+    public function testAssignBadStructuredElement1(VCard $vcard)
+    {
+        $vcard->adr = "foo";
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__set, VCard::__get.
+     * @depends testNoFN
+     * @expectedException DomainException
+     */
+    public function testAssignBadStructuredElement2(VCard $vcard)
+    {
+        $vcard->adr = array("foo");
+	return $vcard;
+    }
+
+    /**
      * @covers VCard::__call
      * @depends testSetFN
      * Because FN is a single value element, setting twice should

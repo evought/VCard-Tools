@@ -403,6 +403,55 @@ class vCard implements Countable, Iterator
     } // __get()
 
     /**
+     * Magic assignment function.
+     * Sets the named element to the requested value, replacing any
+     * current value. Note that the nature of
+     * the element will determine what needs to be passed as an argument: in
+     * the case of a single value element, it will need to be a string
+     * and other elements (allowing multiple values), an array.
+     * Attempting to (e.g.) add a string to an element
+     * accepting multiple values will do Bad Things(tm). This is provided
+     * for completeness and because the __call syntax makes it very difficult
+     * to construct and add a set of values in a batch (say, loading VCards
+     * from a database or POST form) and can have unprectable results.
+     * @param string key
+     * @param string value
+     * throws DomainException if the $value is not appropriately a string,
+     * an array, or an array of arrays.
+     */
+    public function __set($key, $value)
+    {
+	if (empty($value))
+        {
+            unset($this->Data[$key]);
+            return;
+        }
+
+	if ($this->keyIsSingleValueElement($key))
+        {
+            if (!is_string($value))
+                throw new DomainException( "Elements constraint violation: "
+                                           . $key
+                                           . " requires a single value." );
+        } else {
+
+	    if (!is_array($value))
+                throw new DomainException( "Elements constraint violation: "
+                                           . $key
+                                           . " requires an array of values." );
+            if ($this->keyIsStructuredElement($key))
+            {
+                $result = array_unique(array_filter($value, 'is_array'));
+                if ((!count($result) == 1) && (array_pop($result) != true))
+                throw new DomainException( "Elements constraint violation: "
+                                           . $key
+                                           . " requires an array of arrays." );
+            }
+        }
+        $this->Data[$key] = $value;
+    } // __set()
+
+    /**
      * Saves an embedded file
      *
      * @param string Key
@@ -856,4 +905,5 @@ class vCard implements Countable, Iterator
 	return in_array($key, self::$Spec_FileElements);
     }
 } // VCard
+
 ?>
