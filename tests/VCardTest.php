@@ -483,7 +483,31 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	return $vcard;
     }
 
+    /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testNoKind(VCard $vcard)
+    {
+	$this->assertEmpty($vcard->kind);
 
+	return $vcard;
+    }
+
+    /**
+     * @covers VCard::__call, VCard::__unset
+     * @depends testNoKind
+     */
+    public function testSetKind(VCard $vcard)
+    {
+	$expected = "Individual";
+	$vcard->kind($expected);
+	$this->assertNotEmpty($vcard->kind);
+	$this->assertEquals($expected, $vcard->kind);
+
+	unset($vcard->kind);
+	$this->assertEmpty($vcard->kind);
+	return $vcard;
+    }
 
     /**
      * @covers VCard::__construct

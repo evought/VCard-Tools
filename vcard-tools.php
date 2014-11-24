@@ -87,7 +87,9 @@ function store_contact_from_vcard($connection, $vcard)
     $vcard->setFNAppropriately();
 
     $stmt = $connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_prefix, :n_given_name, :n_addit_name, :n_family_name, :n_suffix, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
-    $stmt->bindValue(':kind', $vcard->kind);
+
+    $stmt->bindValue( ':kind', empty($vcard->kind)
+                                ? PDO::PARAM_NULL : $vcard->kind );
     $stmt->bindValue(':fn', $vcard->fn);
 
     $n = $vcard->n;
@@ -267,7 +269,7 @@ function fetch_vcards_from_db($connection, $kind="%")
     $stmt->execute();
     $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
-    $vcards;
+    $vcards = array();
 
     while ($row = $stmt->fetch())
     {

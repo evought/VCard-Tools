@@ -58,9 +58,48 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         ));
     }
 
-    public function testEmpty()
+    public function testFetchWhenEmpty()
     {
-        $this->assertEquals(0, $this->getConnection()->getRowCount('CONTACT'));
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+	$vcards = fetch_vcards_from_db(self::$pdo);
+
+	$this->assertEmpty($vcards);
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Postcondition" );
     }
+
+    public function testSearchWhenEmpty()
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+	$vcards = search_vcards(self::$pdo, "bloomers");
+
+	$this->assertEmpty($vcards);
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Postcondition" );
+    }
+
+    public function testStoreAndRetrieveTrivialVCard()
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+
+        $expected = 'foo';
+        $vcard = new VCard();
+	$vcard->fn = $expected;
+
+        $contact_id = store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+                             "After storing " . $contact_id );
+
+        $result_vcards = fetch_vcards_by_id(self::$pdo, array($contact_id));
+
+	$this->assertCount(1, $result_vcards);
+        $result_vcard = array_pop($result_vcards);
+	$this->assertEquals($expected, $result_vcard->fn);
+    }
+
+
 } // VCardToolsTest
 ?>
