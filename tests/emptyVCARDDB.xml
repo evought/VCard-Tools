@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<mysqldump xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<database name="VCARD">
+	<table_data name="CONTACT">
+	</table_data>
+	<table_data name="CONTACT_AGENT">
+	</table_data>
+	<table_data name="CONTACT_CATEGORIES">
+	</table_data>
+	<table_data name="CONTACT_DATA">
+	</table_data>
+	<table_data name="CONTACT_DATA_REL_ENCODING_TYPES">
+	</table_data>
+	<table_data name="CONTACT_DATA_REL_TYPES">
+	</table_data>
+	<table_data name="CONTACT_EMAIL">
+	</table_data>
+	<table_data name="CONTACT_EMAIL_REL_TYPES">
+	</table_data>
+	<table_data name="CONTACT_ENCODING_TYPES">
+	</table_data>
+	<table_data name="CONTACT_KEYS">
+	</table_data>
+	<table_data name="CONTACT_KEY_REL_TYPES">
+	</table_data>
+	<table_data name="CONTACT_MAIL_ADDRESS">
+	</table_data>
+	<table_data name="CONTACT_MAIL_ADDRESS_REL_TYPES">
+	</table_data>
+	<table_data name="CONTACT_NOTE">
+	</table_data>
+	<table_data name="CONTACT_NOTE_REL_TYPES">
+	</table_data>
+	<table_data name="CONTACT_ORG">
+	</table_data>
+	<table_data name="CONTACT_ORG_REL_TYPES">
+	</table_data>
+	<table_data name="CONTACT_PHONE_NUMBER">
+	</table_data>
+	<table_data name="CONTACT_PHONE_NUMBER_REL_TYPES">
+	</table_data>
+	<table_data name="CONTACT_XTENDED">
+	</table_data>
+	<table_data name="CONTACT_REL_AGENT">
+	</table_data>
+	<table_data name="CONTACT_REL_CATEGORIES">
+	</table_data>
+	<table_data name="CONTACT_REL_DATA">
+	</table_data>
+	<table_data name="CONTACT_REL_EMAIL">
+	</table_data>
+	<table_data name="CONTACT_REL_KEYS">
+	</table_data>
+	<table_data name="CONTACT_REL_MAIL_ADDRESS">
+	</table_data>
+	<table_data name="CONTACT_REL_NOTE">
+	</table_data>
+	<table_data name="CONTACT_REL_ORG">
+	</table_data>
+	<table_data name="CONTACT_REL_PHONE_NUMBER">
+	</table_data>
+	<table_data name="CONTACT_REL_XTENDED">
+	</table_data>
+</database>
+</mysqldump>
