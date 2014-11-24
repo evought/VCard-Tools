@@ -12,7 +12,7 @@ The vcard-tools.php routines for database persistence, by comparison, are green,
 
 #Components#
 
-The project consists of the php modules in vcard-tools.php and vcard.php, as well as the default template definitions in vcard-templates.php. The sql schema (MySQL) is defined in sql/, documentation materials in doc/, and PHPUnit test cases under tests/. Setting up the database *should* be relatively straightforward but I will add some notes to that effect. I also intend to add an Ant script for maintenance tasks for my own sanity but have not yet done so.
+The project consists of the php modules in vcard-tools.php and vcard.php, as well as the default template definitions in vcard-templates.php. The sql schema (MySQL) is defined in sql/, documentation materials in doc/, and PHPUnit test cases under tests/. Setting up the database is described below. I also intend to add an Ant script for maintenance tasks for my own sanity but have not yet done so.
 
 The templating code can be used along with the original VCard class *with or without the database persistence*.
 
@@ -21,4 +21,25 @@ The HTML templating is designed with CSS styling in mind. Classes and roles are 
 #Documentation and Examples#
 
 Aside from the code comments, one of the best resources for using the vcard-tools.php functions will be the test cases, which will be improved as I clean up and refactor the code. There are as yet no publicly visible demonstrations of the class.
+
+#Database Setup#
+
+To use the software, a database (e.g. VCARD) will be needed to contain the tables and a user with appropriate permissions to access it. Depending on your setup, this can be done with a tool such as *PHPMyAdmin* or from the command-line using something like the code in sql/dbinit.sql. In most environments:
+
+    $ mysql --user=root -p &lt; sql/dbinit.sql
+
+Will execute the commands as the MySQL root user, prompting for the password. Edit the account name (and, obviously the password) to suit your needs. To run the unit tests, this 'test-vcard' account will need the SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*. The unit tests will automatically delete new rows and reset the table state after each run. Add the details of your test account to database.php (or your application code) and to phpunit.xml.
+
+You will also likely want a developer account which has privileges to create/destroy the database tables so that you do not need to use the root account during development. Grant this account ALL on VCARD and use it for the next step:
+
+    $ mysql --user=developerlogin -p &lt; sql/vcard.sql
+
+This will create the tables. If you alter the schema, it is a simple matter to
+DROP and CREATE the database and re-CREATE the tables. You may have to rerun your GRANT statements as well. The unit tests rely on an xml table dump to set/reset
+the initial state for the testcases. You will want to recreate this file by
+running (e.g.):
+
+    $mysqldump --xml -t -u [username] -p [database] > tests/emptyVCARDDB.xml
+
+See the PHPUnit Manual, [Database Testing Chapter](https://phpunit.de/manual/current/en/database.html#database.available-implementations) for more information.
 
