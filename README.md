@@ -28,7 +28,14 @@ To use the software, a database (e.g. VCARD) will be needed to contain the table
 
     $ mysql --user=root -p &lt; sql/dbinit.sql
 
-Will execute the commands as the MySQL root user, prompting for the password. Edit the account name (and, obviously the password) to suit your needs. To run the unit tests, this 'test-vcard' account will need the SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*. The unit tests will automatically delete new rows and reset the table state after each run. Add the details of your test account to database.php (or your application code) and to phpunit.xml.
+Will execute the commands as the MySQL root user, prompting for the password. Edit the account name (and, obviously the password) to suit your needs. To run the unit tests, this 'test-vcard' account will need the SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*. The unit tests will automatically delete new rows and reset the table state after each run. Add the details of your test account to db.properties. The properties file will be used by ant to generate database.php (for your application code) and phpunit.xml (for unit tests).
+Whenever these parameters change, you may do:
+
+    $ ant cleanConfig && ant config
+
+To eliminate any existing generated files and refresh them.
+Settings in *${user.name}.properties* will override these values if you need to
+change the settings on a per-user basis and will make git happier in any case.
 
 You will also likely want a developer account which has privileges to create/destroy the database tables so that you do not need to use the root account during development. Grant this account ALL on VCARD and use it for the next step:
 
