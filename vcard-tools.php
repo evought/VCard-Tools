@@ -8,7 +8,7 @@
  * a vcard.
  * @author Eric Vought evought@pobox.com 2014-11-16
  * @copyright Eric Vought 2014, Some rights reserved.
- * @license CC-BY 4.0 http://creativecommons.org/licenses/by/4.0/
+ * @license MIT http://opensource.org/licenses/MIT
  */
 
 require_once "vcard.php";

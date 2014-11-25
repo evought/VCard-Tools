@@ -2,12 +2,11 @@
 /**
  * vCard class for parsing a vCard and/or creating one
  *
- * @link https://github.com/nuovo/vCard-parser
- * @author Martins Pilsetnieks, Roberts Bruveris
+ * @link https://github.com/evought/VCard-Tools
+ * @author Martins Pilsetnieks, Roberts Bruveris, Eric Vought
  * @see RFC 2426, RFC 2425, RFC 6350
- * @version 0.4.8
- * Modified by Eric Vought November 2014
-*/
+ * @license MIT http://opensource.org/licenses/MIT
+ */
 class vCard implements Countable, Iterator
 {
     const MODE_SINGLE = 'single';

@@ -1,6 +1,10 @@
 README.md
+
 Eric Vought
+
 2014-11-24 VCard-Tools PHP toolbox
+
+MIT License http://opensource.org/licenses/MIT
 
 #What This Project Is#
 
@@ -9,6 +13,10 @@ This effort is a set of tools for manipulating VCards (RFC 6350) in PHP, includi
 At its outset, the VCard class is one of the more advanced PHP classes for the purpose. I extended it for use in the prototype site where I first used VCard-Tools, added support for some VCard 4.0 behavior, fixed border parsing cases, added the unit tests, rounded out the interface, and performed cleanup. It is therefore heading toward being a fairly robust tool, albeit with a few oddities brought about by the sheer complexity of the VCard 4.0 schema (which I have some ideas about improving). The schema, also adapted toward VCard 4.0 and improved, is likewise reasonably stable. I intend to extend it to handle the remainder of the VCard 4.0 properties and possibly adapt it to handle more than 1 N property.
 
 The vcard-tools.php routines for database persistence, by comparison, are green, in need of refactoring, cleanup, and testing. I anticipate substantial interface repacking/standardization and internal cleanup in the near future. They should be viewed as a demonstration project at this time, *not production code*. The templating mechanism has a great deal of power and flexibility. The format of template definitions themselves are reasonably stable, but the interface will also undergo cleanup.
+
+#License#
+
+All components are under the [MIT License](license.txt).
 
 #Components#
 

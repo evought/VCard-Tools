@@ -4,7 +4,7 @@
  * @author Eric Vought <evought@pobox.com>
  * 2014-11-16
  * @copyright Eric Vought 2014, Some rights reserved.
- * @license http://creativecommons.org/licenses/by/4.0/ CC-BY 4.0 
+ * @license MIT http://opensource.org/licenses/MIT
  */
 require_once "vcard-tools.php";
 require_once "vcard.php";

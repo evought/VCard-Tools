@@ -1,3 +1,9 @@
+<!--
+  -  Ant build file for VCard-Tools
+  -  Author: Eric Vought
+  -  2014-11
+  -  License: MIT (http://opensource.org/licenses/MIT)
+  -->
 <project name="VCard-Tools" default="dist" basedir=".">
     <description>
     Tools for manipulating VCards (RFC 6350) in PHP, including in-memory 
