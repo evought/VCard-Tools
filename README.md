@@ -18,6 +18,23 @@ The templating code can be used along with the original VCard class *with or wit
 
 The HTML templating is designed with CSS styling in mind. Classes and roles are clearly indicated in the markup as styling hooks and it is simple to present different output for, say, Individual versus Organization or summary versus full information. In a live website, I intend that it should be easy for the user to go from a search-list to individual detailed listings, export the raw .vcf text or even, potentially, generate a QR code. I expect to add a template for proper hcard output, but it should not be difficult (at all) for someone to use the mechanism to produce a conformant hcard using the existing code.
 
+##Requirements##
+
+The project was developed against
+* PHP 5.5 (5.5.18)
+* MySQL 5.5 (5.5.38)
+
+This should be all that is needed to use VCard-Tools.
+
+To develop and run tests, you will additionally need:
+
+* Apache Ant >= 1.9.2 for generating config files and maintenance tasks
+* PHPUnit >= 4.3.5 for running the tests
+* Apache Ant will in turn require a compatible Java Development Kit (I am using
+openJDK 1.8.0, but any JDK which will run Ant should be fine.)
+
+I am doing most of my development on a Intel-based Fedora Linux 20 workstation.
+
 #Documentation and Examples#
 
 Aside from the code comments, one of the best resources for using the vcard-tools.php functions will be the test cases, which will be improved as I clean up and refactor the code. There are as yet no publicly visible demonstrations of the class.
