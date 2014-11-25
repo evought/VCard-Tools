@@ -10,11 +10,48 @@
   <property name="dist.dir"  location="dist"/>
   <property name="doc.dir"  location="docs"/>
 
+  <!-- per-user properties for overriding settings, such as db connection -->
+  <property file="${user.name}.properties"/>
+
+  <!-- database properties for testing -->
+  <property file="db.properties"/>
+
+  <filterset id="db.unittest.filterset">
+  <!-- NOTE: filtersets cannot contain propertysets in ant 1.9.2;
+     - Do it the hard way. -->
+    <filter token="db.unittest.user"   value="${db.unittest.user}"/>
+    <filter token="db.unittest.passwd" value="${db.unittest.passwd}"/>
+    <filter token="db.unittest.passwd" value="${db.unittest.passwd}"/>
+    <filter token="db.unittest.dbname" value="${db.unittest.dbname}"/>
+    <filter token="db.unittest.dsn"    value="${db.unittest.dsn}"/>
+  </filterset>
+
   <!-- temporary files to tidy up -->
   <patternset id="backupFiles.pattern"
     includes="**/*~ **/*.bak" />
 
-  <target name="init">
+  <!-- list of generated configuration files -->
+  <fileset id="configFiles.fileset" dir="${basedir}"
+           includes="phpunit.xml database.php"/>
+
+  <target name="config"
+          description="Substitute macros to create needed configuration files">
+    <copy file="${basedir}/phpunit.xml.in" toFile="${basedir}/phpunit.xml">
+      <filterset refid="db.unittest.filterset"/>
+    </copy>
+    <copy file="${basedir}/database.php.in" toFile="${basedir}/database.php">
+      <filterset refid="db.unittest.filterset"/>
+    </copy>
+  </target>
+
+  <target name="cleanConfig"
+          description="Remove generated configuration files." >
+    <delete>
+      <fileset refid="configFiles.fileset" />
+    </delete>
+  </target>
+
+  <target name="init" depends="config">
     <tstamp/>
   </target>
 
@@ -23,7 +60,8 @@
     <mkdir dir="${dist.dir}"/>
   </target>
 
-  <target name="test">
+  <target name="test" depends="init"
+          description="Execute PHPUnit test suite">
     <echo message="Running unit tests with PHPUnit" />
 
     <exec executable="phpunit" failonerror="true">
