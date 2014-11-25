@@ -1,0 +1,47 @@
+<project name="VCard-Tools" default="dist" basedir=".">
+    <description>
+    Tools for manipulating VCards (RFC 6350) in PHP, including in-memory 
+    representation, database persistence, and HTML templating.
+    </description>
+
+  <!-- set global properties for this build -->
+  <property name="sql.dir" location="sql"/>
+  <property name="test.dir" location="tests"/>
+  <property name="dist.dir"  location="dist"/>
+  <property name="doc.dir"  location="docs"/>
+
+  <!-- temporary files to tidy up -->
+  <patternset id="backupFiles.pattern"
+    includes="**/*~ **/*.bak" />
+
+  <target name="init">
+    <tstamp/>
+  </target>
+
+  <target name="dist" depends="init"
+        description="generate the distribution" >
+    <mkdir dir="${dist.dir}"/>
+  </target>
+
+  <target name="test">
+    <echo message="Running unit tests with PHPUnit" />
+
+    <exec executable="phpunit" failonerror="true">
+       <arg value="${test.dir}"/>
+    </exec>
+  </target>
+
+  <target name="tidy" description="Get rid of temporary and backup files">
+    <delete>
+      <fileset defaultexcludes="no" dir=".">
+        <patternset refid="backupFiles.pattern"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="clean" depends="tidy"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${dist.dir}"/>
+  </target>
+</project>
