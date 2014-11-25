@@ -12,7 +12,7 @@ The vcard-tools.php routines for database persistence, by comparison, are green,
 
 #Components#
 
-The project consists of the php modules in vcard-tools.php and vcard.php, as well as the default template definitions in vcard-templates.php. The sql schema (MySQL) is defined in sql/, documentation materials in doc/, and PHPUnit test cases under tests/. Setting up the database is described below. I also intend to add an Ant script for maintenance tasks for my own sanity but have not yet done so.
+The project consists of the php modules in vcard-tools.php and vcard.php, as well as the default template definitions in vcard-templates.php. The sql schema (MySQL) is defined in sql/, documentation materials in doc/, and PHPUnit test cases under tests/. Setting up the database is described below. There is the beginnings of an [Ant](http://ant.apache.org) script for automating project maintenance tasks.
 
 The templating code can be used along with the original VCard class *with or without the database persistence*.
 
@@ -42,4 +42,10 @@ running (e.g.):
     $mysqldump --xml -t -u [username] -p [database] > tests/emptyVCARDDB.xml
 
 See the PHPUnit Manual, [Database Testing Chapter](https://phpunit.de/manual/current/en/database.html#database.available-implementations) for more information.
+
+# Unit Tests #
+
+Running the unit tests requires [PhpUnit](https://phpunit.de/) to be installed. If it is in the path, the full test suite can be run with the *test* ant task:
+
+    $ ant test
 
