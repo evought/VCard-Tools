@@ -58,7 +58,24 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         ));
     }
 
-    public function testFetchWhenEmpty()
+    /**
+     * Ensure that we can instantiate a VCardDB instance.
+     */
+    public function testCreateVCardDB()
+    {
+        $vcardDB = new VCardDB(self::$pdo);
+        $this->assertNotEmpty($vcardDB);
+        $this->assertInstanceOf('VCardDB', $vcardDB);
+
+	$this->assertSame(self::$pdo, $vcardDB->getConnection());
+
+        return $vcardDB;
+    }
+
+    /**
+     * @depends testCreateVCardDB
+     */
+    public function testFetchWhenEmpty(VCardDB $vcardDB)
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );
@@ -69,7 +86,10 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
                              "Postcondition" );
     }
 
-    public function testSearchWhenEmpty()
+    /**
+     * @depends testCreateVCardDB
+     */
+    public function testSearchWhenEmpty(VCardDB $vcardDB)
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );
@@ -80,7 +100,10 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
                              "Postcondition" );
     }
 
-    public function testStoreAndRetrieveTrivialVCard()
+    /**
+     * @depends testCreateVCardDB
+     */
+    public function testStoreAndRetrieveTrivialVCard(VCardDB $vcardDB)
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );
@@ -100,10 +123,15 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$this->assertEquals($expected, $result_vcard->fn);
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
         unset($result_vcard->prodid);
+
+        return $vcardDB;
     }
 
 
-    public function testStoreAndRetrieveVCard()
+    /**
+     * @depends testStoreAndRetrieveTrivialVCard
+     */
+    public function testStoreAndRetrieveVCard(VCardDB $vcardDB)
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );
@@ -140,12 +168,14 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         unset($result_vcard->prodid);
 
 	$this->assertEquals($vcard, $result_vcard);
+
+        return $vcardDB;
     } //testStoreAndRetrieveVCard()
 
     /**
      * @depends testStoreAndRetrieveVCard
      */
-    public function testStoreAndRetrieveWAddress()
+    public function testStoreAndRetrieveWAddress(VCardDB $vcardDB)
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );

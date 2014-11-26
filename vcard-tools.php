@@ -19,6 +19,35 @@ class VCardDB
     // The product id we will use when creating new vcards
     const VCARD_PRODUCT_ID = '-//VCard Tools//1.0//en';
 
+    /**
+     * The PDO connection used for storage and retrieval.
+     */
+    private $connection;
+
+    /**
+     * Retrieve the current PDO connection.
+     */
+    public function getConnection() {return $this->connection;}
+
+    /**
+     * @arg $connection A PDO connection to read from/write to. Not null. Caller
+     * retains responsibility for connection, but this class shall ensure that
+     * the reference is cleared upon clean-up.
+     */
+    public function __construct(PDO $connection)
+    {
+        assert(!empty($connection));
+        $this->connection = $connection;
+    }
+
+    /**
+     * Make sure that $connection is cleared.
+     */
+    public function __destruct()
+    {
+        unset($this->connection);
+    }
+
     // Store the whole vcard to the database, calling sub-functions to store
     // related tables (e.g. address) as necessary.
     // Returns the new contact_id
