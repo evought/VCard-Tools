@@ -98,6 +98,8 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$this->assertCount(1, $result_vcards);
         $result_vcard = array_pop($result_vcards);
 	$this->assertEquals($expected, $result_vcard->fn);
+        $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
+        unset($result_vcard->prodid);
     }
 
 
@@ -133,9 +135,11 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$this->assertCount(1, $result_vcards);
         $result_vcard = array_pop($result_vcards);
 
-	$this->assertEquals($vcard->fn, $result_vcard->fn);
-        $this->assertEquals($vcard->n, $result_vcard->n);
-        $this->assertEquals($vcard->url, $result_vcard->url);
+        // check and remove prodid so it won't fail comparison
+        $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
+        unset($result_vcard->prodid);
+
+	$this->assertEquals($vcard, $result_vcard);
     } //testStoreAndRetrieveVCard()
 
     /**
@@ -177,9 +181,11 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$this->assertCount(1, $result_vcards);
         $result_vcard = array_pop($result_vcards);
 
-	$this->assertEquals($vcard->fn, $result_vcard->fn);
-        $this->assertEquals($vcard->n, $result_vcard->n);
-        $this->assertEquals($vcard->adr, $result_vcard->adr);
+        // check and remove prodid so it won't fail comparison
+        $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
+        unset($result_vcard->prodid);
+
+	$this->assertEquals($vcard, $result_vcard);
     } //testStoreAndRetrieveWAddress()
 
         /**
@@ -217,9 +223,11 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$this->assertCount(1, $result_vcards);
         $result_vcard = array_pop($result_vcards);
 
-	$this->assertEquals($vcard->fn, $result_vcard->fn);
-        $this->assertEquals($vcard->n, $result_vcard->n);
-        $this->assertEquals($vcard->email, $result_vcard->email);
+        // check and remove prodid so it won't fail comparison
+        $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
+        unset($result_vcard->prodid);
+
+	$this->assertEquals($vcard, $result_vcard);
     } //testStoreAndRetrieveWAddress()
 } // VCardToolsTest
 ?>

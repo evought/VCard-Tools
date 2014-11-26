@@ -425,7 +425,8 @@ class VCardDB
 		$vcard->n($row["N_FAMILY_NAME"], "LastName");
         if (!empty($row["N_SUFFIX"])) $vcard->n($row["N_SUFFIX"], "Suffixes");
         if (!empty($row["NICKNAME"])) $vcard->nickname($row["N_NICKNAME"]);
-        if (!empty($row["BDAY"])) $vcard->bday($row["BDAY"]);
+        if (!empty($row["BDAY"]) && ($row["BDAY"] != PDO::PARAM_NULL))
+            $vcard->bday($row["BDAY"]);
         if (!empty($row["GEO_LAT"])) $vcard->geo($row["GEO_LAT"], "Lattitude");
         if (!empty($row["GEO_LON"])) $vcard->geo($row["GEO_LON"], "Longitude");
         if (!empty($row["TITLE"])) $vcard->title($row["TITLE"]);
