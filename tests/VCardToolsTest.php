@@ -109,10 +109,49 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $expected = [
                         'n_FirstName' => 'Fred',
                         'n_LastName' => 'Jones',
+                        'url' => 'http://golf.com',
+                        'fn' => 'Fred Jones'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        $vcard->n($expected['n_FirstName'], 'FirstName');
+        $vcard->n($expected['n_LastName'], 'LastName');
+	$vcard->url($expected['url']);
+	$vcard->fn = $expected['fn'];
+
+        $contact_id = VCardDB::store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+                             "After storing " . $contact_id );
+        $this->assertEquals( 0,
+            $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS'),
+            "After storing " . $contact_id );
+        $this->assertEquals( 0,
+            $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
+            "After storing " . $contact_id );
+        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+
+	$this->assertCount(1, $result_vcards);
+        $result_vcard = array_pop($result_vcards);
+
+	$this->assertEquals($vcard->fn, $result_vcard->fn);
+        $this->assertEquals($vcard->n, $result_vcard->n);
+        $this->assertEquals($vcard->url, $result_vcard->url);
+    } //testStoreAndRetrieveVCard()
+
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWAddress()
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+
+        $expected = [
+                        'n_FirstName' => 'Fred',
+                        'n_LastName' => 'Jones',
                         'adr_StreetAddress' => '47 Some Street',
 			'adr_Locality' => 'Birmingham',
                         'adr_Region' => 'AL',
-                        'url' => 'http://golf.com',
                         'fn' => 'Fred Jones'
                      ];
         $vcard = new VCard();
@@ -122,7 +161,6 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->adr($expected['adr_StreetAddress'], 'StreetAddress');
         $vcard->adr($expected['adr_Locality'], 'Locality');
         $vcard->adr($expected['adr_Region'], 'Region');
-	$vcard->url($expected['url']);
 	$vcard->fn = $expected['fn'];
 
         $contact_id = VCardDB::store_whole_contact_from_vcard(self::$pdo, $vcard);
@@ -142,7 +180,46 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$this->assertEquals($vcard->fn, $result_vcard->fn);
         $this->assertEquals($vcard->n, $result_vcard->n);
         $this->assertEquals($vcard->adr, $result_vcard->adr);
-        $this->assertEquals($vcard->url, $result_vcard->url);
-    }
+    } //testStoreAndRetrieveWAddress()
+
+        /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWEmail()
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+
+        $expected = [
+                        'n_FirstName' => 'Fred',
+                        'n_LastName' => 'Jones',
+                        'email' => 'noone@nowhere.org',
+                        'fn' => 'Fred Jones'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        $vcard->n($expected['n_FirstName'], 'FirstName');
+        $vcard->n($expected['n_LastName'], 'LastName');
+        $vcard->email($expected['email']);
+	$vcard->fn = $expected['fn'];
+
+        $contact_id = VCardDB::store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+                             "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_EMAIL'),
+            "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_REL_EMAIL'),
+            "After storing " . $contact_id );
+        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+
+	$this->assertCount(1, $result_vcards);
+        $result_vcard = array_pop($result_vcards);
+
+	$this->assertEquals($vcard->fn, $result_vcard->fn);
+        $this->assertEquals($vcard->n, $result_vcard->n);
+        $this->assertEquals($vcard->email, $result_vcard->email);
+    } //testStoreAndRetrieveWAddress()
 } // VCardToolsTest
 ?>
