@@ -63,7 +63,7 @@ class VCardDB
         // FIXME: in case of multiple calls, can optimize by reusing prepared SQL.
         foreach ($vcard->org as $org)
         {
-	    self::store_org_from_vcard($this->connection, $org, $contact_id);
+	    $this->i_storeOrg($org, $contact_id);
         }
 
         foreach ($vcard->adr as $adr)
@@ -164,26 +164,33 @@ class VCardDB
         return $contact_id;
     } // i_storeJustContact()
 
-    // Saves the vcard org data to the database, returns the id of the new
-    // database org record. Takes the vcard org record and the id of the contact
-    // connect it to.
-    // FIXME: does not handle type property in any way.
-    // FIXME: does not handle org subunits.
-    static function store_org_from_vcard($connection, $org, $contact_id)
+    /**
+     * Saves the vcard org data to the database.
+     * @arg $org The VCard org record to write out.
+     * @arg $contact_id The ID of the contact the org is to be attached to.
+     * @return The id of the new org record in the database.
+     * FIXME: does not handle type property in any way.
+     * FIXME: does not handle org subunits.
+     */
+    private function i_storeOrg(Array $org, $contact_id)
     {
-        $stmt = $connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:org_name, :org_unit1, :org_unit2)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)");
 
-        $stmt->bindValue(":org_name", $org["Name"]);
-        $stmt->bindValue(":org_unit1", $org["Unit1"]);
-        $stmt->bindValue(":org_unit2", $org["Unit2"]);
+        foreach(['Name', 'Unit1', 'Unit2'] as $key)
+        {
+            $value = empty($org[$key]) ? PDO::PARAM_NULL : $org[$key];
+            $stmt->bindValue(':'.$key, $value);
+        }
         $stmt->execute();
-        $org_id = $connection->lastInsertId();
+        $org_id = $this->connection->lastInsertId();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contact_id, :org_id)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contact_id, :org_id)");
         $stmt->bindValue(":contact_id", $contact_id);
         $stmt->bindValue(":org_id", $org_id);
         $stmt->execute();
-    } // store_org_from_vcard()
+
+        return $org_id;
+    } // i_storeOrg()
 
     // Saves the vcard address data to the database, returns the id of the new
     // address record. Takes the vcard adr record and the id of the contact to
@@ -489,6 +496,12 @@ class VCardDB
     // Fetch and attach all org records for a vcard, returning the card.
     static function fetch_org_for_vcard_from_db($connection, $vcard, $contact_id)
     {
+        $col_map = [
+                     'NAME' => 'Name',
+		     'UNIT1' => 'Unit1',
+                     'UNIT2' => 'Unit2'
+                   ];
+
         // Fetch a list of org records associated with the contact
         $stmt = $connection->prepare("SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contact_id");
         $stmt->bindValue(":contact_id", $contact_id);
@@ -503,14 +516,13 @@ class VCardDB
         {
 	    $stmt->bindValue(":org_id", $org_id);
 	    $stmt->execute();
-	    $org = $stmt->fetch();
+	    $org_res = $stmt->fetch(PDO::FETCH_ASSOC);
 	    $stmt->closeCursor();
 
-	    $vcard->org([
-		   "Name"=>$org["NAME"],
-		   "Unit1"=>$org["UNIT1"],
-		   "Unit2"=>$org["UNIT2"]
-	    ]);
+            $org = array();
+            foreach ($org_res as $key => $value)
+                if (!empty($value)) $org[$col_map[$key]] = $value;
+            $vcard->org($org);
         }
 
         return $vcard;
@@ -519,6 +531,14 @@ class VCardDB
     // Fetch and attach all adr records for a vcard, returning the card.
     static function fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id)
     {
+        $col_map = [
+                     'STREET' => 'StreetAddress',
+		     'LOCALITY' => 'Locality',
+                     'REGION' => 'Region',
+                     'POSTAL_CODE' => 'PostalCode',
+                     'COUNTRY' => 'Country'
+                   ];
+
         // Fetch a list of adr records associated with the contact
         $stmt = $connection->prepare("SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contact_id");
         $stmt->bindValue(":contact_id", $contact_id);
@@ -536,13 +556,6 @@ class VCardDB
 	    $adr_res = $stmt->fetch(PDO::FETCH_ASSOC);
 	    $stmt->closeCursor();
 
-            $col_map = [
-                     'STREET' => 'StreetAddress',
-		     'LOCALITY' => 'Locality',
-                     'REGION' => 'Region',
-                     'POSTAL_CODE' => 'PostalCode',
-                     'COUNTRY' => 'Country'
-                   ];
             $adr = array();
             foreach ($adr_res as $key => $value)
                 if (!empty($value)) $adr[$col_map[$key]] = $value;
