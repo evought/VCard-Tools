@@ -101,5 +101,43 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     }
 
 
+    public function testStoreAndRetrieveVCard()
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+
+        $expected = [
+                        'n_FirstName' => 'Fred',
+                        'n_LastName' => 'Jones',
+                        'adr_StreetAddress' => '47 Some Street',
+			'adr_Locality' => 'Birmingham',
+                        'adr_Region' => 'AL',
+                        'url' => 'http://golf.com',
+                        'fn' => 'Fred Jones'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        $vcard->n($expected['n_FirstName'], 'FirstName');
+        $vcard->n($expected['n_LastName'], 'LastName');
+        $vcard->adr($expected['adr_StreetAddress'], 'StreetAddress');
+        $vcard->adr($expected['adr_Locality'], 'Locality');
+        $vcard->adr($expected['adr_Region'], 'Region');
+	$vcard->url($expected['url']);
+	$vcard->fn = $expected['fn'];
+
+        $contact_id = store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+                             "After storing " . $contact_id );
+
+        $result_vcards = fetch_vcards_by_id(self::$pdo, array($contact_id));
+
+	$this->assertCount(1, $result_vcards);
+        $result_vcard = array_pop($result_vcards);
+
+	$this->assertEquals($vcard->fn, $result_vcard->fn);
+        $this->assertEquals($vcard->n, $result_vcard->n);
+        $this->assertEquals($vcard->adr, $result_vcard->adr);
+        $this->assertEquals($vcard->url, $result_vcard->url);
+    }
 } // VCardToolsTest
 ?>

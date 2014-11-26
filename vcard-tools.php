@@ -86,26 +86,19 @@ function store_contact_from_vcard($connection, $vcard)
 
     $vcard->setFNAppropriately();
 
-    $stmt = $connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_prefix, :n_given_name, :n_addit_name, :n_family_name, :n_suffix, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
+    $stmt = $connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
 
     $stmt->bindValue( ':kind', empty($vcard->kind)
                                 ? PDO::PARAM_NULL : $vcard->kind );
     $stmt->bindValue(':fn', $vcard->fn);
 
-    $n = $vcard->n;
-    if (empty($n))
+    $n = empty($vcard->n) ? array() : $vcard->n[0];
+
+    foreach([ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
+              'Suffixes' ] as $n_key)
     {
-        $stmt->bindValue(':n_prefix', PDO::PARAM_NULL);
-        $stmt->bindValue(':n_given_name', PDO::PARAM_NULL);
-        $stmt->bindValue(':n_addit_name', PDO::PARAM_NULL);
-        $stmt->bindValue(':n_family_name', PDO::PARAM_NULL);
-        $stmt->bindValue(':n_suffix', PDO::PARAM_NULL);
-    } else {
-        $stmt->bindValue(':n_prefix', $n[0]["Prefixes"]);
-        $stmt->bindValue(':n_given_name', $n[0]["FirstName"]);
-        $stmt->bindValue(':n_addit_name', $n[0]["AdditionalNames"]);
-        $stmt->bindValue(':n_family_name', $n[0]["LastName"]);
-        $stmt->bindValue(':n_suffix', $n[0]["Suffixes"]);
+        $n_value = empty($n[$n_key]) ? PDO::PARAM_NULL : $n[$n_key];
+        $stmt->bindValue(':n_'.$n_key, $n_value);
     }
 
     $stmt->bindValue(':nickname', $vcard->nickname ? $vcard->nickname[0] : PDO::PARAM_NULL);
@@ -164,22 +157,24 @@ function store_org_from_vcard($connection, $org, $contact_id)
 // FIXME: does not handle type property in any way.
 function store_address_from_vcard($connection, $adr, $contact_id)
 {
-    $stmt = $connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:street, :locality, :region, :postal, :country)");
-      $stmt->bindValue(":street", $adr["StreetAddress"]);
-      $stmt->bindValue(":locality", $adr["Locality"]);
-      $stmt->bindValue(":region", $adr["Region"]);
-      $stmt->bindValue(":postal", $adr["PostalCode"]);
-      $stmt->bindValue(":country", $adr["Country"]);
+    $stmt = $connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
 
-      $stmt->execute();
-      $adr_id = $connection->lastInsertId();
+    foreach( [ 'StreetAddress', 'Locality', 'Region', 'PostalCode', 'Country' ]
+             as $key )
+    {
+        $value = empty($adr[$key]) ? PDO::PARAM_NULL : $adr[$key];
+        $stmt->bindValue(':'.$key, $value);
+    }
 
-      $stmt = $connection->prepare("INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contact_id, :adr_id)");
-      $stmt->bindValue(":contact_id", $contact_id);
-      $stmt->bindValue(":adr_id", $adr_id);
-      $stmt->execute();
+    $stmt->execute();
+    $adr_id = $connection->lastInsertId();
 
-      return $adr_id;
+    $stmt = $connection->prepare("INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contact_id, :adr_id)");
+    $stmt->bindValue(":contact_id", $contact_id);
+    $stmt->bindValue(":adr_id", $adr_id);
+    $stmt->execute();
+
+    return $adr_id;
 } // store
 
 // Store the data fields (photo, logo, sound)
@@ -502,16 +497,21 @@ function fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id)
     {
 	$stmt->bindValue(":adr_id", $adr_id);
 	$stmt->execute();
-	$adr = $stmt->fetch();
+	$adr_res = $stmt->fetch(PDO::FETCH_ASSOC);
 	$stmt->closeCursor();
 
-	$vcard->adr([
-		"StreetAddress"=>$adr["STREET"],
-		"Locality"=>$adr["LOCALITY"],
-		"Region"=>$adr["REGION"],
-		"PostalCode"=>$adr["POSTAL_CODE"],
-		"Country"=>$adr["COUNTRY"]
-	]);
+        $col_map = [
+                     'STREET' => 'StreetAddress',
+		     'LOCALITY' => 'Locality',
+                     'REGION' => 'Region',
+                     'POSTAL_CODE' => 'PostalCode',
+                     'COUNTRY' => 'Country'
+                   ];
+        $adr = array();
+        foreach ($adr_res as $key => $value)
+            if (!empty($value)) $adr[$col_map[$key]] = $value;
+
+	$vcard->adr($adr);
     }
     return $vcard;
 } // fetch_adr_for_vcard_from_db()
