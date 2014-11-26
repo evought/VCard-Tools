@@ -73,7 +73,7 @@ class VCardDB
 
         foreach ($vcard->note as $note)
         {
-	    self::store_note_from_vcard($this->connection, $note, $contact_id);
+	    $this->i_storeNote($note, $contact_id);
         }
 
         foreach (["photo", "logo", "sound"] as $data_field)
@@ -264,20 +264,32 @@ class VCardDB
         return $data_id;
     } // i_storeDataProperty()
 
-    static function store_note_from_vcard($connection, $note, $contact_id)
+    /**
+     * Store the note property.
+     * @arg $note The note property to store. Non-empty string.
+     * @arg $contact_id The ID of the contact to attach the record to.
+     * @return The ID of the new NOTE record.
+     */
+    private function i_storeNote($note, $contact_id)
     {
-        $stmt = $connection->prepare("INSERT INTO CONTACT_NOTE (NOTE) VALUES (:note)");
+        assert(!empty($note));
+        assert(is_string($note));
+        assert(is_numeric($contact_id));
+        assert(!empty($this->connection));
+
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_NOTE (NOTE) VALUES (:note)");
 
         $stmt->bindValue(":note", $note);
         $stmt->execute();
-        $note_id = $connection->lastInsertId();
+        $note_id = $this->connection->lastInsertId();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contact_id, :note_id)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contact_id, :note_id)");
         $stmt->bindValue(":contact_id", $contact_id);
         $stmt->bindValue(":note_id", $note_id);
         $stmt->execute();
 
-    } // store_note_from_vcard()
+        return $note_id;
+    } // i_storeNote()
 
     static function store_tel_from_vcard($connection, $tel, $contact_id)
     {

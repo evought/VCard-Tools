@@ -351,5 +351,42 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 
 	$this->assertEquals($vcard, $result_vcard);
     } //testStoreAndRetrieveWLogo()
+
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWNote(VCardDB $vcardDB)
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+
+        $expected = [
+                        'fn'          => 'Carpenter',
+			'note' => 'It is time to talk of many things...'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        $vcard->note($expected['note']);
+
+        $contact_id = $vcardDB->store($vcard);
+        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+                             "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_NOTE'),
+            "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_REL_NOTE'),
+            "After storing " . $contact_id );
+        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+
+	$this->assertCount(1, $result_vcards);
+        $result_vcard = array_pop($result_vcards);
+
+        // check and remove prodid so it won't fail comparison
+        $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
+        unset($result_vcard->prodid);
+
+	$this->assertEquals($vcard, $result_vcard);
+    } //testStoreAndRetrieveWNote()
 } // VCardToolsTest
 ?>
