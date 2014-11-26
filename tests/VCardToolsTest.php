@@ -128,7 +128,12 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $contact_id = store_whole_contact_from_vcard(self::$pdo, $vcard);
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contact_id );
-
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS'),
+            "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
+            "After storing " . $contact_id );
         $result_vcards = fetch_vcards_by_id(self::$pdo, array($contact_id));
 
 	$this->assertCount(1, $result_vcards);
