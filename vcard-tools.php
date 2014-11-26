@@ -48,56 +48,61 @@ class VCardDB
         unset($this->connection);
     }
 
-    // Store the whole vcard to the database, calling sub-functions to store
-    // related tables (e.g. address) as necessary.
-    // Returns the new contact_id
-    // FIXME: None of these routines deal with ENCODING.
-    static function store_whole_contact_from_vcard($connection, $vcard)
+    /**
+     * Store the whole vcard to the database, calling sub-functions to store
+     * related tables (e.g. address) as necessary.
+     * Returns the new contact_id
+     * FIXME: None of these routines deal with ENCODING.
+     */
+    function store(VCard $vcard)
     {
-        $contact_id = self::store_contact_from_vcard($connection, $vcard);
+        assert(!empty($this->connection));
+
+        $contact_id = self::store_contact_from_vcard($this->connection, $vcard);
 
         // FIXME: in case of multiple calls, can optimize by reusing prepared SQL.
         foreach ($vcard->org as $org)
         {
-	    self::store_org_from_vcard($connection, $org, $contact_id);
+	    self::store_org_from_vcard($this->connection, $org, $contact_id);
         }
 
         foreach ($vcard->adr as $adr)
         {
-	    self::store_address_from_vcard($connection, $adr, $contact_id);
+	    self::store_address_from_vcard($this->connection, $adr, $contact_id);
         }
 
         foreach ($vcard->note as $note)
         {
-	    self::store_note_from_vcard($connection, $note, $contact_id);
+	    self::store_note_from_vcard($this->connection, $note, $contact_id);
         }
 
         foreach (["photo", "logo", "sound"] as $data_field)
         {
 	    foreach ($vcard->$data_field as $data_item)
     	    {
-                self::store_data_from_vcard( $connection, $data_field,
+                self::store_data_from_vcard( $this->connection, $data_field,
                                              $data_item, $contact_id );
     	    }
         }
 
         foreach ($vcard->tel as $tel)
         {
-	    self::store_tel_from_vcard($connection, $tel, $contact_id);
+	    self::store_tel_from_vcard($this->connection, $tel, $contact_id);
         }
 
         foreach ($vcard->email as $item)
         {
-	    self::store_email_from_vcard($connection, $item, $contact_id);
+	    self::store_email_from_vcard($this->connection, $item, $contact_id);
         }
 
         foreach ($vcard->categories as $item)
         {
-	    self::store_category_from_vcard($connection, $item, $contact_id);
+	    self::store_category_from_vcard( $this->connection, $item, 
+                                             $contact_id );
         }
 
         return $contact_id;
-    } // store_whole_contact_from_vcard()
+    } // store()
 
     // Saves the vcard contact data to the database, returns the id of the
     // new connection record.

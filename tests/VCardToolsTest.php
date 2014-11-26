@@ -112,7 +112,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $vcard = new VCard();
 	$vcard->fn = $expected;
 
-        $contact_id = VCardDB::store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $contact_id = $vcardDB->store($vcard);
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contact_id );
 
@@ -149,7 +149,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$vcard->url($expected['url']);
 	$vcard->fn = $expected['fn'];
 
-        $contact_id = VCardDB::store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $contact_id = $vcardDB->store($vcard);
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contact_id );
         $this->assertEquals( 0,
@@ -197,7 +197,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->adr($expected['adr_Region'], 'Region');
 	$vcard->fn = $expected['fn'];
 
-        $contact_id = VCardDB::store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $contact_id = $vcardDB->store($vcard);
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contact_id );
         $this->assertEquals( 1,
@@ -218,10 +218,10 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 	$this->assertEquals($vcard, $result_vcard);
     } //testStoreAndRetrieveWAddress()
 
-        /**
+    /**
      * @depends testStoreAndRetrieveVCard
      */
-    public function testStoreAndRetrieveWEmail()
+    public function testStoreAndRetrieveWEmail(VCardDB $vcardDB)
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );
@@ -239,7 +239,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->email($expected['email']);
 	$vcard->fn = $expected['fn'];
 
-        $contact_id = VCardDB::store_whole_contact_from_vcard(self::$pdo, $vcard);
+        $contact_id = $vcardDB->store($vcard);
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contact_id );
         $this->assertEquals( 1,
@@ -258,6 +258,6 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         unset($result_vcard->prodid);
 
 	$this->assertEquals($vcard, $result_vcard);
-    } //testStoreAndRetrieveWAddress()
+    } //testStoreAndRetrieveWEmail()
 } // VCardToolsTest
 ?>
