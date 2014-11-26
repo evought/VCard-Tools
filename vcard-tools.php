@@ -166,14 +166,18 @@ class VCardDB
 
     /**
      * Saves the vcard org data to the database.
-     * @arg $org The VCard org record to write out.
+     * @arg $org The VCard org record to write out. Not empty.
      * @arg $contact_id The ID of the contact the org is to be attached to.
+     * Numeric.
      * @return The id of the new org record in the database.
      * FIXME: does not handle type property in any way.
      * FIXME: does not handle org subunits.
      */
     private function i_storeOrg(Array $org, $contact_id)
     {
+        assert(!empty($org));
+        assert(is_numeric($contact_id));
+
         $stmt = $this->connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)");
 
         foreach(['Name', 'Unit1', 'Unit2'] as $key)
