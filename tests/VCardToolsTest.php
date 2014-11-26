@@ -281,7 +281,6 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->n($expected['n_LastName'], 'LastName');
         $vcard->title($expected['title']);
         $vcard->org($expected['org'], 'Name');
-	$vcard->fn = $expected['fn'];
 
         $contact_id = $vcardDB->store($vcard);
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
@@ -303,5 +302,54 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 
 	$this->assertEquals($vcard, $result_vcard);
     } //testStoreAndRetrieveWOrg()
+
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWLogo(VCardDB $vcardDB)
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+
+        $expected = [
+                        'org_name'    => 'Seinar Fleet Systems',
+                        'org_unit1'   => 'Seinar Advanced Projects Laboratory',
+			'org_unit2'   => 'TIE AO1X Division',
+                        'fn'          => 'Seinar APL TIE AO1X Division',
+			'logo' => 'http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        $vcard->org($expected['org_name'], 'Name');
+        $vcard->org($expected['org_unit1'], 'Unit1');
+        $vcard->org($expected['org_unit2'], 'Unit2');
+        $vcard->logo($expected['logo']);
+
+        $contact_id = $vcardDB->store($vcard);
+        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+                             "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_ORG'),
+            "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_REL_ORG'),
+            "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_DATA'),
+            "After storing " . $contact_id );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_REL_DATA'),
+            "After storing " . $contact_id );
+        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+
+	$this->assertCount(1, $result_vcards);
+        $result_vcard = array_pop($result_vcards);
+
+        // check and remove prodid so it won't fail comparison
+        $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
+        unset($result_vcard->prodid);
+
+	$this->assertEquals($vcard, $result_vcard);
+    } //testStoreAndRetrieveWLogo()
 } // VCardToolsTest
 ?>

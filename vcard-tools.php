@@ -80,8 +80,7 @@ class VCardDB
         {
 	    foreach ($vcard->$data_field as $data_item)
     	    {
-                self::store_data_from_vcard( $this->connection, $data_field,
-                                             $data_item, $contact_id );
+                $this->i_storeDataProperty($data_field, $data_item, $contact_id);
     	    }
         }
 
@@ -177,6 +176,7 @@ class VCardDB
     {
         assert(!empty($org));
         assert(is_numeric($contact_id));
+        assert(!empty($this->connection));
 
         $stmt = $this->connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)");
 
@@ -211,6 +211,7 @@ class VCardDB
     {
         assert(!empty($adr));
         assert(is_numeric($contact_id));
+        assert(!empty($this->connection));
 
         $stmt = $this->connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
 
@@ -233,24 +234,35 @@ class VCardDB
         return $adr_id;
     } // i_storeAddress()
 
-    // Store the data fields (photo, logo, sound)
-    // Currently only stores URLs, not blobs
-    // $data_field must be one of: photo, logo, sound
-    static function store_data_from_vcard( $connection, $data_field, $url, 
-                                           $contact_id )
+    /**
+     * Store the data fields (photo, logo, sound)
+     * Currently only stores URLs, not blobs
+     * @arg $data_field Must be one of: photo, logo, sound.
+     * @arg $url The URL to the data to store. Not empty.
+     * @arg $contact_id The ID of the contact to attach this to. Numeric.
+     * @return The ID of the new Data record in the database.
+     */
+    private function i_storeDataProperty($data_field, $url, $contact_id)
     {
-        $stmt = $connection->prepare("INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (:data_name, :url)");
+        assert(in_array($data_field, ['photo', 'logo', 'sound']));
+        assert(!empty($url));
+        assert(is_numeric($contact_id));
+        assert(!empty($this->connection));
+
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (:data_name, :url)");
 
         $stmt->bindValue(":data_name", $data_field);
         $stmt->bindValue(":url", $url);
         $stmt->execute();
-        $data_id = $connection->lastInsertId();
+        $data_id = $this->connection->lastInsertId();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contact_id, :data_id)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contact_id, :data_id)");
         $stmt->bindValue(":contact_id", $contact_id);
         $stmt->bindValue(":data_id", $data_id);
         $stmt->execute();
-    } // store_data_from_vcard
+
+        return $data_id;
+    } // i_storeDataProperty()
 
     static function store_note_from_vcard($connection, $note, $contact_id)
     {
