@@ -14,631 +14,638 @@
 require_once "vcard.php";
 require_once "vcard-templates.php";
 
-// The product id we will use when creating new vcards
-$vcard_product_id = "-//VCard Tools//1.0//en";
-
-// Store the whole vcard to the database, calling sub-functions to store
-// related tables (e.g. address) as necessary.
-// Returns the new contact_id
-// FIXME: None of these routines deal with ENCODING.
-function store_whole_contact_from_vcard($connection, $vcard)
+class VCardDB
 {
-    $contact_id = store_contact_from_vcard($connection, $vcard);
+    // The product id we will use when creating new vcards
+    const VCARD_PRODUCT_ID = '-//VCard Tools//1.0//en';
 
-    // FIXME: in case of multiple calls, can optimize by reusing prepared SQL.
-    foreach ($vcard->org as $org)
+    // Store the whole vcard to the database, calling sub-functions to store
+    // related tables (e.g. address) as necessary.
+    // Returns the new contact_id
+    // FIXME: None of these routines deal with ENCODING.
+    static function store_whole_contact_from_vcard($connection, $vcard)
     {
-	store_org_from_vcard($connection, $org, $contact_id);
-    }
+        $contact_id = self::store_contact_from_vcard($connection, $vcard);
 
-    foreach ($vcard->adr as $adr)
+        // FIXME: in case of multiple calls, can optimize by reusing prepared SQL.
+        foreach ($vcard->org as $org)
+        {
+	    self::store_org_from_vcard($connection, $org, $contact_id);
+        }
+
+        foreach ($vcard->adr as $adr)
+        {
+	    self::store_address_from_vcard($connection, $adr, $contact_id);
+        }
+
+        foreach ($vcard->note as $note)
+        {
+	    self::store_note_from_vcard($connection, $note, $contact_id);
+        }
+
+        foreach (["photo", "logo", "sound"] as $data_field)
+        {
+	    foreach ($vcard->$data_field as $data_item)
+    	    {
+                self::store_data_from_vcard( $connection, $data_field,
+                                             $data_item, $contact_id );
+    	    }
+        }
+
+        foreach ($vcard->tel as $tel)
+        {
+	    self::store_tel_from_vcard($connection, $tel, $contact_id);
+        }
+
+        foreach ($vcard->email as $item)
+        {
+	    self::store_email_from_vcard($connection, $item, $contact_id);
+        }
+
+        foreach ($vcard->categories as $item)
+        {
+	    self::store_category_from_vcard($connection, $item, $contact_id);
+        }
+
+        return $contact_id;
+    } // store_whole_contact_from_vcard()
+
+    // Saves the vcard contact data to the database, returns the id of the
+    // new connection record.
+    // Stores JUST the info from the CONTACT table itself, no sub-tables.
+    static function store_contact_from_vcard($connection, $vcard)
     {
-	store_address_from_vcard($connection, $adr, $contact_id);
-    }
+        // NOTE: The VCard spec allows a contact to have multiple names.
+        // In practice, no implementations seem to allow this, so we ignore
+        // it. That means we have to deal with the oddity that n is actually an
+        // array below.
 
-    foreach ($vcard->note as $note)
-    {
-	store_note_from_vcard($connection, $note, $contact_id);
-    }
+        $vcard->setFNAppropriately();
 
-    foreach (["photo", "logo", "sound"] as $data_field)
-    {
-	foreach ($vcard->$data_field as $data_item)
-    	{
-            store_data_from_vcard($connection, $data_field, $data_item, $contact_id);
-    	}
-    }
+        $stmt = $connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
 
-    foreach ($vcard->tel as $tel)
-    {
-	store_tel_from_vcard($connection, $tel, $contact_id);
-    }
-
-    foreach ($vcard->email as $item)
-    {
-	store_email_from_vcard($connection, $item, $contact_id);
-    }
-
-    foreach ($vcard->categories as $item)
-    {
-	store_category_from_vcard($connection, $item, $contact_id);
-    }
-
-    return $contact_id;
-} // store_whole_contact_from_vcard()
-
-// Saves the vcard contact data to the database, returns the id of the
-// new connection record.
-// Stores JUST the info from the CONTACT table itself, no sub-tables.
-function store_contact_from_vcard($connection, $vcard)
-{
-    // NOTE: The VCard spec allows a contact to have multiple names.
-    // In practice, no implementations seem to allow this, so we ignore
-    // it. That means we have to deal with the oddity that n is actually an
-    // array below.
-
-    $vcard->setFNAppropriately();
-
-    $stmt = $connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
-
-    $stmt->bindValue( ':kind', empty($vcard->kind)
+        $stmt->bindValue( ':kind', empty($vcard->kind)
                                 ? PDO::PARAM_NULL : $vcard->kind );
-    $stmt->bindValue(':fn', $vcard->fn);
+        $stmt->bindValue(':fn', $vcard->fn);
 
-    $n = empty($vcard->n) ? array() : $vcard->n[0];
+        $n = empty($vcard->n) ? array() : $vcard->n[0];
 
-    foreach([ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
+        foreach([ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
               'Suffixes' ] as $n_key)
-    {
-        $n_value = empty($n[$n_key]) ? PDO::PARAM_NULL : $n[$n_key];
-        $stmt->bindValue(':n_'.$n_key, $n_value);
-    }
+        {
+            $n_value = empty($n[$n_key]) ? PDO::PARAM_NULL : $n[$n_key];
+            $stmt->bindValue(':n_'.$n_key, $n_value);
+        }
 
-    $stmt->bindValue(':nickname', $vcard->nickname ? $vcard->nickname[0] : PDO::PARAM_NULL);
-    $stmt->bindValue(':bday', $vcard->bday ? $vcard->bday : PDO::PARAM_NULL);
-    $stmt->bindValue(':tz', $vcard->tz ? $vcard->tz : PDO::PARAM_NULL);
+        $stmt->bindValue(':nickname', $vcard->nickname ? $vcard->nickname[0] : PDO::PARAM_NULL);
+        $stmt->bindValue(':bday', $vcard->bday ? $vcard->bday : PDO::PARAM_NULL);
+        $stmt->bindValue(':tz', $vcard->tz ? $vcard->tz : PDO::PARAM_NULL);
 
-    $geo = $vcard->geo;
-    if (empty($geo))
-    {
-        $stmt->bindValue(':geolat', PDO::PARAM_NULL);
-        $stmt->bindValue(':geolon', PDO::PARAM_NULL);
-    } else {
-        $stmt->bindValue(':geolat', $geo[0]["Lattitude"]);
-        $stmt->bindValue(':geolon', $geo[0]["Longitude"]);
-    }
+        $geo = $vcard->geo;
+        if (empty($geo))
+        {
+            $stmt->bindValue(':geolat', PDO::PARAM_NULL);
+            $stmt->bindValue(':geolon', PDO::PARAM_NULL);
+        } else {
+            $stmt->bindValue(':geolat', $geo[0]["Lattitude"]);
+            $stmt->bindValue(':geolon', $geo[0]["Longitude"]);
+        }
 
-    $stmt->bindValue(':role', $vcard->role ? $vcard->role[0] : PDO::PARAM_NULL);
-    $stmt->bindValue(':title',
-	$vcard->title ? $vcard->title[0]: PDO::PARAM_NULL);
+        $stmt->bindValue( ':role', $vcard->role
+                          ? $vcard->role[0] : PDO::PARAM_NULL );
+        $stmt->bindValue(':title',
+	    $vcard->title ? $vcard->title[0]: PDO::PARAM_NULL );
 
-    $stmt->bindValue(':rev', $vcard->rev ? $vcard->rev : PDO::PARAM_NULL);
-    $stmt->bindValue(':uid', $vcard->uid ? $vcard->uid : PDO::PARAM_NULL);
-    $stmt->bindValue(':url', $vcard->url ? $vcard->url[0] : PDO::PARAM_NULL);
+        $stmt->bindValue(':rev', $vcard->rev ? $vcard->rev : PDO::PARAM_NULL);
+        $stmt->bindValue(':uid', $vcard->uid ? $vcard->uid : PDO::PARAM_NULL);
+        $stmt->bindValue(':url', $vcard->url ? $vcard->url[0] : PDO::PARAM_NULL);
     
-    $stmt->execute();
-    $contact_id = $connection->lastInsertId();
+        $stmt->execute();
+        $contact_id = $connection->lastInsertId();
 
-    return $contact_id;
-} // store_contact_from_vcard()
+        return $contact_id;
+    } // store_contact_from_vcard()
 
-// Saves the vcard org data to the database, returns the id of the new
-// database org record. Takes the vcard org record and the id of the contact
-// connect it to.
-// FIXME: does not handle type property in any way.
-// FIXME: does not handle org subunits.
-function store_org_from_vcard($connection, $org, $contact_id)
-{
-      $stmt = $connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:org_name, :org_unit1, :org_unit2)");
-
-      $stmt->bindValue(":org_name", $org["Name"]);
-      $stmt->bindValue(":org_unit1", $org["Unit1"]);
-      $stmt->bindValue(":org_unit2", $org["Unit2"]);
-      $stmt->execute();
-      $org_id = $connection->lastInsertId();
-
-      $stmt = $connection->prepare("INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contact_id, :org_id)");
-      $stmt->bindValue(":contact_id", $contact_id);
-      $stmt->bindValue(":org_id", $org_id);
-      $stmt->execute();
-
-} // store_org_from_vcard()
-
-// Saves the vcard address data to the database, returns the id of the new
-// address record. Takes the vcard adr record and the id of the contact to
-// connect it to.
-// FIXME: does not handle type property in any way.
-function store_address_from_vcard($connection, $adr, $contact_id)
-{
-    $stmt = $connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
-
-    foreach( [ 'StreetAddress', 'Locality', 'Region', 'PostalCode', 'Country' ]
-             as $key )
+    // Saves the vcard org data to the database, returns the id of the new
+    // database org record. Takes the vcard org record and the id of the contact
+    // connect it to.
+    // FIXME: does not handle type property in any way.
+    // FIXME: does not handle org subunits.
+    static function store_org_from_vcard($connection, $org, $contact_id)
     {
-        $value = empty($adr[$key]) ? PDO::PARAM_NULL : $adr[$key];
-        $stmt->bindValue(':'.$key, $value);
-    }
+        $stmt = $connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:org_name, :org_unit1, :org_unit2)");
 
-    $stmt->execute();
-    $adr_id = $connection->lastInsertId();
+        $stmt->bindValue(":org_name", $org["Name"]);
+        $stmt->bindValue(":org_unit1", $org["Unit1"]);
+        $stmt->bindValue(":org_unit2", $org["Unit2"]);
+        $stmt->execute();
+        $org_id = $connection->lastInsertId();
 
-    $stmt = $connection->prepare("INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contact_id, :adr_id)");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->bindValue(":adr_id", $adr_id);
-    $stmt->execute();
+        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contact_id, :org_id)");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->bindValue(":org_id", $org_id);
+        $stmt->execute();
+    } // store_org_from_vcard()
 
-    return $adr_id;
-} // store
-
-// Store the data fields (photo, logo, sound)
-// Currently only stores URLs, not blobs
-// $data_field must be one of: photo, logo, sound
-function store_data_from_vcard($connection, $data_field, $url, $contact_id)
-{
-      $stmt = $connection->prepare("INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (:data_name, :url)");
-
-      $stmt->bindValue(":data_name", $data_field);
-      $stmt->bindValue(":url", $url);
-      $stmt->execute();
-      $data_id = $connection->lastInsertId();
-
-      $stmt = $connection->prepare("INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contact_id, :data_id)");
-      $stmt->bindValue(":contact_id", $contact_id);
-      $stmt->bindValue(":data_id", $data_id);
-      $stmt->execute();
-
-} // store_data_from_vcard
-
-function store_note_from_vcard($connection, $note, $contact_id)
-{
-      $stmt = $connection->prepare("INSERT INTO CONTACT_NOTE (NOTE) VALUES (:note)");
-
-      $stmt->bindValue(":note", $note);
-      $stmt->execute();
-      $note_id = $connection->lastInsertId();
-
-      $stmt = $connection->prepare("INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contact_id, :note_id)");
-      $stmt->bindValue(":contact_id", $contact_id);
-      $stmt->bindValue(":note_id", $note_id);
-      $stmt->execute();
-
-} // store_note_from_vcard()
-
-function store_tel_from_vcard($connection, $tel, $contact_id)
-{
-      $stmt = $connection->prepare("INSERT INTO CONTACT_PHONE_NUMBER (LOCAL_NUMBER) VALUES (:number)");
-
-      $stmt->bindValue(":number", $tel);
-      $stmt->execute();
-      $phone_id = $connection->lastInsertId();
-
-      $stmt = $connection->prepare("INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contact_id, :phone_id)");
-      $stmt->bindValue(":contact_id", $contact_id);
-      $stmt->bindValue(":phone_id", $phone_id);
-      $stmt->execute();
-} // store_tel_from_vcard()
-
-function store_email_from_vcard($connection, $email, $contact_id)
-{
-      $stmt = $connection->prepare("INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:email)");
-
-      $stmt->bindValue(":email", $email);
-      $stmt->execute();
-      $new_id = $connection->lastInsertId();
-
-      $stmt = $connection->prepare("INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contact_id, :new_id)");
-      $stmt->bindValue(":contact_id", $contact_id);
-      $stmt->bindValue(":new_id", $new_id);
-      $stmt->execute();
-} // store_email_from_vcard()
-
-function store_category_from_vcard($connection, $category, $contact_id)
-{
-      $stmt = $connection->prepare("INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:category)");
-
-      $stmt->bindValue(":category", $category);
-      $stmt->execute();
-      $new_id = $connection->lastInsertId();
-
-      $stmt = $connection->prepare("INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contact_id, :new_id)");
-      $stmt->bindValue(":contact_id", $contact_id);
-      $stmt->bindValue(":new_id", $new_id);
-      $stmt->execute();
-} // store_category_from_vcard()
-
-/**
- * Fetch all vcards from the database.
- * If kind is given, only fetch those of that kind (e.g. organization).
- */
-function fetch_vcards_from_db($connection, $kind="%")
-{
-    $stmt = $connection->prepare("SELECT * FROM CONTACT WHERE KIND LIKE :kind");
-    $stmt->bindValue(":kind", $kind);
-    $stmt->execute();
-    $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
-
-    $vcards = array();
-
-    while ($row = $stmt->fetch())
+    // Saves the vcard address data to the database, returns the id of the new
+    // address record. Takes the vcard adr record and the id of the contact to
+    // connect it to.
+    // FIXME: does not handle type property in any way.
+    function store_address_from_vcard($connection, $adr, $contact_id)
     {
-	$vcards[$row["CONTACT_ID"]]
+        $stmt = $connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
+
+        foreach( [ 'StreetAddress', 'Locality', 'Region',
+                   'PostalCode', 'Country' ]
+                 as $key )
+        {
+            $value = empty($adr[$key]) ? PDO::PARAM_NULL : $adr[$key];
+            $stmt->bindValue(':'.$key, $value);
+        }
+
+        $stmt->execute();
+        $adr_id = $connection->lastInsertId();
+
+        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contact_id, :adr_id)");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->bindValue(":adr_id", $adr_id);
+        $stmt->execute();
+
+        return $adr_id;
+    } // store_address_from_vcard()
+
+    // Store the data fields (photo, logo, sound)
+    // Currently only stores URLs, not blobs
+    // $data_field must be one of: photo, logo, sound
+    static function store_data_from_vcard( $connection, $data_field, $url, 
+                                           $contact_id )
+    {
+        $stmt = $connection->prepare("INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (:data_name, :url)");
+
+        $stmt->bindValue(":data_name", $data_field);
+        $stmt->bindValue(":url", $url);
+        $stmt->execute();
+        $data_id = $connection->lastInsertId();
+
+        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contact_id, :data_id)");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->bindValue(":data_id", $data_id);
+        $stmt->execute();
+    } // store_data_from_vcard
+
+    static function store_note_from_vcard($connection, $note, $contact_id)
+    {
+        $stmt = $connection->prepare("INSERT INTO CONTACT_NOTE (NOTE) VALUES (:note)");
+
+        $stmt->bindValue(":note", $note);
+        $stmt->execute();
+        $note_id = $connection->lastInsertId();
+
+        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contact_id, :note_id)");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->bindValue(":note_id", $note_id);
+        $stmt->execute();
+
+    } // store_note_from_vcard()
+
+    static function store_tel_from_vcard($connection, $tel, $contact_id)
+    {
+        $stmt = $connection->prepare("INSERT INTO CONTACT_PHONE_NUMBER (LOCAL_NUMBER) VALUES (:number)");
+
+        $stmt->bindValue(":number", $tel);
+        $stmt->execute();
+        $phone_id = $connection->lastInsertId();
+
+        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contact_id, :phone_id)");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->bindValue(":phone_id", $phone_id);
+        $stmt->execute();
+    } // store_tel_from_vcard()
+
+    static function store_email_from_vcard($connection, $email, $contact_id)
+    {
+        $stmt = $connection->prepare("INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:email)");
+
+        $stmt->bindValue(":email", $email);
+        $stmt->execute();
+        $new_id = $connection->lastInsertId();
+
+        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contact_id, :new_id)");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->bindValue(":new_id", $new_id);
+        $stmt->execute();
+    } // store_email_from_vcard()
+
+    static function store_category_from_vcard($connection, $category, $contact_id)
+    {
+        $stmt = $connection->prepare("INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:category)");
+
+        $stmt->bindValue(":category", $category);
+        $stmt->execute();
+        $new_id = $connection->lastInsertId();
+
+        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contact_id, :new_id)");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->bindValue(":new_id", $new_id);
+        $stmt->execute();
+    } // store_category_from_vcard()
+
+    /**
+     * Fetch all vcards from the database.
+     * If kind is given, only fetch those of that kind (e.g. organization).
+     */
+    static function fetch_vcards_from_db($connection, $kind="%")
+    {
+        $stmt = $connection->prepare("SELECT * FROM CONTACT WHERE KIND LIKE :kind");
+        $stmt->bindValue(":kind", $kind);
+        $stmt->execute();
+        $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+        $vcards = array();
+
+        while ($row = $stmt->fetch())
+        {
+	    $vcards[$row["CONTACT_ID"]]
 		= i_fetch_vcard_from_database($connection, $row);
-    } // while
+        } // while
 
-    $stmt->closeCursor();
+        $stmt->closeCursor();
 
-    return $vcards;
-} // fetch_vcards_from_db()
+        return $vcards;
+    } // fetch_vcards_from_db()
 
-/**
- * Returns all vcards where the fn or categories match the requested search
- * string.
- */
-function search_vcards($connection, $search_string, $kind="%")
-{
-    $stmt = $connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE FN LIKE :search_string AND KIND LIKE :kind");
-    $stmt->bindValue(":kind", $kind);
-    $stmt->bindValue(":search_string", $search_string);
-    $stmt->execute();
-
-    $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
- 
-    $contact_ids += fetch_contact_ids_for_category($connection, $search_string, $kind="%");
-
-    return fetch_vcards_by_id($connection, $contact_ids);
-} // search_vcards()
-
-/**
- * Returns a list of all contact_ids where the org.name parameter matches
- * the query. May be a SQL pattern.
- */
-function fetch_contact_ids_for_organization($connection, $organization_name, $kind="%")
-{
-    if (empty($organization_name)) return array();
-
-    $stmt = $connection->prepare("SELECT ORG_ID FROM CONTACT_ORG WHERE NAME LIKE :organization_name");
-    $stmt->bindValue(":organization_name", $organization_name);
-    $stmt->execute();
-    $org_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
-
-    if (empty($org_ids)) return array();
-
-    // HACK: PDO does not support bind an array to an IN parameter, so
-    // we just add the list as a string to the query. We aren't re-executing
-    // the query and there is no worry of SQL injection here, so it doesn't
-    // matter but it's clunky.
-    $stmt = $connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_ORG WHERE ORG_ID IN ("
-	. implode(",", $org_ids) . ")");
-    $stmt->execute();
-    $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
-
-    return filter_contact_ids_by_kind($connection, $contact_ids, $kind);
-} // fetch_contact_ids_for_organization()
-
-/**
- * Returns only the contact_ids from the input list where kind matches.
- */
-function filter_contact_ids_by_kind($connection, $contact_ids, $kind="%")
-{
-    if (empty($contact_ids) || $kind == "%") return $contact_ids;
-
-    $stmt = $connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE CONTACT_ID IN ("
-	. implode(",", $contact_ids) . ") AND KIND LIKE :kind");
-    $stmt->bindValue(":kind", $kind);
-    $stmt->execute();
-    $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
-
-    return $contact_ids;    
-} // filter_contact_ids_by_kind()
-
-
-/**
- * Returns a list of all contact_ids in a given category. Category may be
- * a SQL pattern.
- */
-function fetch_contact_ids_for_category($connection, $category, $kind="%")
-{
-    $stmt = $connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY_NAME LIKE :category");
-    $stmt->bindValue(":category", $category);
-    $stmt->execute();
-    $category_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
-
-    if (empty($category_ids)) return array();
-
-    // HACK: PDO does not support bind an array to an IN parameter, so
-    // we just add the list as a string to the query. We aren't re-executing
-    // the query and there is no worry of SQL injection here, so it doesn't
-    // matter but it's clunky.
-    $stmt = $connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_CATEGORIES WHERE CATEGORY_ID IN ("
-	. implode(",", $category_ids) . ")");
-    $stmt->execute();
-    $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
-
-    return filter_contact_ids_by_kind($connection, $contact_ids, $kind);
-} // fetch_contact_ids_for_category()
-
-function fetch_vcards_by_id($connection, $contact_ids)
-{
-    $vcards = array();
-    foreach($contact_ids as $contact_id)
+    /**
+     * Returns all vcards where the fn or categories match the requested search
+     * string.
+     */
+    static function search_vcards($connection, $search_string, $kind="%")
     {
-	$vcards[$contact_id]
-		= fetch_vcard_from_db($connection, $contact_id);
-    }
+        $stmt = $connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE FN LIKE :search_string AND KIND LIKE :kind");
+        $stmt->bindValue(":kind", $kind);
+        $stmt->bindValue(":search_string", $search_string);
+        $stmt->execute();
 
-    return $vcards;
-} // fetch_vcards_by_id()
+        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+ 
+        $contact_ids += self::fetch_contact_ids_for_category($connection, $search_string, $kind="%");
 
-/**
- * Fetch a single vcard given a contact_id.
- * @return The completed vcard or false if none found.
- */
-function fetch_vcard_from_db($connection, $contact_id)
-{
-    $stmt = $connection->prepare("SELECT * FROM CONTACT WHERE CONTACT_ID = :contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
-    $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        return self::fetch_vcards_by_id($connection, $contact_ids);
+    } // search_vcards()
 
-    $vcard = false;
+    /**
+     * Returns a list of all contact_ids where the org.name parameter matches
+     * the query. May be a SQL pattern.
+     */
+    static function fetch_contact_ids_for_organization( $connection, 
+        $organization_name, $kind="%" )
+    {
+        if (empty($organization_name)) return array();
 
-    $row = $stmt->fetch();
-    if ($row != false)
-	$vcard = i_fetch_vcard_from_database($connection, $row);
-    $stmt->closeCursor();
+        $stmt = $connection->prepare("SELECT ORG_ID FROM CONTACT_ORG WHERE NAME LIKE :organization_name");
+        $stmt->bindValue(":organization_name", $organization_name);
+        $stmt->execute();
+        $org_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
 
-    return $vcard;
+        if (empty($org_ids)) return array();
+
+        // HACK: PDO does not support bind an array to an IN parameter, so
+        // we just add the list as a string to the query. We aren't re-executing
+        // the query and there is no worry of SQL injection here, so it doesn't
+        // matter but it's clunky.
+        $stmt = $connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_ORG WHERE ORG_ID IN ("
+	    . implode(",", $org_ids) . ")");
+        $stmt->execute();
+        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+
+        return self::filter_contact_ids_by_kind($connection, $contact_ids, $kind);
+    } // fetch_contact_ids_for_organization()
+
+    /**
+     * Returns only the contact_ids from the input list where kind matches.
+     */
+    static function filter_contact_ids_by_kind( $connection, $contact_ids, 
+          $kind="%" )
+    {
+        if (empty($contact_ids) || $kind == "%") return $contact_ids;
+
+        $stmt = $connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE CONTACT_ID IN ("
+	. implode(",", $contact_ids) . ") AND KIND LIKE :kind");
+        $stmt->bindValue(":kind", $kind);
+        $stmt->execute();
+        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+
+        return $contact_ids;    
+    } // filter_contact_ids_by_kind()
+
+    /**
+     * Returns a list of all contact_ids in a given category. Category may be
+     * a SQL pattern.
+     */
+    static function fetch_contact_ids_for_category( $connection, $category, 
+           $kind="%" )
+    {
+        $stmt = $connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY_NAME LIKE :category");
+        $stmt->bindValue(":category", $category);
+        $stmt->execute();
+        $category_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+
+        if (empty($category_ids)) return array();
+
+        // HACK: PDO does not support bind an array to an IN parameter, so
+        // we just add the list as a string to the query. We aren't re-executing
+        // the query and there is no worry of SQL injection here, so it doesn't
+        // matter but it's clunky.
+        $stmt = $connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_CATEGORIES WHERE CATEGORY_ID IN ("
+	    . implode(",", $category_ids) . ")");
+        $stmt->execute();
+        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+
+        return self::filter_contact_ids_by_kind($connection, $contact_ids, $kind);
+    } // fetch_contact_ids_for_category()
+
+    static function fetch_vcards_by_id($connection, $contact_ids)
+    {
+        $vcards = array();
+        foreach($contact_ids as $contact_id)
+        {
+	    $vcards[$contact_id]
+		   = self::fetch_vcard_from_db($connection, $contact_id);
+        }
+
+        return $vcards;
+    } // fetch_vcards_by_id()
+
+    /**
+     * Fetch a single vcard given a contact_id.
+     * @return The completed vcard or false if none found.
+     */
+    static function fetch_vcard_from_db($connection, $contact_id)
+    {
+        $stmt = $connection->prepare("SELECT * FROM CONTACT WHERE CONTACT_ID = :contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
+        $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+        $vcard = false;
+
+        $row = $stmt->fetch();
+        if ($row != false)
+	   $vcard = self::i_fetch_vcard_from_database($connection, $row);
+        $stmt->closeCursor();
+
+        return $vcard;
 } // fetch_vcard_from_db()
 
-/**
- * Internal helper to fill in details of a vcard.
- * @arg $row The associative array row returned from the db.
- * @arg $connection DB connection to fetch additional info.
- * @return The finished vcard.
- */
-function i_fetch_vcard_from_database($connection, $row)
-{
-    global $vcard_product_id;
+    /**
+     * Internal helper to fill in details of a vcard.
+     * @arg $row The associative array row returned from the db.
+     * @arg $connection DB connection to fetch additional info.
+     * @return The finished vcard.
+     */
+    static function i_fetch_vcard_from_database($connection, $row)
+    {
+        $vcard = new vcard();
+        $contact_id = $row["CONTACT_ID"];
 
-    $vcard = new vcard();
-    $contact_id = $row["CONTACT_ID"];
+        if (!empty($row["KIND"])) $vcard->kind($row["KIND"]);
+        if (!empty($row["FN"])) $vcard->fn($row["FN"]);
 
-    if (!empty($row["KIND"])) $vcard->kind($row["KIND"]);
-    if (!empty($row["FN"])) $vcard->fn($row["FN"]);
-
-    if (!empty($row["N_PREFIX"])) $vcard->n($row["N_PREFIX"], "Prefixes");
-    if (!empty($row["N_GIVEN_NAME"]))
+        if (!empty($row["N_PREFIX"])) $vcard->n($row["N_PREFIX"], "Prefixes");
+        if (!empty($row["N_GIVEN_NAME"]))
 		$vcard->n($row["N_GIVEN_NAME"], "FirstName");
-    if (!empty($row["N_ADDIT_NAME"]))
+        if (!empty($row["N_ADDIT_NAME"]))
 		$vcard->n($row["N_ADDIT_NAME"], "AdditionalNames");
-    if (!empty($row["N_FAMILY_NAME"]))
+        if (!empty($row["N_FAMILY_NAME"]))
 		$vcard->n($row["N_FAMILY_NAME"], "LastName");
-    if (!empty($row["N_SUFFIX"])) $vcard->n($row["N_SUFFIX"], "Suffixes");
-    if (!empty($row["NICKNAME"])) $vcard->nickname($row["N_NICKNAME"]);
-    if (!empty($row["BDAY"])) $vcard->bday($row["BDAY"]);
-    if (!empty($row["GEO_LAT"])) $vcard->geo($row["GEO_LAT"], "Lattitude");
-    if (!empty($row["GEO_LON"])) $vcard->geo($row["GEO_LON"], "Longitude");
-    if (!empty($row["TITLE"])) $vcard->title($row["TITLE"]);
-    if (!empty($row["ROLE"])) $vcard->role($row["ROLE"]);
-    if (!empty($row["REV"])) $vcard->rev($row["REV"]);
-    if (!empty($row["UID"])) $vcard->uid($row["UID"]);
-    if (!empty($row["URL"])) $vcard->url($row["URL"]);
-    if (!empty($row["VERSION"])) $vcard->version($row["VERSION"]);
-	$vcard->prodid($vcard_product_id);
+        if (!empty($row["N_SUFFIX"])) $vcard->n($row["N_SUFFIX"], "Suffixes");
+        if (!empty($row["NICKNAME"])) $vcard->nickname($row["N_NICKNAME"]);
+        if (!empty($row["BDAY"])) $vcard->bday($row["BDAY"]);
+        if (!empty($row["GEO_LAT"])) $vcard->geo($row["GEO_LAT"], "Lattitude");
+        if (!empty($row["GEO_LON"])) $vcard->geo($row["GEO_LON"], "Longitude");
+        if (!empty($row["TITLE"])) $vcard->title($row["TITLE"]);
+        if (!empty($row["ROLE"])) $vcard->role($row["ROLE"]);
+        if (!empty($row["REV"])) $vcard->rev($row["REV"]);
+        if (!empty($row["UID"])) $vcard->uid($row["UID"]);
+        if (!empty($row["URL"])) $vcard->url($row["URL"]);
+        if (!empty($row["VERSION"])) $vcard->version($row["VERSION"]);
+	$vcard->prodid(self::VCARD_PRODUCT_ID);
 
-    fetch_org_for_vcard_from_db($connection, $vcard, $contact_id);
-    fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id);
-    fetch_note_for_vcard_from_db($connection, $vcard, $contact_id);
-    fetch_data_for_vcard_from_db($connection, $vcard, $contact_id);
-    fetch_tel_for_vcard_from_db($connection, $vcard, $contact_id);
-    fetch_email_for_vcard_from_db($connection, $vcard, $contact_id);
-    fetch_category_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_org_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_note_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_data_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_tel_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_email_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_category_for_vcard_from_db($connection, $vcard, $contact_id);
 
-    return $vcard;
-} // i_fetch_vcard_from_database()
+        return $vcard;
+    } // i_fetch_vcard_from_database()
 
-// Fetch and attach all org records for a vcard, returning the card.
-function fetch_org_for_vcard_from_db($connection, $vcard, $contact_id)
-{
-    // Fetch a list of org records associated with the contact
-    $stmt = $connection->prepare("SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
-
-    $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
-
-    // Fetch each org record in turn
-    $stmt = $connection->prepare("SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:org_id");
-    foreach ($results as $org_id)
+    // Fetch and attach all org records for a vcard, returning the card.
+    static function fetch_org_for_vcard_from_db($connection, $vcard, $contact_id)
     {
-	$stmt->bindValue(":org_id", $org_id);
-	$stmt->execute();
-	$org = $stmt->fetch();
-	$stmt->closeCursor();
+        // Fetch a list of org records associated with the contact
+        $stmt = $connection->prepare("SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
 
-	$vcard->org([
-		"Name"=>$org["NAME"],
-		"Unit1"=>$org["UNIT1"],
-		"Unit2"=>$org["UNIT2"]
-	]);
-    }
+        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
 
-    return $vcard;
-} // fetch_org_for_vcard_from_db()
+        // Fetch each org record in turn
+        $stmt = $connection->prepare("SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:org_id");
+        foreach ($results as $org_id)
+        {
+	    $stmt->bindValue(":org_id", $org_id);
+	    $stmt->execute();
+	    $org = $stmt->fetch();
+	    $stmt->closeCursor();
 
-// Fetch and attach all adr records for a vcard, returning the card.
-function fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id)
-{
-    // Fetch a list of adr records associated with the contact
-    $stmt = $connection->prepare("SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
+	    $vcard->org([
+		   "Name"=>$org["NAME"],
+		   "Unit1"=>$org["UNIT1"],
+		   "Unit2"=>$org["UNIT2"]
+	    ]);
+        }
 
-    $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
+        return $vcard;
+    } // fetch_org_for_vcard_from_db()
 
-    // Fetch each adr record in turn
-    $stmt = $connection->prepare("SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:adr_id");
-    foreach ($results as $adr_id)
+    // Fetch and attach all adr records for a vcard, returning the card.
+    static function fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id)
     {
-	$stmt->bindValue(":adr_id", $adr_id);
-	$stmt->execute();
-	$adr_res = $stmt->fetch(PDO::FETCH_ASSOC);
-	$stmt->closeCursor();
+        // Fetch a list of adr records associated with the contact
+        $stmt = $connection->prepare("SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
 
-        $col_map = [
+        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+
+        // Fetch each adr record in turn
+        $stmt = $connection->prepare("SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:adr_id");
+        foreach ($results as $adr_id)
+        {
+	    $stmt->bindValue(":adr_id", $adr_id);
+	    $stmt->execute();
+	    $adr_res = $stmt->fetch(PDO::FETCH_ASSOC);
+	    $stmt->closeCursor();
+
+            $col_map = [
                      'STREET' => 'StreetAddress',
 		     'LOCALITY' => 'Locality',
                      'REGION' => 'Region',
                      'POSTAL_CODE' => 'PostalCode',
                      'COUNTRY' => 'Country'
                    ];
-        $adr = array();
-        foreach ($adr_res as $key => $value)
-            if (!empty($value)) $adr[$col_map[$key]] = $value;
+            $adr = array();
+            foreach ($adr_res as $key => $value)
+                if (!empty($value)) $adr[$col_map[$key]] = $value;
 
-	$vcard->adr($adr);
-    }
-    return $vcard;
-} // fetch_adr_for_vcard_from_db()
+	    $vcard->adr($adr);
+        }
+        return $vcard;
+    } // fetch_adr_for_vcard_from_db()
 
-// Fetch and attach all note records for a vcard, returning the card.
-function fetch_note_for_vcard_from_db($connection, $vcard, $contact_id)
-{
-    // Fetch a list of note records associated with the contact
-    $stmt = $connection->prepare("SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
-
-    $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
-
-    // Fetch each note record in turn
-    $stmt = $connection->prepare("SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:note_id");
-    foreach ($results as $note_id)
+    // Fetch and attach all note records for a vcard, returning the card.
+    static function fetch_note_for_vcard_from_db($connection, $vcard, $contact_id)
     {
-	$stmt->bindValue(":note_id", $note_id);
-	$stmt->execute();
-	$note = $stmt->fetch(PDO::FETCH_NUM, 0);
-	$stmt->closeCursor();
+        // Fetch a list of note records associated with the contact
+        $stmt = $connection->prepare("SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
 
-	$vcard->note($note[0]);
-    }
+        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
 
-    return $vcard;
-} // fetch_note_for_vcard_from_db()
+        // Fetch each note record in turn
+        $stmt = $connection->prepare("SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:note_id");
+        foreach ($results as $note_id)
+        {
+	    $stmt->bindValue(":note_id", $note_id);
+	    $stmt->execute();
+	    $note = $stmt->fetch(PDO::FETCH_NUM, 0);
+	    $stmt->closeCursor();
 
-function fetch_tel_for_vcard_from_db($connection, $vcard, $contact_id)
-{
-    // Fetch a list of tel records associated with the contact
-    $stmt = $connection->prepare("SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
+	    $vcard->note($note[0]);
+        }
 
-    $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
+        return $vcard;
+    } // fetch_note_for_vcard_from_db()
 
-    // Fetch each record in turn
-    $stmt = $connection->prepare("SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:phone_id");
-    foreach ($results as $phone_id)
+    static function fetch_tel_for_vcard_from_db($connection, $vcard, $contact_id)
     {
-	$stmt->bindValue(":phone_id", $phone_id);
-	$stmt->execute();
-	$phone = $stmt->fetch(PDO::FETCH_NUM, 0);
-	$stmt->closeCursor();
+        // Fetch a list of tel records associated with the contact
+        $stmt = $connection->prepare("SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
 
-	$vcard->tel($phone[0]);
-    }
+        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
 
-    return $vcard;
-} // fetch_tel_for_vcard_from_db()
+        // Fetch each record in turn
+        $stmt = $connection->prepare("SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:phone_id");
+        foreach ($results as $phone_id)
+        {
+	    $stmt->bindValue(":phone_id", $phone_id);
+	    $stmt->execute();
+	    $phone = $stmt->fetch(PDO::FETCH_NUM, 0);
+	    $stmt->closeCursor();
 
-function fetch_email_for_vcard_from_db($connection, $vcard, $contact_id)
-{
-    // Fetch a list of records associated with the contact
-    $stmt = $connection->prepare("SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
+	    $vcard->tel($phone[0]);
+        }
 
-    $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
+        return $vcard;
+    } // fetch_tel_for_vcard_from_db()
 
-    // Fetch each record in turn
-    $stmt = $connection->prepare("SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id");
-    foreach ($results as $id)
+    static function fetch_email_for_vcard_from_db($connection, $vcard, 
+              $contact_id )
     {
-	$stmt->bindValue(":id", $id);
-	$stmt->execute();
-	$item = $stmt->fetch(PDO::FETCH_NUM, 0);
-	$stmt->closeCursor();
+        // Fetch a list of records associated with the contact
+        $stmt = $connection->prepare("SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
 
-	$vcard->email($item[0]);
-    }
+        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
 
-    return $vcard;
-} // fetch_email_for_vcard_from_db()
+        // Fetch each record in turn
+        $stmt = $connection->prepare("SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id");
+        foreach ($results as $id)
+        {
+	    $stmt->bindValue(":id", $id);
+	    $stmt->execute();
+	    $item = $stmt->fetch(PDO::FETCH_NUM, 0);
+	    $stmt->closeCursor();
 
-// Fetch and attach all data records for a vcard, returning the card.
-// photo, logo, sound
-function fetch_data_for_vcard_from_db($connection, $vcard, $contact_id)
-{
-    // Fetch a list of data records associated with the contact
-    $stmt = $connection->prepare("SELECT CONTACT_DATA_ID FROM CONTACT_REL_DATA WHERE CONTACT_ID=:contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
+	    $vcard->email($item[0]);
+        }
 
-    $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
+        return $vcard;
+    } // fetch_email_for_vcard_from_db()
 
-    if (empty($results)) $vcard;
-
-    // Fetch each data record in turn
-    $stmt = $connection->prepare("SELECT DATA_NAME, URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:data_id");
-    foreach ($results as $data_id)
+    // Fetch and attach all data records for a vcard, returning the card.
+    // photo, logo, sound
+    static function fetch_data_for_vcard_from_db($connection, $vcard, $contact_id)
     {
-	$stmt->bindValue(":data_id", $data_id);
-	$stmt->execute();
-	$data = $stmt->fetch();
-	$stmt->closeCursor();
+        // Fetch a list of data records associated with the contact
+        $stmt = $connection->prepare("SELECT CONTACT_DATA_ID FROM CONTACT_REL_DATA WHERE CONTACT_ID=:contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
 
-	$field = $data["DATA_NAME"];
-	$vcard->$field($data["URL"]);
-    }
+        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
 
-    return $vcard;
-} // fetch_adr_for_vcard_from_db()
+        if (empty($results)) $vcard;
 
-function fetch_category_for_vcard_from_db($connection, $vcard, $contact_id)
-{
-    // Fetch a list of records associated with the contact
-    $stmt = $connection->prepare("SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contact_id");
-    $stmt->bindValue(":contact_id", $contact_id);
-    $stmt->execute();
+        // Fetch each data record in turn
+        $stmt = $connection->prepare("SELECT DATA_NAME, URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:data_id");
+        foreach ($results as $data_id)
+        {
+	    $stmt->bindValue(":data_id", $data_id);
+	    $stmt->execute();
+	    $data = $stmt->fetch();
+	    $stmt->closeCursor();
 
-    $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    $stmt->closeCursor();
+	    $field = $data["DATA_NAME"];
+	    $vcard->$field($data["URL"]);
+        }
 
-    // Fetch each record in turn
-    $stmt = $connection->prepare("SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id");
-    foreach ($results as $id)
+        return $vcard;
+    } // fetch_adr_for_vcard_from_db()
+
+    static function fetch_category_for_vcard_from_db( $connection, $vcard, 
+           $contact_id )
     {
-	$stmt->bindValue(":id", $id);
-	$stmt->execute();
-	$item = $stmt->fetch(PDO::FETCH_NUM, 0);
-	$stmt->closeCursor();
+        // Fetch a list of records associated with the contact
+        $stmt = $connection->prepare("SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contact_id");
+        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt->execute();
 
-	$vcard->categories($item[0]);
-    }
+        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
 
-    return $vcard;
-} // fetch_category_for_vcard_from_db()
+        // Fetch each record in turn
+        $stmt = $connection->prepare("SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id");
+        foreach ($results as $id)
+        {
+	    $stmt->bindValue(":id", $id);
+	    $stmt->execute();
+	    $item = $stmt->fetch(PDO::FETCH_NUM, 0);
+	    $stmt->closeCursor();
+
+	    $vcard->categories($item[0]);
+        }
+
+        return $vcard;
+    } // fetch_category_for_vcard_from_db()
+} // VCardDB
 
 /**
  * Produce HTML output from the given vcard via the assoc array
