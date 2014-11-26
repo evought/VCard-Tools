@@ -58,7 +58,7 @@ class VCardDB
     {
         assert(!empty($this->connection));
 
-        $contact_id = self::store_contact_from_vcard($this->connection, $vcard);
+        $contact_id = $this->i_storeJustContact($vcard);
 
         // FIXME: in case of multiple calls, can optimize by reusing prepared SQL.
         foreach ($vcard->org as $org)
@@ -104,24 +104,28 @@ class VCardDB
         return $contact_id;
     } // store()
 
-    // Saves the vcard contact data to the database, returns the id of the
-    // new connection record.
-    // Stores JUST the info from the CONTACT table itself, no sub-tables.
-    static function store_contact_from_vcard($connection, $vcard)
+
+    /**
+     * Saves the vcard contact data to the database, returns the id of the
+     * new connection record.
+     * Stores JUST the info from the CONTACT table itself, no sub-tables.
+     */
+    private function i_storeJustContact(VCard $vcard)
     {
-        // NOTE: The VCard spec allows a contact to have multiple names.
-        // In practice, no implementations seem to allow this, so we ignore
-        // it. That means we have to deal with the oddity that n is actually an
-        // array below.
+        assert(!empty($this->connection));
 
         $vcard->setFNAppropriately();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
 
         $stmt->bindValue( ':kind', empty($vcard->kind)
                                 ? PDO::PARAM_NULL : $vcard->kind );
         $stmt->bindValue(':fn', $vcard->fn);
 
+        // NOTE: The VCard spec allows a contact to have multiple names.
+        // In practice, no implementations seem to allow this, so we ignore
+        // it (for now). That means we have to deal with the oddity that n
+        // is actually an array below.
         $n = empty($vcard->n) ? array() : $vcard->n[0];
 
         foreach([ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
@@ -155,10 +159,10 @@ class VCardDB
         $stmt->bindValue(':url', $vcard->url ? $vcard->url[0] : PDO::PARAM_NULL);
     
         $stmt->execute();
-        $contact_id = $connection->lastInsertId();
+        $contact_id = $this->connection->lastInsertId();
 
         return $contact_id;
-    } // store_contact_from_vcard()
+    } // i_storeJustContact()
 
     // Saves the vcard org data to the database, returns the id of the new
     // database org record. Takes the vcard org record and the id of the contact
