@@ -68,7 +68,7 @@ class VCardDB
 
         foreach ($vcard->adr as $adr)
         {
-	    self::store_address_from_vcard($this->connection, $adr, $contact_id);
+	    $this->i_storeAddress($adr, $contact_id);
         }
 
         foreach ($vcard->note as $note)
@@ -192,13 +192,23 @@ class VCardDB
         return $org_id;
     } // i_storeOrg()
 
-    // Saves the vcard address data to the database, returns the id of the new
-    // address record. Takes the vcard adr record and the id of the contact to
-    // connect it to.
-    // FIXME: does not handle type property in any way.
-    function store_address_from_vcard($connection, $adr, $contact_id)
+    /**
+     * Saves the vcard address data to the database, returns the id of the new
+     * address record. Takes the vcard adr record and the id of the contact to
+     * connect it to.
+     * @arg $adr An array with the ADR data from VCard. Not empty.
+     * @arg $contact_id The ID of the contact the adr is to be attached to.
+     * Numeric.
+     * @return The ID of the new ADR database record.
+     *
+     * FIXME: does not handle type property in any way.
+     */
+    private function i_storeAddress(Array $adr, $contact_id)
     {
-        $stmt = $connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
+        assert(!empty($adr));
+        assert(is_numeric($contact_id));
+
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
 
         foreach( [ 'StreetAddress', 'Locality', 'Region',
                    'PostalCode', 'Country' ]
@@ -209,15 +219,15 @@ class VCardDB
         }
 
         $stmt->execute();
-        $adr_id = $connection->lastInsertId();
+        $adr_id = $this->connection->lastInsertId();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contact_id, :adr_id)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contact_id, :adr_id)");
         $stmt->bindValue(":contact_id", $contact_id);
         $stmt->bindValue(":adr_id", $adr_id);
         $stmt->execute();
 
         return $adr_id;
-    } // store_address_from_vcard()
+    } // i_storeAddress()
 
     // Store the data fields (photo, logo, sound)
     // Currently only stores URLs, not blobs
