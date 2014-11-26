@@ -17,13 +17,6 @@ require_once "vcard-templates.php";
 // The product id we will use when creating new vcards
 $vcard_product_id = "-//VCard Tools//1.0//en";
 
-// Strip dangerous or unnecessary characters from a user-created string. 
-function test_input($data) {
-  $data = trim($data);
-  $data = htmlspecialchars($data);
-  return $data;
-} // test_input()
-
 // Store the whole vcard to the database, calling sub-functions to store
 // related tables (e.g. address) as necessary.
 // Returns the new contact_id
