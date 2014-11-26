@@ -83,6 +83,46 @@
     </delete>
   </target>
 
+  <target name="createUnitDB" depends="config"
+      description="Create the database for unit testing">
+    <sql
+      classpath="${db.jdbcdriver}"
+      driver="com.mysql.jdbc.Driver" 
+      url="jdbc:mysql://${db.unittest.host}/" 
+      userid="${db.devel.user}" 
+      password="${db.devel.passwd}"
+      autocommit="true"> 
+      CREATE DATABASE ${db.unittest.dbname}; 
+      GRANT SELECT, INSERT, UPDATE, DELETE on ${db.unittest.dbname}.*
+          TO '${db.unittest.user}'@'${db.unittest.host}'; 
+    </sql> 
+  </target>
+
+  <target name="unitDBSchema" depends="createUnitDB"
+          description="Load the table definitions for unit test database.">
+    <sql
+      classpath="${db.jdbcdriver}"
+      driver="com.mysql.jdbc.Driver" 
+      url="jdbc:mysql://${db.unittest.host}/${db.unittest.dbname}" 
+      userid="${db.devel.user}" 
+      password="${db.devel.passwd}"
+      autocommit="true"
+      src="${sql.dir}/vcard.sql" />
+  </target> 
+
+  <target name="dropUnitDB" depends="config"
+      description="Create the database for unit testing">
+    <sql
+      classpath="${db.jdbcdriver}"
+      driver="com.mysql.jdbc.Driver" 
+      url="jdbc:mysql://${db.unittest.host}/${db.unittest.dbname}" 
+      userid="${db.devel.user}" 
+      password="${db.devel.passwd}"
+      autocommit="true"> 
+      DROP DATABASE ${db.unittest.dbname}; 
+    </sql> 
+  </target>
+
   <target name="clean" depends="tidy"
         description="clean up" >
     <!-- Delete the ${build} and ${dist} directory trees -->

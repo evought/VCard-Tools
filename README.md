@@ -40,6 +40,7 @@ To develop and run tests, you will additionally need:
 * PHPUnit >= 4.3.5 for running the tests
 * Apache Ant will in turn require a compatible Java Development Kit (I am using
 openJDK 1.8.0, but any JDK which will run Ant should be fine.)
+* The MySQL jdbc driver (used by ant to execute database tasks).
 
 I am doing most of my development on a Intel-based Fedora Linux 20 workstation.
 
@@ -49,27 +50,46 @@ Aside from the code comments, one of the best resources for using the vcard-tool
 
 #Database Setup#
 
-To use the software, a database (e.g. VCARD) will be needed to contain the tables and a user with appropriate permissions to access it. Depending on your setup, this can be done with a tool such as *PHPMyAdmin* or from the command-line using something like the code in sql/dbinit.sql. In most environments:
+To use the software, a database (e.g. VCARD) will be needed to contain the tables and a user with appropriate permissions to access it. Given appropriate settings
+and a user with appropriate permissions in the database, ant will do the actual
+loading of the schema for you.
 
-    $ mysql --user=root -p &lt; sql/dbinit.sql
+First off, you need a MySQL user account with permissions to create a database and
+grant privileges on that database to a test user. I refer to this as the *developer account*. You could use the MySQL *root* user to do this, but on
+general principle, it is better to have a developer account with less that super-user powers and yet more than your unit test account. In some environments, such as a shared database, you may not have the option of using the root account. Depending on your setup, this can be done with a tool such as *PHPMyAdmin* or from the command-line. In most environments:
 
-Will execute the commands as the MySQL root user, prompting for the password. Edit the account name (and, obviously the password) to suit your needs. To run the unit tests, this 'test-vcard' account will need the SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*. The unit tests will automatically delete new rows and reset the table state after each run. Add the details of your test account to db.properties. The properties file will be used by ant to generate database.php (for your application code) and phpunit.xml (for unit tests).
-Whenever these parameters change, you may do:
+    $ mysql --user=root -p
+
+Will pull up a SQL shell as the MySQL root user, prompting for the password. You may then create the desired account and grant it privileges:
+
+    mysql> create user 'developer'@'localhost' identified by 'password';
+    mysql> grant all on VCARD.* to 'developer'@'localhost' with grant option;
+
+Substituting whatever is appropriate for 'developer' and 'password'. At the same time, create a *test account* for actually running the tests:
+
+    mysql> create user 'test-vcard'@'localhost' identified by 'password';
+
+Create a ${username}.properties file in your project folder, copying and editing
+values from db.properties to set the username, password, host, database name, etc., for your database. (In other words, I would put these settings in 'evought.properties'). As your personal property file will not be under control of git, you won't have to worry about committing your settings (and password!) back to the repository. The ant build script, build.xml will use these settings
+to build some configuration files, initialize the database, and run the tests.
+
+Running 'ant config' will build the configuration files (such as phpunit.xml and database.php) needed. Anytime you change these settings, you will want to run:
 
     $ ant cleanConfig && ant config
 
-To eliminate any existing generated files and refresh them.
-Settings in *${user.name}.properties* will override these values if you need to
-change the settings on a per-user basis and will make git happier in any case.
+To force them to be rebuilt. You can then:
 
-You will also likely want a developer account which has privileges to create/destroy the database tables so that you do not need to use the root account during development. Grant this account ALL on VCARD and use it for the next step:
+    $ ant unitDBSchema
 
-    $ mysql --user=developerlogin -p &lt; sql/vcard.sql
+This will automatically invoke "ant createUnitDB" to create the database and
+grant permissions to your test user (SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*) and then it will load the schema definitions from sql/vcard.sql. If you need to, you can always load vcard.sql manually from a terminal or by pasting it into a query in PHPMyAdmin.
 
-This will create the tables. If you alter the schema, it is a simple matter to
-DROP and CREATE the database and re-CREATE the tables. You may have to rerun your GRANT statements as well. The unit tests rely on an xml table dump to set/reset
-the initial state for the testcases. You will want to recreate this file by
-running (e.g.):
+The unit tests will automatically delete new rows and reset the table state after each run, so you *should not* have to clean and reset the database yourself unless something has happened to disrupt its state or you have intentionally made changes to the data or the schema. If that happens:
+
+   $ ant dropUnitDB && ant createUnitDB
+
+Will recreate the tables. The unit tests rely on an xml table dump to set/reset
+the initial state for the testcases. If the schema has changed, you will want to recreate this file by running (e.g.):
 
     $mysqldump --xml -t -u [username] -p [database] > tests/emptyVCARDDB.xml
 
