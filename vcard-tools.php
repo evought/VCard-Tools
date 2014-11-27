@@ -405,21 +405,28 @@ class VCardDB
     /**
      * Returns all vcards where the fn or categories match the requested search
      * string.
+     * @arg $searchString The pattern to search for (SQL matching rules). If
+     * omitted, match all cards.
+     * @arg $kind If kind is given, return only cards of that kind (e.g.
+     * organization).
      */
-    static function search_vcards($connection, $search_string, $kind="%")
+    public function search($searchString='%', $kind='%')
     {
-        $stmt = $connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE FN LIKE :search_string AND KIND LIKE :kind");
+    	assert(isset($this->connection));
+    	
+        $stmt = $this->connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE FN LIKE :searchString AND KIND LIKE :kind");
         $stmt->bindValue(":kind", $kind);
-        $stmt->bindValue(":search_string", $search_string);
+        $stmt->bindValue(":searchString", $searchString);
         $stmt->execute();
 
         $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
  
-        $contact_ids += self::fetch_contact_ids_for_category($connection, $search_string, $kind="%");
+        $contact_ids += self::fetch_contact_ids_for_category( $this->connection,
+        		$searchString, $kind="%" );
 
-        return self::fetch_vcards_by_id($connection, $contact_ids);
-    } // search_vcards()
+        return self::fetch_vcards_by_id($this->connection, $contact_ids);
+    } // search()
 
     /**
      * Returns a list of all contact_ids where the org.name parameter matches
