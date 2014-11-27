@@ -86,6 +86,8 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     	             -> org('Seinar Fleet Systems', 'Name')
     	             -> title('CEO')
     	             -> fn('Raith Seinar')
+    	             -> categories('military industrial')
+    	             -> categories('empire')
     	             -> kind('individual');
     	return $raithSeinar;
     }
@@ -102,6 +104,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     	           -> org('TIE AO1X Division', 'Unit2')
     	           -> fn('Seinar APL TIE AO1X Division')
     	           -> logo('http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg')
+    	           -> categories('military industrial')
+    	           -> categories('empire')
+    	           -> actegories('Research and Development')
     	           -> kind('organization');
 	return $seinarAPL;    	 
     }
@@ -602,6 +607,73 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     			. ' ddb: ' . $dDBContactID);
     	 
     	$this->assertContains($rSContactID, $IDs);
+    }
+    
+    /**
+     * @depends testStoreAndRetrieveWOrg
+     */
+    public function testFetchIDsForCategory(VCardDB $vcardDB)
+    {
+    	$raithSeinar = $this->getRaithSeinar();
+    	$rSContactID = $vcardDB->store($raithSeinar);
+    	 
+    	$seinarAPL = $this->getSeinarAPL();
+    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    	 
+    	$dDBinks = $this->getDDBinks();
+    	$dDBContactID = $vcardDB->store($dDBinks);
+    	 
+    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+    	 
+    	$IDs = $vcardDB->fetchIDsForCategory('military industrial');
+    	 
+    	$this->assertNotEmpty($IDs);
+    	$this->assertInternalType("array", $IDs);
+    	 
+    	$this->assertCount( 2, $IDs,
+    			print_r($IDs, true)
+    			. ' rs: ' . $rSContactID
+    			. ' apl: ' . $sAPLContactID
+    			. ' ddb: ' . $dDBContactID);
+    	 
+    	$this->assertContains($rSContactID, $IDs);
+    	$this->assertContains($sAPLContactID, $IDs);
+    	// Binks is left out (as he should be).
+    	 
+    	return $vcardDB;
+    }
+    
+    /**
+     * @depends testFetchIDsForCategory
+     */
+    public function testFetchIDsForCategoryByKind(VCardDB $vcardDB)
+    {
+    	$raithSeinar = $this->getRaithSeinar();
+    	$rSContactID = $vcardDB->store($raithSeinar);
+    
+    	$seinarAPL = $this->getSeinarAPL();
+    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    
+    	$dDBinks = $this->getDDBinks();
+    	$dDBContactID = $vcardDB->store($dDBinks);
+    
+    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+    
+    	$IDs = $vcardDB->fetchIDsForCategory( 'military industrial',
+                                              'organization' );
+    
+    	$this->assertNotEmpty($IDs);
+    	$this->assertInternalType("array", $IDs);
+    
+    	$this->assertCount( 1, $IDs,
+    			print_r($IDs, true)
+    			. ' rs: ' . $rSContactID
+    			. ' apl: ' . $sAPLContactID
+    			. ' ddb: ' . $dDBContactID);
+    
+    	$this->assertContains($sAPLContactID, $IDs);
+    
+    	return $vcardDB;
     }
     
 } // VCardToolsTest

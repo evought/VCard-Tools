@@ -422,8 +422,8 @@ class VCardDB
         $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
  
-        $contact_ids += self::fetch_contact_ids_for_category( $this->connection,
-        		$searchString, $kind="%" );
+        $contact_ids += $this->fetchIDsForCategory( $searchString,
+        		$kind="%" );
 
         return self::fetch_vcards_by_id($this->connection, $contact_ids);
     } // search()
@@ -461,55 +461,65 @@ class VCardDB
         $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        return self::filter_contact_ids_by_kind( $this->connection,
-        		$contactIDs, $kind );
+        return $this->filterIDsByKind($contactIDs, $kind);
     } // fetchIDsForOrganization()
 
     /**
      * Returns only the contact_ids from the input list where kind matches.
+     * @arg $contactIDs The list of contact IDs to filter. An array
+     * (non-empty) of numerics.
+     * @arg $kind The kind of record desired (e.g. individual)
+     * @return A new list of any IDs that match.
      */
-    static function filter_contact_ids_by_kind( $connection, $contact_ids, 
-          $kind="%" )
+    public function filterIDsByKind(Array $contactIDs, $kind)
     {
-        if (empty($contact_ids) || $kind == "%") return $contact_ids;
-
-        $stmt = $connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE CONTACT_ID IN ("
-	. implode(",", $contact_ids) . ") AND KIND LIKE :kind");
+    	assert(isset($this->connection));
+    	assert(!empty($contactIDs));
+    	assert(is_string($kind));
+    	
+        $stmt = $this->connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE CONTACT_ID IN ("
+	. implode(",", $contactIDs) . ") AND KIND LIKE :kind");
         $stmt->bindValue(":kind", $kind);
         $stmt->execute();
-        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        return $contact_ids;    
-    } // filter_contact_ids_by_kind()
+        return $contactIDs;    
+    } // filterIDsByKind()
 
     /**
-     * Returns a list of all contact_ids in a given category. Category may be
-     * a SQL pattern.
+     * Returns a list of all contact_ids in a given category.
+     * @arg $category The string representing the category to search for.
+     * May be a SQL pattern. Not empty.
+     * @arg $kind If given, the kind (e.g. individual) to filter by.
+     * @return An array of contact IDs. No VCards are fetched.
      */
-    static function fetch_contact_ids_for_category( $connection, $category, 
-           $kind="%" )
+    public function fetchIDsForCategory($category, $kind="%")
     {
-        $stmt = $connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY_NAME LIKE :category");
+    	assert(isset($this->connection));
+    	assert(!empty($category));
+    	assert(is_string($category));
+    	
+        $stmt = $this->connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY_NAME LIKE :category");
         $stmt->bindValue(":category", $category);
         $stmt->execute();
-        $category_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $categoryIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        if (empty($category_ids)) return array();
+        if (empty($categoryIDs)) return array();
 
         // HACK: PDO does not support bind an array to an IN parameter, so
         // we just add the list as a string to the query. We aren't re-executing
         // the query and there is no worry of SQL injection here, so it doesn't
         // matter but it's clunky.
-        $stmt = $connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_CATEGORIES WHERE CATEGORY_ID IN ("
-	    . implode(",", $category_ids) . ")");
+        $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_CATEGORIES WHERE CATEGORY_ID IN ("
+	    . implode(",", $categoryIDs) . ")");
         $stmt->execute();
-        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        return self::filter_contact_ids_by_kind($connection, $contact_ids, $kind);
-    } // fetch_contact_ids_for_category()
+        return $this->filterIDsByKind($contactIDs, $kind);
+    } // fetchIDsForCategory()
 
     static function fetch_vcards_by_id($connection, $contact_ids)
     {
