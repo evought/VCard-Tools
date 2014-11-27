@@ -86,7 +86,7 @@ class VCardDB
 
         foreach ($vcard->tel as $tel)
         {
-	    self::store_tel_from_vcard($this->connection, $tel, $contact_id);
+	    $this->i_storeTel($tel, $contact_id);
         }
 
         foreach ($vcard->email as $item)
@@ -291,19 +291,33 @@ class VCardDB
         return $note_id;
     } // i_storeNote()
 
-    static function store_tel_from_vcard($connection, $tel, $contact_id)
+    /**
+     * Store the Tel record.
+     * @arg $tel The value to store. Non-empty string.
+     * @arg $contact_id The ID of the contact record to associate it with.
+     * Numeric.
+     * @return The ID of the new TEL record.
+     */
+    private function i_storeTel($tel, $contact_id)
     {
-        $stmt = $connection->prepare("INSERT INTO CONTACT_PHONE_NUMBER (LOCAL_NUMBER) VALUES (:number)");
+        assert(!empty($tel));
+        assert(is_string($tel));
+        assert(is_numeric($contact_id));
+        assert(!empty($this->connection));
+
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_PHONE_NUMBER (LOCAL_NUMBER) VALUES (:number)");
 
         $stmt->bindValue(":number", $tel);
         $stmt->execute();
-        $phone_id = $connection->lastInsertId();
+        $phone_id = $this->connection->lastInsertId();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contact_id, :phone_id)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contact_id, :phone_id)");
         $stmt->bindValue(":contact_id", $contact_id);
         $stmt->bindValue(":phone_id", $phone_id);
         $stmt->execute();
-    } // store_tel_from_vcard()
+
+        return $phone_id;
+    } // i_storeTel()
 
     static function store_email_from_vcard($connection, $email, $contact_id)
     {
