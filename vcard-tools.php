@@ -16,6 +16,8 @@ require_once "vcard-templates.php";
 
 class VCardDB
 {
+// FIXME: Add a method to fetch all contact IDs (without loading the records).
+    
     // The product id we will use when creating new vcards
     const VCARD_PRODUCT_ID = '-//VCard Tools//1.0//en';
 
@@ -374,11 +376,15 @@ class VCardDB
 
     /**
      * Fetch all vcards from the database.
-     * If kind is given, only fetch those of that kind (e.g. organization).
+     * @arg $kind If kind is given, only fetch those of that kind (e.g.
+     * organization).
+     * @return An array of VCards keyed by contact id.
      */
-    static function fetch_vcards_from_db($connection, $kind="%")
+    public function fetchAll($kind="%")
     {
-        $stmt = $connection->prepare("SELECT * FROM CONTACT WHERE KIND LIKE :kind");
+    	assert(isset($this->connection));
+    	
+        $stmt = $this->connection->prepare("SELECT * FROM CONTACT WHERE KIND LIKE :kind");
         $stmt->bindValue(":kind", $kind);
         $stmt->execute();
         $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
@@ -388,13 +394,13 @@ class VCardDB
         while ($row = $stmt->fetch())
         {
 	    $vcards[$row["CONTACT_ID"]]
-		= i_fetch_vcard_from_database($connection, $row);
+		= self::i_fetch_vcard_from_database($this->connection, $row);
         } // while
 
         $stmt->closeCursor();
 
         return $vcards;
-    } // fetch_vcards_from_db()
+    } // fetchAll()
 
     /**
      * Returns all vcards where the fn or categories match the requested search

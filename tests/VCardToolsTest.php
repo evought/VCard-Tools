@@ -79,7 +79,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );
-	$vcards = VCardDB::fetch_vcards_from_db(self::$pdo);
+	$vcards = $vcardDB->fetchAll();
 
 	$this->assertEmpty($vcards);
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
@@ -116,18 +116,39 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contact_id );
 
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
-
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
-	$this->assertEquals($expected, $result_vcard->fn);
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
+	$this->assertNotNull($result_vcard);
+	
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
         unset($result_vcard->prodid);
-
+        
+        $this->assertEquals($vcard, $result_vcard);
+        
         return $vcardDB;
     }
 
-
+    /**
+     * @depends testStoreAndRetrieveTrivialVCard
+     */
+    public function testFetchWithOneVCard(VCardDB $vcardDB)
+    {
+    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+    			"Precondition" );
+    	
+    	$expected = 'foo';
+    	$vcard = new VCard();
+    	$vcard->fn = $expected;
+    	
+    	$contact_id = $vcardDB->store($vcard);
+    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+    			"After storing " . $contact_id );
+    	
+    	$result_vcards = $vcardDB->fetchAll();
+    	$this->assertNotEmpty($result_vcards);
+    	$this->assertCount(1, $result_vcards);
+    	$this->assertArrayHasKey($contact_id, $result_vcards);
+    }
+    
     /**
      * @depends testStoreAndRetrieveTrivialVCard
      */
@@ -158,10 +179,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 0,
             $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
             "After storing " . $contact_id );
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
 
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
+	$this->assertNotNull($result_vcard);
 
         // check and remove prodid so it won't fail comparison
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
@@ -206,10 +226,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
             "After storing " . $contact_id );
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
 
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
+	$this->assertNotNull($result_vcard);
 
         // check and remove prodid so it won't fail comparison
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
@@ -248,10 +267,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_EMAIL'),
             "After storing " . $contact_id );
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
 
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
+	$this->assertNotNull($result_vcard);
 
         // check and remove prodid so it won't fail comparison
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
@@ -291,10 +309,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_ORG'),
             "After storing " . $contact_id );
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
 
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
+	$this->assertNotNull($result_vcard);
 
         // check and remove prodid so it won't fail comparison
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
@@ -340,10 +357,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_DATA'),
             "After storing " . $contact_id );
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
 
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
+	$this->assertNotNull($result_vcard);
 
         // check and remove prodid so it won't fail comparison
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
@@ -377,10 +393,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_NOTE'),
             "After storing " . $contact_id );
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
 
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
+	$this->assertNotNull($result_vcard);
 
         // check and remove prodid so it won't fail comparison
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
@@ -414,10 +429,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_PHONE_NUMBER'),
             "After storing " . $contact_id );
-        $result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
 
-	$this->assertCount(1, $result_vcards);
-        $result_vcard = array_pop($result_vcards);
+        $result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
+	$this->assertNotNull($result_vcard);
 
         // check and remove prodid so it won't fail comparison
         $this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
@@ -451,10 +465,9 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     	$this->assertEquals( 1,
     			$this->getConnection()->getRowCount('CONTACT_REL_CATEGORIES'),
     			"After storing " . $contact_id );
-    	$result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
-    
-    	$this->assertCount(1, $result_vcards);
-    	$result_vcard = array_pop($result_vcards);
+
+    	$result_vcard = VCardDB::fetch_vcard_from_db(self::$pdo, $contact_id);
+        $this->assertNotNull($result_vcard);
     
     	// check and remove prodid so it won't fail comparison
     	$this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
