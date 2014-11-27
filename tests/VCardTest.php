@@ -940,7 +940,37 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 				print_r($vcard->url, true) );
 
    }
-
-
+   /**
+    * Make sure the magic __call method works correctly for call chaining.
+    * @covers VCard::__set
+    * @depends testSetTwoURLs
+    */
+   public function testSetChaining(VCard $vcard)
+   {
+   	$url1 = "foo";
+   	$url2 = "baz";
+   	$tel  = "999-454-3212";
+   	
+   	$vcard =  new VCard();
+   	
+   	$vcard  ->url($url1)
+   	        ->url($url2)
+   	        ->tel($tel);
+   	
+   	$this->assertNotEmpty($vcard->url);
+   	$this->assertInternalType("array", $vcard->url);
+   	$this->assertCount(2, $vcard->url);
+   	$this->assertContains( $url1, $vcard->url,
+   			print_r($vcard->url, true) );
+   	$this->assertContains( $url2, $vcard->url,
+   			print_r($vcard->url, true) );
+   	
+   	$this->assertNotEmpty($vcard->tel);
+   	$this->assertInternalType("array", $vcard->tel);
+   	$this->assertCount(1, $vcard->tel);
+   	$this->assertContains( $tel, $vcard->tel,
+   			print_r($vcard->tel, true) );
+   	
+   }
 }
 ?>
