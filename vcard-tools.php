@@ -86,17 +86,17 @@ class VCardDB
 
         foreach ($vcard->tel as $tel)
         {
-	    $this->i_storeTel($tel, $contact_id);
+	        $this->i_storeTel($tel, $contact_id);
         }
 
         foreach ($vcard->email as $item)
         {
-	    self::store_email_from_vcard($this->connection, $item, $contact_id);
+	        $this->i_storeEmail($item, $contact_id);
         }
 
         foreach ($vcard->categories as $item)
         {
-	    self::store_category_from_vcard( $this->connection, $item, 
+	        self::store_category_from_vcard( $this->connection, $item, 
                                              $contact_id );
         }
 
@@ -318,19 +318,33 @@ class VCardDB
         return $phone_id;
     } // i_storeTel()
 
-    static function store_email_from_vcard($connection, $email, $contact_id)
+    /**
+     * Store the email property.
+     * @param unknown $email The email address to store (string, not empty).
+     * @param unknown $contact_id The ID of the CONTACT record to associate this with. Numeric.
+     * @return The ID of the new EMAIL record.
+     * FIXME: does not handle TYPE paramters.
+     */
+    private function i_storeEmail($email, $contact_id)
     {
-        $stmt = $connection->prepare("INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:email)");
+        assert(!empty($email));
+        assert(is_string($email));
+        assert(is_numeric($contact_id));
+        assert(!empty($this->connection));
+    	
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:email)");
 
         $stmt->bindValue(":email", $email);
         $stmt->execute();
-        $new_id = $connection->lastInsertId();
+        $new_id = $this->connection->lastInsertId();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contact_id, :new_id)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contact_id, :new_id)");
         $stmt->bindValue(":contact_id", $contact_id);
         $stmt->bindValue(":new_id", $new_id);
         $stmt->execute();
-    } // store_email_from_vcard()
+        
+        return $new_id;
+    } // i_storeEmail()
 
     static function store_category_from_vcard($connection, $category, $contact_id)
     {
