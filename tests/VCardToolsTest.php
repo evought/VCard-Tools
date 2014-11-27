@@ -357,6 +357,8 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
             "After storing " . $contactID );
         $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
         $this->compareVCards($vcard, $resultVCard);
+        
+        return $vcardDB;
     } //testStoreAndRetrieveWOrg()
 
     /**
@@ -490,5 +492,51 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     	$resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWCategory()
+    
+    /**
+     * @depends testStoreAndRetrieveWOrg
+     */
+    public function testFetchIDsForOrganization(VCardDB $vcardDB)
+    {    	    	    	
+    	$raithSeinar = new VCard();
+    	$raithSeinar -> n('Raith', 'FirstName')
+    	             -> n('Seinar', 'LastName')
+    	             -> org('Seinar Fleet Systems', 'Name')
+    	             -> title('CEO')
+    	             -> fn('Raith Seinar');
+    	$rSContactID = $vcardDB->store($raithSeinar);
+    	
+    	$seinarAPL = new VCard();
+    	$seinarAPL   -> org('Seinar Fleet Systems', 'Name')
+    	             -> org('Seinar Advanced Projects Laboratory', 'Unit1')
+    	             -> org('TIE AO1X Division', 'Unit2')
+    	             -> fn('Seinar APL TIE AO1X Division')
+    	             -> logo('http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg');
+    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    	
+    	$dDBinks = new vCard();
+    	$dDBinks     -> n('Darth Darth', 'FirstName')
+    	             -> n('Binks', 'LastName')
+    	             -> org('Sith', 'Name')
+    	             -> fn('Darth Darth Binks');
+    	$dDBContactID = $vcardDB->store($dDBinks);
+    	
+    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+    	
+    	$IDs = $vcardDB->fetchIDsForOrganization('Seinar Fleet Systems');
+    	
+    	$this->assertNotEmpty($IDs);
+    	$this->assertInternalType("array", $IDs);
+    	
+    	$this->assertCount( 2, $IDs,
+    			       print_r($IDs, true)
+    			       . ' rs: ' . $rSContactID
+                               . ' apl: ' . $sAPLContactID
+                               . ' ddb: ' . $dDBContactID);
+    	
+    	$this->assertContains($rSContactID, $IDs);
+    	$this->assertContains($sAPLContactID, $IDs);
+    	// Binks is left out (as he should be).
+    }
 } // VCardToolsTest
 ?>

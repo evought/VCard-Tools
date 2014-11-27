@@ -430,33 +430,40 @@ class VCardDB
 
     /**
      * Returns a list of all contact_ids where the org.name parameter matches
-     * the query. May be a SQL pattern.
+     * the query.
+     * @arg $organizationName The name of the organization to search for. May
+     * be a SQL pattern. String, not empty.
+     * @arg $kind If kind is provided, limit results to a specific Kind (e.g.
+     * individual.
+     * @return The list of contact ids. Actual VCards are not fetched.
      */
-    static function fetch_contact_ids_for_organization( $connection, 
-        $organization_name, $kind="%" )
+    public function fetchIDsForOrganization($organizationName, $kind="%")
     {
-        if (empty($organization_name)) return array();
-
-        $stmt = $connection->prepare("SELECT ORG_ID FROM CONTACT_ORG WHERE NAME LIKE :organization_name");
-        $stmt->bindValue(":organization_name", $organization_name);
+    	assert(isset($this->connection));
+    	assert(!empty($organizationName));
+    	assert(is_string($organizationName));
+    	
+        $stmt = $this->connection->prepare("SELECT ORG_ID FROM CONTACT_ORG WHERE NAME LIKE :organizationName");
+        $stmt->bindValue(":organizationName", $organizationName);
         $stmt->execute();
-        $org_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $orgIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        if (empty($org_ids)) return array();
+        if (empty($orgIDs)) return array();
 
         // HACK: PDO does not support bind an array to an IN parameter, so
         // we just add the list as a string to the query. We aren't re-executing
         // the query and there is no worry of SQL injection here, so it doesn't
         // matter but it's clunky.
-        $stmt = $connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_ORG WHERE ORG_ID IN ("
-	    . implode(",", $org_ids) . ")");
+        $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_ORG WHERE ORG_ID IN ("
+	    . implode(",", $orgIDs) . ")");
         $stmt->execute();
-        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        return self::filter_contact_ids_by_kind($connection, $contact_ids, $kind);
-    } // fetch_contact_ids_for_organization()
+        return self::filter_contact_ids_by_kind( $this->connection,
+        		$contactIDs, $kind );
+    } // fetchIDsForOrganization()
 
     /**
      * Returns only the contact_ids from the input list where kind matches.
