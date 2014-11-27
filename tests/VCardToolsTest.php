@@ -73,7 +73,53 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         
         $this->assertEquals($vcard, $dbVCard);
     }
+    
+    /**
+     * Some cards for testing.
+     * @return an individual VCard.
+     */
+    public function getRaithSeinar()
+    {
+    	$raithSeinar = new VCard();
+    	$raithSeinar -> n('Raith', 'FirstName')
+    	             -> n('Seinar', 'LastName')
+    	             -> org('Seinar Fleet Systems', 'Name')
+    	             -> title('CEO')
+    	             -> fn('Raith Seinar')
+    	             -> kind('individual');
+    	return $raithSeinar;
+    }
+    
+    /**
+     * Some cards for testing.
+     * @return an organization VCard.
+     */
+    public function getSeinarAPL()
+    {
+    	$seinarAPL = new VCard();
+    	$seinarAPL -> org('Seinar Fleet Systems', 'Name')
+    	           -> org('Seinar Advanced Projects Laboratory', 'Unit1')
+    	           -> org('TIE AO1X Division', 'Unit2')
+    	           -> fn('Seinar APL TIE AO1X Division')
+    	           -> logo('http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg')
+    	           -> kind('organization');
+	return $seinarAPL;    	 
+    }
 
+    /**
+     * Some cards for testing.
+     * @return an individual VCard.
+     */
+    public function getDDBinks()
+    {
+    	$dDBinks = new vCard();
+    	$dDBinks -> n('Darth Darth', 'FirstName')
+    	         -> n('Binks', 'LastName')
+    	         -> org('Sith', 'Name')
+    	         -> fn('Darth Darth Binks')
+    	         -> kind('individual');
+        return $dDBinks;
+    }
     /**
      * Ensure that we can instantiate a VCardDB instance.
      */
@@ -498,27 +544,13 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testFetchIDsForOrganization(VCardDB $vcardDB)
     {    	    	    	
-    	$raithSeinar = new VCard();
-    	$raithSeinar -> n('Raith', 'FirstName')
-    	             -> n('Seinar', 'LastName')
-    	             -> org('Seinar Fleet Systems', 'Name')
-    	             -> title('CEO')
-    	             -> fn('Raith Seinar');
+    	$raithSeinar = $this->getRaithSeinar();
     	$rSContactID = $vcardDB->store($raithSeinar);
     	
-    	$seinarAPL = new VCard();
-    	$seinarAPL   -> org('Seinar Fleet Systems', 'Name')
-    	             -> org('Seinar Advanced Projects Laboratory', 'Unit1')
-    	             -> org('TIE AO1X Division', 'Unit2')
-    	             -> fn('Seinar APL TIE AO1X Division')
-    	             -> logo('http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg');
+    	$seinarAPL = $this->getSeinarAPL();
     	$sAPLContactID = $vcardDB->store($seinarAPL);
     	
-    	$dDBinks = new vCard();
-    	$dDBinks     -> n('Darth Darth', 'FirstName')
-    	             -> n('Binks', 'LastName')
-    	             -> org('Sith', 'Name')
-    	             -> fn('Darth Darth Binks');
+    	$dDBinks = $this->getDDBinks();
     	$dDBContactID = $vcardDB->store($dDBinks);
     	
     	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
@@ -537,6 +569,40 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     	$this->assertContains($rSContactID, $IDs);
     	$this->assertContains($sAPLContactID, $IDs);
     	// Binks is left out (as he should be).
+    	
+    	return $vcardDB;
     }
+    
+    /**
+     * @depends testFetchIDsForOrganization
+     */
+    public function testFetchIDsForOrganizationByKind(VCardDB $vcardDB)
+    {
+    	$raithSeinar = $this->getRaithSeinar();
+    	$rSContactID = $vcardDB->store($raithSeinar);
+    	 
+    	$seinarAPL = $this->getSeinarAPL();
+    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    	 
+    	$dDBinks = $this->getDDBinks();
+    	$dDBContactID = $vcardDB->store($dDBinks);
+    	 
+    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+    	 
+    	$IDs = $vcardDB->fetchIDsForOrganization( 'Seinar Fleet Systems',
+                                                  'individual' );
+    	 
+    	$this->assertNotEmpty($IDs);
+    	$this->assertInternalType("array", $IDs);
+    	 
+    	$this->assertCount( 1, $IDs,
+    			print_r($IDs, true)
+    			. ' rs: ' . $rSContactID
+    			. ' apl: ' . $sAPLContactID
+    			. ' ddb: ' . $dDBContactID);
+    	 
+    	$this->assertContains($rSContactID, $IDs);
+    }
+    
 } // VCardToolsTest
 ?>
