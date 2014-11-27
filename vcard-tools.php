@@ -170,7 +170,6 @@ class VCardDB
      * Numeric.
      * @return The id of the new org record in the database.
      * FIXME: does not handle type property in any way.
-     * FIXME: does not handle org subunits.
      */
     private function i_storeOrg(Array $org, $contact_id)
     {
