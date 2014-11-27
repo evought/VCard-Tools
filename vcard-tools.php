@@ -96,8 +96,7 @@ class VCardDB
 
         foreach ($vcard->categories as $item)
         {
-	        self::store_category_from_vcard( $this->connection, $item, 
-                                             $contact_id );
+	        $this->i_storeCategory($item, $contact_id);
         }
 
         return $contact_id;
@@ -346,19 +345,32 @@ class VCardDB
         return $new_id;
     } // i_storeEmail()
 
-    static function store_category_from_vcard($connection, $category, $contact_id)
+    /**
+     * Store a categories property.
+     * @param unknown $category The individual category to store. String, not empty.
+     * @param unknown $contact_id The ID of the CONTACT record to associate this with.
+     * @return The ID of the new CATEGORIES record.
+     */
+    private function i_storeCategory($category, $contact_id)
     {
-        $stmt = $connection->prepare("INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:category)");
+        assert(!empty($category));
+        assert(is_string($category));
+        assert(is_numeric($contact_id));
+        assert(!empty($this->connection));
+    	
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:category)");
 
         $stmt->bindValue(":category", $category);
         $stmt->execute();
-        $new_id = $connection->lastInsertId();
+        $new_id = $this->connection->lastInsertId();
 
-        $stmt = $connection->prepare("INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contact_id, :new_id)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contact_id, :new_id)");
         $stmt->bindValue(":contact_id", $contact_id);
         $stmt->bindValue(":new_id", $new_id);
         $stmt->execute();
-    } // store_category_from_vcard()
+        
+        return $new_id;
+    } // i_storeCategory()
 
     /**
      * Fetch all vcards from the database.

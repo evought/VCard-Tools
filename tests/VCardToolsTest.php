@@ -425,5 +425,42 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 
 	$this->assertEquals($vcard, $result_vcard);
     } //testStoreAndRetrieveWTel()
+    
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWCategory(VCardDB $vcardDB)
+    {
+    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+    			"Precondition" );
+    
+    	$expected = [
+                     'fn'          => 'Sigmund Freud',
+    	             'category'    => 'mental health'
+    		    ];
+    	$vcard = new VCard();
+    	$vcard->fn = $expected['fn'];
+    	$vcard->categories($expected['category']);
+    
+    	$contact_id = $vcardDB->store($vcard);
+    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+    			"After storing " . $contact_id );
+    	$this->assertEquals( 1,
+    			$this->getConnection()->getRowCount('CONTACT_CATEGORIES'),
+    			"After storing " . $contact_id );
+    	$this->assertEquals( 1,
+    			$this->getConnection()->getRowCount('CONTACT_REL_CATEGORIES'),
+    			"After storing " . $contact_id );
+    	$result_vcards = VCardDB::fetch_vcards_by_id(self::$pdo, array($contact_id));
+    
+    	$this->assertCount(1, $result_vcards);
+    	$result_vcard = array_pop($result_vcards);
+    
+    	// check and remove prodid so it won't fail comparison
+    	$this->assertEquals(VCardDB::VCARD_PRODUCT_ID, $result_vcard->prodid);
+    	unset($result_vcard->prodid);
+    
+    	$this->assertEquals($vcard, $result_vcard);
+    } //testStoreAndRetrieveWCategory()
 } // VCardToolsTest
 ?>
