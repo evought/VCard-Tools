@@ -419,13 +419,14 @@ class VCardDB
         $stmt->bindValue(":searchString", $searchString);
         $stmt->execute();
 
-        $contact_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
  
-        $contact_ids += $this->fetchIDsForCategory( $searchString,
+        $contactIDs += $this->fetchIDsForCategory( $searchString,
         		$kind="%" );
+        if (empty($contactIDs)) return array();
 
-        return self::fetch_vcards_by_id($this->connection, $contact_ids);
+        return $this->fetchByID($contactIDs);
     } // search()
 
     /**
@@ -521,17 +522,25 @@ class VCardDB
         return $this->filterIDsByKind($contactIDs, $kind);
     } // fetchIDsForCategory()
 
-    static function fetch_vcards_by_id($connection, $contact_ids)
+    /**
+     * Retrieve VCard records for the given Contact IDs.
+     * @param unknown $contactIDs
+     * @return An array of VCards indexed by contact ID.
+     */
+    public function fetchByID(Array $contactIDs)
     {
+    	assert(isset($this->connection));
+    	assert(!empty($contactIDs));
+    	
         $vcards = array();
-        foreach($contact_ids as $contact_id)
+        foreach($contactIDs as $contactID)
         {
-	    $vcards[$contact_id]
-		   = self::fetch_vcard_from_db($connection, $contact_id);
+	    $vcards[$contactID]
+		   = self::fetch_vcard_from_db($this->connection, $contactID);
         }
 
         return $vcards;
-    } // fetch_vcards_by_id()
+    } // fetchByID()
 
     /**
      * Fetch a single vcard given a contact_id.

@@ -106,7 +106,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     	           -> logo('http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg')
     	           -> categories('military industrial')
     	           -> categories('empire')
-    	           -> actegories('Research and Development')
+    	           -> categories('Research and Development')
     	           -> kind('organization');
 	return $seinarAPL;    	 
     }
@@ -237,31 +237,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
                              "Postcondition" );
     }
 
-    /**
-     * @depends testStoreAndRetrieveTrivialVCard
-     */
-    public function testSearchWithOneVCardMatches(VCardDB $vcardDB)
-    {
-    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-    			"Precondition" );
-    
-    	$fn = 'foo';
-    	$vcard = new VCard();
-    	$vcard->fn = $fn;
-    
-    	$contactID = $vcardDB->store($vcard);
-    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-    			"After storing " . $contactID );
-    
-    	$resultVCards = $vcardDB->search("foo");
-        	
-    	$this->assertNotEmpty($resultVCards);
-    	$this->assertCount(1, $resultVCards);
-    	$this->assertArrayHasKey($contactID, $resultVCards);
-    	
-    	$resultVCard = $resultVCards[$contactID];
-        $this->compareVCards($vcard, $resultVCard);    	 
-    }
+
     
     
     /**
@@ -340,6 +316,64 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->compareVCards($vcard, $resultVCard);    	 
     } //testStoreAndRetrieveWAddress()
 
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testFetchByID(VCardDB $vcardDB)
+    {
+    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+    			"Precondition" );
+    	 
+    	$vcard1 = $this->getRaithSeinar();
+    	$id1 = $vcardDB->store($vcard1);
+    	 
+    	$vcard2 = $this->getSeinarAPL();
+    	$id2 = $vcardDB->store($vcard2);
+    
+    	$this->assertEquals(2, $this->getConnection()->getRowCount('CONTACT'));
+    	 
+    	$resultVCards = $vcardDB->fetchByID([$id1, $id2]);
+    
+    	$this->assertNotEmpty($resultVCards);
+    	$this->assertCount(2, $resultVCards);
+    	$this->assertArrayHasKey($id1, $resultVCards);
+    	$this->assertArrayHasKey($id2, $resultVCards);
+    
+    	$result1 = $resultVCards[$id1];
+    	$this->compareVCards($vcard1, $result1);
+    	 
+    	$result2 = $resultVCards[$id2];
+    	$this->compareVCards($vcard2, $result2);
+    	 
+    	return $vcardDB;
+    }
+    
+    /**
+     * @depends testFetchByID
+     */
+    public function testSearchWithOneVCardMatches(VCardDB $vcardDB)
+    {
+    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+    			"Precondition" );
+    
+    	$fn = 'foo';
+    	$vcard = new VCard();
+    	$vcard->fn = $fn;
+    
+    	$contactID = $vcardDB->store($vcard);
+    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+    			"After storing " . $contactID );
+    
+    	$resultVCards = $vcardDB->search("foo");
+    	 
+    	$this->assertNotEmpty($resultVCards);
+    	$this->assertCount(1, $resultVCards);
+    	$this->assertArrayHasKey($contactID, $resultVCards);
+    	 
+    	$resultVCard = $resultVCards[$contactID];
+    	$this->compareVCards($vcard, $resultVCard);
+    }
+    
     /**
      * @depends testStoreAndRetrieveVCard
      */
