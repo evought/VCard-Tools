@@ -578,18 +578,13 @@ class VCardDB
         $vcard = new vCard();
         $contactID = $row["CONTACT_ID"];
 
-        if (!empty($row["KIND"])) $vcard->kind($row["KIND"]);
-        if (!empty($row["FN"])) $vcard->fn($row["FN"]);
-        if (!empty($row["NICKNAME"])) $vcard->nickname($row["N_NICKNAME"]);
-        if (!empty($row["BDAY"]) && ($row["BDAY"] != PDO::PARAM_NULL))
-        	$vcard->bday($row["BDAY"]);
-        if (!empty($row["TITLE"])) $vcard->title($row["TITLE"]);
-        if (!empty($row["ROLE"])) $vcard->role($row["ROLE"]);
-        if (!empty($row["REV"])) $vcard->rev($row["REV"]);
-        if (!empty($row["UID"])) $vcard->uid($row["UID"]);
-        if (!empty($row["URL"])) $vcard->url($row["URL"]);
-        if (!empty($row["VERSION"])) $vcard->version($row["VERSION"]);
-        
+        $simpleCols = [ 'KIND', 'FN', 'NICKNAME', 'BDAY', 'TITLE', 'ROLE',
+                        'REV', 'UID', 'URL', 'VERSION' ];
+        foreach ($simpleCols as $col)
+        {
+            if (!empty($row[$col]) && ($row[$col] != PDO::PARAM_NULL))
+            	$vcard->$col($row[$col]);
+        }
         
         if (!empty($row["N_PREFIX"])) $vcard->n($row["N_PREFIX"], "Prefixes");
         if (!empty($row["N_GIVEN_NAME"]))
