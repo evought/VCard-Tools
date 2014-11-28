@@ -183,7 +183,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contactID );
 
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
 
         $this->compareVCards($vcard, $resultVCard);
         return $vcardDB;
@@ -270,7 +270,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 0,
             $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
             "After storing " . $contactID );
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
 
         $this->compareVCards($vcard, $resultVCard);    	 
 	
@@ -311,7 +311,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
             "After storing " . $contactID );
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
 
         $this->compareVCards($vcard, $resultVCard);    	 
     } //testStoreAndRetrieveWAddress()
@@ -405,7 +405,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
             $this->getConnection()->getRowCount('CONTACT_REL_EMAIL'),
             "After storing " . $contactID );
 
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWEmail()
 
@@ -440,7 +440,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1,
             $this->getConnection()->getRowCount('CONTACT_REL_ORG'),
             "After storing " . $contactID );
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
         
         return $vcardDB;
@@ -484,7 +484,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
             $this->getConnection()->getRowCount('CONTACT_REL_DATA'),
             "After storing " . $contactID );
 
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWLogo()
 
@@ -514,7 +514,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
             $this->getConnection()->getRowCount('CONTACT_REL_NOTE'),
             "After storing " . $contactID );
 
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWNote()
 
@@ -544,7 +544,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
             $this->getConnection()->getRowCount('CONTACT_REL_PHONE_NUMBER'),
             "After storing " . $contactID );
 
-        $resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+        $resultVCard = $vcardDB->fetchOne($contactID);
 	$this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWTel()
     
@@ -574,7 +574,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     			$this->getConnection()->getRowCount('CONTACT_REL_CATEGORIES'),
     			"After storing " . $contactID );
 
-    	$resultVCard = VCardDB::fetch_vcard_from_db(self::$pdo, $contactID);
+    	$resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWCategory()
     

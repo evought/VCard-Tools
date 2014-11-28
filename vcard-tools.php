@@ -535,8 +535,7 @@ class VCardDB
         $vcards = array();
         foreach($contactIDs as $contactID)
         {
-	    $vcards[$contactID]
-		   = self::fetch_vcard_from_db($this->connection, $contactID);
+	    $vcards[$contactID] = $this->fetchOne($contactID);
         }
 
         return $vcards;
@@ -544,12 +543,17 @@ class VCardDB
 
     /**
      * Fetch a single vcard given a contact_id.
+     * @arg $contactID The ID of the record to fetch. Numeric, not empty.
      * @return The completed vcard or false if none found.
      */
-    static function fetch_vcard_from_db($connection, $contact_id)
+    public function fetchOne($contactID)
     {
-        $stmt = $connection->prepare("SELECT * FROM CONTACT WHERE CONTACT_ID = :contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+    	assert(isset($this->connection));
+    	assert(!empty($contactID));
+    	assert(is_numeric($contactID));
+    	
+        $stmt = $this->connection->prepare("SELECT * FROM CONTACT WHERE CONTACT_ID = :contactID");
+        $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
         $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
@@ -557,11 +561,11 @@ class VCardDB
 
         $row = $stmt->fetch();
         if ($row != false)
-	   $vcard = self::i_fetch_vcard_from_database($connection, $row);
+	   $vcard = self::i_fetch_vcard_from_database($this->connection, $row);
         $stmt->closeCursor();
 
         return $vcard;
-} // fetch_vcard_from_db()
+    } // fetchOne()
 
     /**
      * Internal helper to fill in details of a vcard.
