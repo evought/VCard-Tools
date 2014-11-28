@@ -393,8 +393,7 @@ class VCardDB
 
         while ($row = $stmt->fetch())
         {
-	    $vcards[$row["CONTACT_ID"]]
-		= self::i_fetch_vcard_from_database($this->connection, $row);
+	    $vcards[$row["CONTACT_ID"]] = $this->i_fetchVCard($row);
         } // while
 
         $stmt->closeCursor();
@@ -560,8 +559,7 @@ class VCardDB
         $vcard = false;
 
         $row = $stmt->fetch();
-        if ($row != false)
-	   $vcard = self::i_fetch_vcard_from_database($this->connection, $row);
+        if ($row != false) $vcard = $this->i_fetchVCard($row);
         $stmt->closeCursor();
 
         return $vcard;
@@ -569,18 +567,30 @@ class VCardDB
 
     /**
      * Internal helper to fill in details of a vcard.
-     * @arg $row The associative array row returned from the db.
-     * @arg $connection DB connection to fetch additional info.
+     * @arg $row The associative array row returned from the db. Not empty.
      * @return The finished vcard.
      */
-    static function i_fetch_vcard_from_database($connection, $row)
+    protected function i_fetchVCard(Array $row)
     {
-        $vcard = new vcard();
-        $contact_id = $row["CONTACT_ID"];
+    	assert(isset($this->connection));
+    	assert(!empty($row));
+    	
+        $vcard = new vCard();
+        $contactID = $row["CONTACT_ID"];
 
         if (!empty($row["KIND"])) $vcard->kind($row["KIND"]);
         if (!empty($row["FN"])) $vcard->fn($row["FN"]);
-
+        if (!empty($row["NICKNAME"])) $vcard->nickname($row["N_NICKNAME"]);
+        if (!empty($row["BDAY"]) && ($row["BDAY"] != PDO::PARAM_NULL))
+        	$vcard->bday($row["BDAY"]);
+        if (!empty($row["TITLE"])) $vcard->title($row["TITLE"]);
+        if (!empty($row["ROLE"])) $vcard->role($row["ROLE"]);
+        if (!empty($row["REV"])) $vcard->rev($row["REV"]);
+        if (!empty($row["UID"])) $vcard->uid($row["UID"]);
+        if (!empty($row["URL"])) $vcard->url($row["URL"]);
+        if (!empty($row["VERSION"])) $vcard->version($row["VERSION"]);
+        
+        
         if (!empty($row["N_PREFIX"])) $vcard->n($row["N_PREFIX"], "Prefixes");
         if (!empty($row["N_GIVEN_NAME"]))
 		$vcard->n($row["N_GIVEN_NAME"], "FirstName");
@@ -589,29 +599,22 @@ class VCardDB
         if (!empty($row["N_FAMILY_NAME"]))
 		$vcard->n($row["N_FAMILY_NAME"], "LastName");
         if (!empty($row["N_SUFFIX"])) $vcard->n($row["N_SUFFIX"], "Suffixes");
-        if (!empty($row["NICKNAME"])) $vcard->nickname($row["N_NICKNAME"]);
-        if (!empty($row["BDAY"]) && ($row["BDAY"] != PDO::PARAM_NULL))
-            $vcard->bday($row["BDAY"]);
+        
         if (!empty($row["GEO_LAT"])) $vcard->geo($row["GEO_LAT"], "Lattitude");
         if (!empty($row["GEO_LON"])) $vcard->geo($row["GEO_LON"], "Longitude");
-        if (!empty($row["TITLE"])) $vcard->title($row["TITLE"]);
-        if (!empty($row["ROLE"])) $vcard->role($row["ROLE"]);
-        if (!empty($row["REV"])) $vcard->rev($row["REV"]);
-        if (!empty($row["UID"])) $vcard->uid($row["UID"]);
-        if (!empty($row["URL"])) $vcard->url($row["URL"]);
-        if (!empty($row["VERSION"])) $vcard->version($row["VERSION"]);
+        
 	$vcard->prodid(self::VCARD_PRODUCT_ID);
 
-        self::fetch_org_for_vcard_from_db($connection, $vcard, $contact_id);
-        self::fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id);
-        self::fetch_note_for_vcard_from_db($connection, $vcard, $contact_id);
-        self::fetch_data_for_vcard_from_db($connection, $vcard, $contact_id);
-        self::fetch_tel_for_vcard_from_db($connection, $vcard, $contact_id);
-        self::fetch_email_for_vcard_from_db($connection, $vcard, $contact_id);
-        self::fetch_category_for_vcard_from_db($connection, $vcard, $contact_id);
+        self::fetch_org_for_vcard_from_db($this->connection, $vcard, $contactID);
+        self::fetch_adr_for_vcard_from_db($this->connection, $vcard, $contactID);
+        self::fetch_note_for_vcard_from_db($this->connection, $vcard, $contactID);
+        self::fetch_data_for_vcard_from_db($this->connection, $vcard, $contactID);
+        self::fetch_tel_for_vcard_from_db($this->connection, $vcard, $contactID);
+        self::fetch_email_for_vcard_from_db($this->connection, $vcard, $contactID);
+        self::fetch_category_for_vcard_from_db($this->connection, $vcard, $contactID);
 
         return $vcard;
-    } // i_fetch_vcard_from_database()
+    } // i_fetchVCard()
 
     // Fetch and attach all org records for a vcard, returning the card.
     static function fetch_org_for_vcard_from_db($connection, $vcard, $contact_id)
