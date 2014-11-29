@@ -783,42 +783,6 @@ class VCardDB
     	return $propList;
     } // i_fetchBasicProperty()    
 
-    /**
-     * Fetch all CATEGORIES records for the given contact ID and attach them.
-     * @param vCard $vcard The vCard to attach records to. Not null.
-     * @param unknown $contactID The contact ID the records are associated
-     * with. Numeric, not null.
-     * @return vCard The vCard being assembled.
-     */
-    private function i_fetchCategoriesForVCard(vCard $vcard, $contactID)
-    {
-    	assert($this->connection !== null);
-    	assert($vcard !== null);
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
-    	
-        // Fetch a list of records associated with the contact
-        $stmt = $this->connection->prepare('SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID');
-        $stmt->bindValue(':contactID', $contactID);
-        $stmt->execute();
-
-        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        // Fetch each record in turn
-        $stmt = $this->connection->prepare('SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id');
-        foreach ($results as $id)
-        {
-	    $stmt->bindValue(':id', $id);
-	    $stmt->execute();
-	    $item = $stmt->fetch(PDO::FETCH_NUM, 0);
-	    $stmt->closeCursor();
-
-	    $vcard->categories($item[0]);
-        }
-
-        return $vcard;
-    } // i_fetchCategoriesForVCard()
 } // VCardDB
 
 /**
