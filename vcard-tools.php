@@ -618,7 +618,7 @@ class VCardDB
         $this->i_fetchNotesForVCard($vcard, $contactID);
         self::fetch_data_for_vcard_from_db($this->connection, $vcard, $contactID);
         $this->i_fetchTelsForVCard($vcard, $contactID);
-        self::fetch_email_for_vcard_from_db($this->connection, $vcard, $contactID);
+        $this->i_fetchEmailsForVCard($vcard, $contactID);
         self::fetch_category_for_vcard_from_db($this->connection, $vcard, $contactID);
 
         return $vcard;
@@ -792,19 +792,30 @@ class VCardDB
         return $vcard;
     } // i_fetchTelsForVCard()
 
-    static function fetch_email_for_vcard_from_db($connection, $vcard, 
-              $contact_id )
+    /**
+     * Fetch all EMAIL records for a give contact ID and attach them.
+     * @param vCard $vcard The card to attach the records to. Not null.
+     * @param unknown $contactID The contact ID the EMAIL records are
+     * associated with. Numeric, not null.
+     * @return The vcard being assembled.
+     */
+    private function i_fetchEmailsForVCard(vCard $vcard, $contactID)
     {
+    	assert($this->connection !== null);
+    	assert($vcard !== null);
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
+    	
         // Fetch a list of records associated with the contact
-        $stmt = $connection->prepare("SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt = $this->connection->prepare("SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID");
+        $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         // Fetch each record in turn
-        $stmt = $connection->prepare("SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id");
+        $stmt = $this->connection->prepare("SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id");
         foreach ($results as $id)
         {
 	    $stmt->bindValue(":id", $id);
@@ -816,7 +827,7 @@ class VCardDB
         }
 
         return $vcard;
-    } // fetch_email_for_vcard_from_db()
+    } // i_fetchEmailsForVCard()
 
     // Fetch and attach all data records for a vcard, returning the card.
     // photo, logo, sound
