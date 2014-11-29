@@ -613,10 +613,14 @@ class VCardDB
         
 	$vcard->prodid(self::VCARD_PRODUCT_ID);
 
-        $this->i_fetchOrgsForVCard($vcard, $contactID);
-        $this->i_fetchAdrsForVCard($vcard, $contactID);
-        $this->i_fetchDataForVCard($vcard, $contactID);
-
+        // Data properties
+	$this->i_fetchDataForVCard($vcard, $contactID);
+        
+        // Structured Properties
+        $vcard->org = $this->i_fetchStructuredProperty('org', $contactID);
+        $vcard->adr = $this->i_fetchStructuredProperty('adr', $contactID);
+        
+        // Basic Properties
         foreach (['note', 'email', 'tel', 'categories'] as $property)
         {
             $vcard->$property
@@ -627,99 +631,74 @@ class VCardDB
     } // i_fetchVCard()
 
     /**
-     * Fetch and attach all org records for a vcard, returning the card.
-     * @arg $vcard The card to attach records to. Not null.
-     * @arg $contactID The ID of the contact record ORG records are attached
-     * to. Numeric, not empty.
-     * @return The vcard.
-     */ 
-    private function i_fetchOrgsForVCard(vCard $vcard, $contactID)
+     * Fetch all records for the named structured property (e.g. ADR) and
+     * return them in an array.
+     * @param unknown $propertyName The name of the associate records to
+     * retrieve. String, not null.
+     * @param unknown $contactID The ID of the CONTACT the records are
+     * associated with. Numeric, not null.
+     * @return NULL|array An array of the structured properties or null if none
+     * available.
+     */
+    private function i_fetchStructuredProperty($propertyName, $contactID)
     {
     	assert(isset($this->connection));
-    	assert($vcard !== null);
+    	assert($propertyName !== null);
+    	assert(is_string($propertyName));
     	assert(!empty($contactID));
     	assert(is_numeric($contactID));
     	
-        $col_map = [
-                     'NAME' => 'Name',
-		     'UNIT1' => 'Unit1',
-                     'UNIT2' => 'Unit2'
-                   ];
-
-        // Fetch a list of org records associated with the contact
-        $stmt = $this->connection->prepare("SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID");
-        $stmt->bindValue(":contactID", $contactID);
-        $stmt->execute();
-
-        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        // Fetch each org record in turn
-        $stmt = $this->connection->prepare("SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:orgID");
-        foreach ($results as $orgID)
-        {
-	    $stmt->bindValue(":orgID", $orgID);
-	    $stmt->execute();
-	    $orgRes = $stmt->fetch(PDO::FETCH_ASSOC);
-	    $stmt->closeCursor();
-
-            $org = array();
-            foreach ($orgRes as $key => $value)
-                if (!empty($value)) $org[$col_map[$key]] = $value;
-            $vcard->org($org);
-        }
-
-        return $vcard;
-    } // i_fetchOrgsForVCard()
-
-    /**
-     * Fetch and attach all ADR records for a vcard, returning the card.
-     * @arg $vcard The card to attach the records to. Not null.
-     * @arg $contactID The contact ID the ADR records are associated with.
-     * Numeric. Not null.
-     * @return The vcard the records have been attached to.
-     */
-    private function i_fetchAdrsForVCard(vCard $vcard, $contactID)
-    {
-    	assert(isset($this->connection));
-    	assert($vcard !== null);
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
+    	static $col_map = [
+    		'org'=> [ 'NAME'=>'Name','UNIT1'=>'Unit1', 'UNIT2'=>'Unit2'],
+    		'adr'=> [
+                          'STREET' => 'StreetAddress',
+		          'LOCALITY' => 'Locality',
+                          'REGION' => 'Region',
+                          'POSTAL_CODE' => 'PostalCode',
+                          'COUNTRY' => 'Country'
+                        ]
+    	        ];
+    	static $listRecSql = [
+    	        'org'=>'SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID',
+    	        'adr'=>'SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contactID',
+        	];
+    	static $getRecSql = [
+    	        'adr'=>'SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:id',
+    	        'org'=>'SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:id'
+    	];
     	
-        $col_map = [
-                     'STREET' => 'StreetAddress',
-		     'LOCALITY' => 'Locality',
-                     'REGION' => 'Region',
-                     'POSTAL_CODE' => 'PostalCode',
-                     'COUNTRY' => 'Country'
-                   ];
+    	assert(array_key_exists($propertyName, $listRecSql));
+    	
+    	// Fetch a list of $propertyName records associated with the contact
+    	$stmt = $this->connection->prepare($listRecSql[$propertyName]);
+    	$stmt->bindValue(":contactID", $contactID);
+    	$stmt->execute();
+    	
+    	$results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    	$stmt->closeCursor();
 
-        // Fetch a list of adr records associated with the contact
-        $stmt = $this->connection->prepare("SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contactID");
-        $stmt->bindValue(":contactID", $contactID);
-        $stmt->execute();
+    	if (empty($results)) return null;
+    	 
+    	// Fetch each $propertyName record in turn    	
+    	$propList = array();
 
-        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        // Fetch each adr record in turn
-        $stmt = $this->connection->prepare("SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:adrID");
-        foreach ($results as $adrID)
-        {
-	    $stmt->bindValue(":adrID", $adrID);
-	    $stmt->execute();
-	    $adrRes = $stmt->fetch(PDO::FETCH_ASSOC);
-	    $stmt->closeCursor();
-
-            $adr = array();
-            foreach ($adrRes as $key => $value)
-                if (!empty($value)) $adr[$col_map[$key]] = $value;
-
-	    $vcard->adr($adr);
-        }
-        return $vcard;
-    } // fetchAdrsForVCard()
-
+    	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
+    	foreach ($results as $id)
+    	{
+    		$stmt->bindValue(":id", $id);
+    		$stmt->execute();
+    		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+    		$stmt->closeCursor();
+    	
+    		$record = array();
+    		foreach ($result as $key => $value)
+    		    if (!empty($value))
+    			$record[$col_map[$propertyName][$key]] = $value;
+    		$propList[] = $record;
+    	}
+    	return $propList;    	 
+    } // i_fetchStructuredProperty()
+    
     /**
      * Fetches all records of a basic multi-value property associated with
      * the given contact ID.
