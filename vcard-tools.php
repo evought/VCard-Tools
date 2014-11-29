@@ -614,7 +614,7 @@ class VCardDB
 	$vcard->prodid(self::VCARD_PRODUCT_ID);
 
         $this->i_fetchOrgsForVCard($vcard, $contactID);
-        self::fetch_adr_for_vcard_from_db($this->connection, $vcard, $contactID);
+        $this->i_fetchAdrsForVCard($vcard, $contactID);
         self::fetch_note_for_vcard_from_db($this->connection, $vcard, $contactID);
         self::fetch_data_for_vcard_from_db($this->connection, $vcard, $contactID);
         self::fetch_tel_for_vcard_from_db($this->connection, $vcard, $contactID);
@@ -634,7 +634,7 @@ class VCardDB
     private function i_fetchOrgsForVCard(vCard $vcard, $contactID)
     {
     	assert(isset($this->connection));
-    	assert($vcard != null);
+    	assert($vcard !== null);
     	assert(!empty($contactID));
     	assert(is_numeric($contactID));
     	
@@ -670,9 +670,20 @@ class VCardDB
         return $vcard;
     } // i_fetchOrgsForVCard()
 
-    // Fetch and attach all adr records for a vcard, returning the card.
-    static function fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id)
+    /**
+     * Fetch and attach all ADR records for a vcard, returning the card.
+     * @arg $vcard The card to attach the records to. Not null.
+     * @arg $contactID The contact ID the ADR records are associated with.
+     * Numeric. Not null.
+     * @return The vcard the records have been attached to.
+     */
+    private function i_fetchAdrsForVCard(vCard $vcard, $contactID)
     {
+    	assert(isset($this->connection));
+    	assert($vcard !== null);
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
+    	
         $col_map = [
                      'STREET' => 'StreetAddress',
 		     'LOCALITY' => 'Locality',
@@ -682,30 +693,30 @@ class VCardDB
                    ];
 
         // Fetch a list of adr records associated with the contact
-        $stmt = $connection->prepare("SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt = $this->connection->prepare("SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contactID");
+        $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         // Fetch each adr record in turn
-        $stmt = $connection->prepare("SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:adr_id");
-        foreach ($results as $adr_id)
+        $stmt = $this->connection->prepare("SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:adrID");
+        foreach ($results as $adrID)
         {
-	    $stmt->bindValue(":adr_id", $adr_id);
+	    $stmt->bindValue(":adrID", $adrID);
 	    $stmt->execute();
-	    $adr_res = $stmt->fetch(PDO::FETCH_ASSOC);
+	    $adrRes = $stmt->fetch(PDO::FETCH_ASSOC);
 	    $stmt->closeCursor();
 
             $adr = array();
-            foreach ($adr_res as $key => $value)
+            foreach ($adrRes as $key => $value)
                 if (!empty($value)) $adr[$col_map[$key]] = $value;
 
 	    $vcard->adr($adr);
         }
         return $vcard;
-    } // fetch_adr_for_vcard_from_db()
+    } // fetchAdrsForVCard()
 
     // Fetch and attach all note records for a vcard, returning the card.
     static function fetch_note_for_vcard_from_db($connection, $vcard, $contact_id)
