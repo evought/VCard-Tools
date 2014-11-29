@@ -616,7 +616,7 @@ class VCardDB
         $this->i_fetchOrgsForVCard($vcard, $contactID);
         $this->i_fetchAdrsForVCard($vcard, $contactID);
         $this->i_fetchNotesForVCard($vcard, $contactID);
-        self::fetch_data_for_vcard_from_db($this->connection, $vcard, $contactID);
+        $this->i_fetchDataForVCard($vcard, $contactID);
         $this->i_fetchTelsForVCard($vcard, $contactID);
         $this->i_fetchEmailsForVCard($vcard, $contactID);
         self::fetch_category_for_vcard_from_db($this->connection, $vcard, $contactID);
@@ -829,25 +829,36 @@ class VCardDB
         return $vcard;
     } // i_fetchEmailsForVCard()
 
-    // Fetch and attach all data records for a vcard, returning the card.
-    // photo, logo, sound
-    static function fetch_data_for_vcard_from_db($connection, $vcard, $contact_id)
+    /**
+     * Fetch and attach all data records (photo, logo, sound) for a vcard,
+     * returning the card.
+     * @param vCard $vcard The vCard the records will be attached to. Not null.
+     * @param unknown $contactID The ID of the contact data records are
+     * associated with. Numeric, not null.
+     * @return The vcard being assembled.
+     */
+    private function i_fetchDataForVCard(vCard $vcard, $contactID)
     {
+    	assert($this->connection !== null);
+    	assert($vcard !== null);
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
+    	
         // Fetch a list of data records associated with the contact
-        $stmt = $connection->prepare("SELECT CONTACT_DATA_ID FROM CONTACT_REL_DATA WHERE CONTACT_ID=:contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt = $this->connection->prepare('SELECT CONTACT_DATA_ID FROM CONTACT_REL_DATA WHERE CONTACT_ID=:contactID');
+        $stmt->bindValue(':contactID', $contactID);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        if (empty($results)) $vcard;
+        if (empty($results)) return $vcard;
 
         // Fetch each data record in turn
-        $stmt = $connection->prepare("SELECT DATA_NAME, URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:data_id");
-        foreach ($results as $data_id)
+        $stmt = $this->connection->prepare('SELECT DATA_NAME, URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:dataID');
+        foreach ($results as $dataID)
         {
-	    $stmt->bindValue(":data_id", $data_id);
+	    $stmt->bindValue(':dataID', $dataID);
 	    $stmt->execute();
 	    $data = $stmt->fetch();
 	    $stmt->closeCursor();
@@ -857,7 +868,7 @@ class VCardDB
         }
 
         return $vcard;
-    } // fetch_adr_for_vcard_from_db()
+    } // i_fetchDataForVCard()
 
     static function fetch_category_for_vcard_from_db( $connection, $vcard, 
            $contact_id )
