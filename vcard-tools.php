@@ -159,16 +159,17 @@ class VCardDB
     /**
      * Saves the vcard org data to the database.
      * @arg $org The VCard org record to write out. Not empty.
-     * @arg $contact_id The ID of the contact the org is to be attached to.
+     * @arg $contactID The ID of the contact the org is to be attached to.
      * Numeric.
      * @return The id of the new org record in the database.
      * FIXME: does not handle type property in any way.
      */
-    private function i_storeOrg(Array $org, $contact_id)
+    private function i_storeOrg(Array $org, $contactID)
     {
-        assert(!empty($org));
-        assert(is_numeric($contact_id));
-        assert(!empty($this->connection));
+        assert($this->connection !== null);
+    	assert(!empty($org));
+        assert($contactID !== null);
+        assert(is_numeric($contactID));
 
         $stmt = $this->connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)");
 
@@ -178,14 +179,11 @@ class VCardDB
             $stmt->bindValue(':'.$key, $value, PDO::PARAM_STR);
         }
         $stmt->execute();
-        $org_id = $this->connection->lastInsertId();
+        $propertyID = $this->connection->lastInsertId();
 
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contact_id, :org_id)");
-        $stmt->bindValue(":contact_id", $contact_id);
-        $stmt->bindValue(":org_id", $org_id);
-        $stmt->execute();
+        $this->i_linkProperty('org', $propertyID, $contactID);
 
-        return $org_id;
+        return $propertyID;
     } // i_storeOrg()
 
     /**
@@ -193,17 +191,17 @@ class VCardDB
      * address record. Takes the vcard adr record and the id of the contact to
      * connect it to.
      * @arg $adr An array with the ADR data from VCard. Not empty.
-     * @arg $contact_id The ID of the contact the adr is to be attached to.
+     * @arg $contactID The ID of the contact the adr is to be attached to.
      * Numeric.
      * @return The ID of the new ADR database record.
      *
      * FIXME: does not handle type property in any way.
      */
-    private function i_storeAddress(Array $adr, $contact_id)
+    private function i_storeAddress(Array $adr, $contactID)
     {
         assert(!empty($adr));
-        assert(is_numeric($contact_id));
-        assert(!empty($this->connection));
+        assert(is_numeric($contactID));
+        assert($this->connection !== null);
 
         $stmt = $this->connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
 
@@ -216,16 +214,53 @@ class VCardDB
         }
 
         $stmt->execute();
-        $adr_id = $this->connection->lastInsertId();
+        $propertyID = $this->connection->lastInsertId();
 
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contact_id, :adr_id)");
-        $stmt->bindValue(":contact_id", $contact_id);
-        $stmt->bindValue(":adr_id", $adr_id);
-        $stmt->execute();
-
-        return $adr_id;
+        $this->i_linkProperty('adr', $propertyID, $contactID);
+        return $propertyID;
     } // i_storeAddress()
 
+    /**
+     * For properties requiring a subsidiary table/link table, add a link
+     * between a new property record and a CONTACT.
+     * @param unknown $propertyName The name of the property to link. String,
+     * not null.
+     * @param unknown $propertyID The ID of the new record. Numeric, not null.
+     * @param unknown $contactID The ID of the CONTACT to link to. Numeric,
+     * not null.
+     */
+    private function i_linkProperty($propertyName, $propertyID, $contactID)
+    {
+    	assert($this->connection !== null);
+    	assert($propertyName !== null);
+    	assert(is_string($propertyName));
+    	assert($propertyID !== null);
+    	assert(is_numeric($propertyID));
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
+
+    	$linkSQL = [
+    	    'note'=>'INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contactID, :id)',
+    	    'tel'=>'INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contactID, :id)',
+    	    'email'=>'INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contactID, :id)',
+    	    'categories'=>'INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contactID, :id)',
+    	    'photo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
+    	    'logo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
+    	    'sound'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
+    	    'adr'=>'INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contactID, :id)',
+    	    'org'=>'INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contactID, :id)'
+    	];
+    	
+    	assert(array_key_exists($propertyName, $linkSQL));
+    	
+    	$stmt = $this->connection->prepare($linkSQL[$propertyName]);
+    	$stmt->bindValue(":contactID", $contactID);
+    	$stmt->bindValue(":id", $propertyID);
+    	$stmt->execute();
+    	
+    	return;
+    } // i_linkProperty()
+    
     /**
      * Store a basic property (multiple simple values) which requires a
      * subsidiary table/link table and return the ID of the new record.
@@ -254,15 +289,6 @@ class VCardDB
     	    'logo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'logo\', :value)',
     	    'sound'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'sound\', :value)'
     	];
-    	$linkSQL = [
-    	    'note'=>'INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contactID, :id)',
-    	    'tel'=>'INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contactID, :id)',
-    	    'email'=>'INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contactID, :id)',
-    	    'categories'=>'INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contactID, :id)',
-    	    'photo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
-    	    'logo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
-    	    'sound'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)'
-    	];
 
     	assert(array_key_exists($propertyName, $storeSQL));
     	
@@ -270,14 +296,11 @@ class VCardDB
     	
     	$stmt->bindValue(":value", $value);
     	$stmt->execute();
-    	$id = $this->connection->lastInsertId();
+    	$propertyID = $this->connection->lastInsertId();
+
+    	$this->i_linkProperty($propertyName, $propertyID, $contactID);
     	
-    	$stmt = $this->connection->prepare($linkSQL[$propertyName]);
-    	$stmt->bindValue(":contactID", $contactID);
-    	$stmt->bindValue(":id", $id);
-    	$stmt->execute();
-    	
-    	return $id;
+    	return $propertyID;
     } // i_storeBasicProperty()
     
     /**
