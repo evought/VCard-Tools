@@ -206,7 +206,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     			"After storing " . $contactID );
     	
     	$resultVCards = $vcardDB->fetchAll();
-    	$this->assertNotEmpty($resultVCards);
+    	$this->assertNotEmpty($resultVCards, print_r($vcardDB->fetchOne($contactID), true));
     	$this->assertCount(1, $resultVCards);
     	$this->assertArrayHasKey($contactID, $resultVCards);
 

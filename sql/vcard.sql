@@ -110,7 +110,7 @@ create table CONTACT_ENCODING_TYPES
 create table CONTACT
 (
     CONTACT_ID MEDIUMINT NOT NULL AUTO_INCREMENT,
-    KIND VARCHAR(20) NOT NULL,
+    KIND VARCHAR(20),
     FN VARCHAR(255) NOT NULL,
     N_GIVEN_NAME VARCHAR(50),
     N_ADDIT_NAME VARCHAR(50),
@@ -118,7 +118,7 @@ create table CONTACT
     N_PREFIX VARCHAR(50),
     N_SUFFIX VARCHAR(50),
     NICKNAME VARCHAR(255),
-    BDAY TIMESTAMP,
+    BDAY TIMESTAMP NULL,
     TZ CHAR(3),                 -- Time zone offset in hours
     GEO_LAT DOUBLE,             -- Latitude
     GEO_LONG DOUBLE,            -- Longitude

@@ -119,7 +119,7 @@ class VCardDB
         $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
 
         $stmt->bindValue( ':kind', empty($vcard->kind)
-                                ? PDO::PARAM_NULL : $vcard->kind );
+                                ? null : $vcard->kind, PDO::PARAM_STR );
         $stmt->bindValue(':fn', $vcard->fn);
 
         // NOTE: The VCard spec allows a contact to have multiple names.
@@ -131,32 +131,43 @@ class VCardDB
         foreach([ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
               'Suffixes' ] as $n_key)
         {
-            $n_value = empty($n[$n_key]) ? PDO::PARAM_NULL : $n[$n_key];
-            $stmt->bindValue(':n_'.$n_key, $n_value);
+            $n_value = empty($n[$n_key]) ? null : $n[$n_key];
+            $stmt->bindValue(':n_'.$n_key, $n_value, PDO::PARAM_STR);
         }
 
-        $stmt->bindValue(':nickname', $vcard->nickname ? $vcard->nickname[0] : PDO::PARAM_NULL);
-        $stmt->bindValue(':bday', $vcard->bday ? $vcard->bday : PDO::PARAM_NULL);
-        $stmt->bindValue(':tz', $vcard->tz ? $vcard->tz : PDO::PARAM_NULL);
+        $stmt->bindValue( ':nickname',
+        		  empty($vcard->nickname) 
+        		          ? null : $vcard->nickname[0],
+        		  PDO::PARAM_STR );
+        
+        if (empty($vcard->bday))
+           $stmt->bindValue( ':bday', null, PDO::PARAM_NULL);
+        else 
+           $stmt->bindValue( ':bday', $vcard->bday);
+        
+        $stmt->bindValue(':tz', empty($vcard->tz) ? null : $vcard->tz[0]);
 
         $geo = $vcard->geo;
         if (empty($geo))
         {
-            $stmt->bindValue(':geolat', PDO::PARAM_NULL);
-            $stmt->bindValue(':geolon', PDO::PARAM_NULL);
+            $stmt->bindValue(':geolat', null, PDO::PARAM_NULL);
+            $stmt->bindValue(':geolon', null, PDO::PARAM_NULL);
         } else {
             $stmt->bindValue(':geolat', $geo[0]["Lattitude"]);
             $stmt->bindValue(':geolon', $geo[0]["Longitude"]);
         }
 
-        $stmt->bindValue( ':role', $vcard->role
-                          ? $vcard->role[0] : PDO::PARAM_NULL );
-        $stmt->bindValue(':title',
-	    $vcard->title ? $vcard->title[0]: PDO::PARAM_NULL );
+        $stmt->bindValue( ':role', empty($vcard->role)
+                          ? null : $vcard->role[0], PDO::PARAM_STR );
+        $stmt->bindValue( ':title', empty($vcard->title)
+        		  ? null : $vcard->title[0], PDO::PARAM_STR );
 
-        $stmt->bindValue(':rev', $vcard->rev ? $vcard->rev : PDO::PARAM_NULL);
-        $stmt->bindValue(':uid', $vcard->uid ? $vcard->uid : PDO::PARAM_NULL);
-        $stmt->bindValue(':url', $vcard->url ? $vcard->url[0] : PDO::PARAM_NULL);
+        $stmt->bindValue( ':rev', empty($vcard->rev)
+        		  ? null : $vcard->rev, PDO::PARAM_STR );
+        $stmt->bindValue( ':uid', empty($vcard->uid)
+        		  ? null : $vcard->uid, PDO::PARAM_STR );
+        $stmt->bindValue( ':url', empty($vcard->url)
+        		  ? null : $vcard->url[0], PDO::PARAM_STR );
     
         $stmt->execute();
         $contact_id = $this->connection->lastInsertId();
@@ -380,12 +391,13 @@ class VCardDB
      * organization).
      * @return An array of VCards keyed by contact id.
      */
-    public function fetchAll($kind="%")
+    public function fetchAll($kind='%')
     {
     	assert(isset($this->connection));
     	
-        $stmt = $this->connection->prepare("SELECT * FROM CONTACT WHERE KIND LIKE :kind");
-        $stmt->bindValue(":kind", $kind);
+    	$stmt = $this->connection->prepare('SELECT * FROM CONTACT WHERE IFNULL(KIND, \'\') LIKE :kind');
+    	$stmt->bindValue(":kind", $kind);
+
         $stmt->execute();
         $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
@@ -413,7 +425,7 @@ class VCardDB
     {
     	assert(isset($this->connection));
     	
-        $stmt = $this->connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE FN LIKE :searchString AND KIND LIKE :kind");
+        $stmt = $this->connection->prepare('SELECT CONTACT_ID FROM CONTACT WHERE FN LIKE :searchString AND IFNULL(KIND,\'\') LIKE :kind');
         $stmt->bindValue(":kind", $kind);
         $stmt->bindValue(":searchString", $searchString);
         $stmt->execute();
@@ -554,6 +566,8 @@ class VCardDB
         $stmt = $this->connection->prepare("SELECT * FROM CONTACT WHERE CONTACT_ID = :contactID");
         $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
+        assert($stmt->rowCount() <= 1);
+                
         $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
         $vcard = false;
@@ -582,10 +596,9 @@ class VCardDB
                         'REV', 'UID', 'URL', 'VERSION' ];
         foreach ($simpleCols as $col)
         {
-            if (!empty($row[$col]) && ($row[$col] != PDO::PARAM_NULL))
-            	$vcard->$col($row[$col]);
+            if (!empty($row[$col])) $vcard->$col($row[$col]);
         }
-        
+                
         if (!empty($row["N_PREFIX"])) $vcard->n($row["N_PREFIX"], "Prefixes");
         if (!empty($row["N_GIVEN_NAME"]))
 		$vcard->n($row["N_GIVEN_NAME"], "FirstName");
@@ -600,7 +613,7 @@ class VCardDB
         
 	$vcard->prodid(self::VCARD_PRODUCT_ID);
 
-        self::fetch_org_for_vcard_from_db($this->connection, $vcard, $contactID);
+        $this->i_fetchOrgsForVCard($vcard, $contactID);
         self::fetch_adr_for_vcard_from_db($this->connection, $vcard, $contactID);
         self::fetch_note_for_vcard_from_db($this->connection, $vcard, $contactID);
         self::fetch_data_for_vcard_from_db($this->connection, $vcard, $contactID);
@@ -611,9 +624,20 @@ class VCardDB
         return $vcard;
     } // i_fetchVCard()
 
-    // Fetch and attach all org records for a vcard, returning the card.
-    static function fetch_org_for_vcard_from_db($connection, $vcard, $contact_id)
+    /**
+     * Fetch and attach all org records for a vcard, returning the card.
+     * @arg $vcard The card to attach records to. Not null.
+     * @arg $contactID The ID of the contact record ORG records are attached
+     * to. Numeric, not empty.
+     * @return The vcard.
+     */ 
+    private function i_fetchOrgsForVCard(vCard $vcard, $contactID)
     {
+    	assert(isset($this->connection));
+    	assert($vcard != null);
+    	assert(!empty($contactID));
+    	assert(is_numeric($contactID));
+    	
         $col_map = [
                      'NAME' => 'Name',
 		     'UNIT1' => 'Unit1',
@@ -621,30 +645,30 @@ class VCardDB
                    ];
 
         // Fetch a list of org records associated with the contact
-        $stmt = $connection->prepare("SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt = $this->connection->prepare("SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID");
+        $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         // Fetch each org record in turn
-        $stmt = $connection->prepare("SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:org_id");
-        foreach ($results as $org_id)
+        $stmt = $this->connection->prepare("SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:orgID");
+        foreach ($results as $orgID)
         {
-	    $stmt->bindValue(":org_id", $org_id);
+	    $stmt->bindValue(":orgID", $orgID);
 	    $stmt->execute();
-	    $org_res = $stmt->fetch(PDO::FETCH_ASSOC);
+	    $orgRes = $stmt->fetch(PDO::FETCH_ASSOC);
 	    $stmt->closeCursor();
 
             $org = array();
-            foreach ($org_res as $key => $value)
+            foreach ($orgRes as $key => $value)
                 if (!empty($value)) $org[$col_map[$key]] = $value;
             $vcard->org($org);
         }
 
         return $vcard;
-    } // fetch_org_for_vcard_from_db()
+    } // i_fetchOrgsForVCard()
 
     // Fetch and attach all adr records for a vcard, returning the card.
     static function fetch_adr_for_vcard_from_db($connection, $vcard, $contact_id)
