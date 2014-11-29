@@ -612,16 +612,14 @@ class VCardDB
         if (!empty($row["GEO_LON"])) $vcard->geo($row["GEO_LON"], "Longitude");
         
 	$vcard->prodid(self::VCARD_PRODUCT_ID);
-
-        // Data properties
-	$this->i_fetchDataForVCard($vcard, $contactID);
         
         // Structured Properties
         $vcard->org = $this->i_fetchStructuredProperty('org', $contactID);
         $vcard->adr = $this->i_fetchStructuredProperty('adr', $contactID);
         
         // Basic Properties
-        foreach (['note', 'email', 'tel', 'categories'] as $property)
+        foreach ( ['note', 'email', 'tel', 'categories', 'logo',
+        		'photo', 'sound'] as $property )
         {
             $vcard->$property
                 = $this->i_fetchBasicProperty($property, $contactID);
@@ -654,7 +652,11 @@ class VCardDB
     	'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
     	'tel'=>'SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID',
     	'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
-    	'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID'
+    	'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID',
+
+    	'logo' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'logo\'',
+    	'photo' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'photo\'',
+    	'sound' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'sound\''
     	];
     	
     	assert(array_key_exists($propertyName, $listRecSql));
@@ -752,7 +754,10 @@ class VCardDB
             'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:id',
             'tel'=>"SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:id",
             'email'=>'SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id',
-            'categories'=>'SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id'
+            'categories'=>'SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id',
+            'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
+            'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
+            'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id'
     	];
     	
     	assert(array_key_exists($propertyName, $getRecSql));
@@ -777,47 +782,6 @@ class VCardDB
     
     	return $propList;
     } // i_fetchBasicProperty()    
-
-    /**
-     * Fetch and attach all data records (photo, logo, sound) for a vcard,
-     * returning the card.
-     * @param vCard $vcard The vCard the records will be attached to. Not null.
-     * @param unknown $contactID The ID of the contact data records are
-     * associated with. Numeric, not null.
-     * @return The vcard being assembled.
-     */
-    private function i_fetchDataForVCard(vCard $vcard, $contactID)
-    {
-    	assert($this->connection !== null);
-    	assert($vcard !== null);
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
-    	
-        // Fetch a list of data records associated with the contact
-        $stmt = $this->connection->prepare('SELECT CONTACT_DATA_ID FROM CONTACT_REL_DATA WHERE CONTACT_ID=:contactID');
-        $stmt->bindValue(':contactID', $contactID);
-        $stmt->execute();
-
-        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        if (empty($results)) return $vcard;
-
-        // Fetch each data record in turn
-        $stmt = $this->connection->prepare('SELECT DATA_NAME, URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:dataID');
-        foreach ($results as $dataID)
-        {
-	    $stmt->bindValue(':dataID', $dataID);
-	    $stmt->execute();
-	    $data = $stmt->fetch();
-	    $stmt->closeCursor();
-
-	    $field = $data["DATA_NAME"];
-	    $vcard->$field($data["URL"]);
-        }
-
-        return $vcard;
-    } // i_fetchDataForVCard()
 
     /**
      * Fetch all CATEGORIES records for the given contact ID and attach them.
