@@ -617,7 +617,7 @@ class VCardDB
         $this->i_fetchAdrsForVCard($vcard, $contactID);
         $this->i_fetchNotesForVCard($vcard, $contactID);
         self::fetch_data_for_vcard_from_db($this->connection, $vcard, $contactID);
-        self::fetch_tel_for_vcard_from_db($this->connection, $vcard, $contactID);
+        $this->i_fetchTelsForVCard($vcard, $contactID);
         self::fetch_email_for_vcard_from_db($this->connection, $vcard, $contactID);
         self::fetch_category_for_vcard_from_db($this->connection, $vcard, $contactID);
 
@@ -755,21 +755,33 @@ class VCardDB
         return $vcard;
     } // i_fetchNotesForVCard()
 
-    static function fetch_tel_for_vcard_from_db($connection, $vcard, $contact_id)
+    /**
+     * Fetch and attach all TEL records for the given contact ID.
+     * @param vCard $vcard The vCard to attach fetched records to. Not null.
+     * @param unknown $contact_id The ID of the contact the TEL records are
+     * associated with. Numeric, not null.
+     * @return The vCard being assembled.
+     */
+    private function i_fetchTelsForVCard(vCard $vcard, $contactID)
     {
+    	assert($this->connection !== null);
+    	assert($vcard !== null);
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
+    	
         // Fetch a list of tel records associated with the contact
-        $stmt = $connection->prepare("SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt = $this->connection->prepare("SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID");
+        $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         // Fetch each record in turn
-        $stmt = $connection->prepare("SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:phone_id");
-        foreach ($results as $phone_id)
+        $stmt = $this->connection->prepare("SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:phoneID");
+        foreach ($results as $phoneID)
         {
-	    $stmt->bindValue(":phone_id", $phone_id);
+	    $stmt->bindValue(":phoneID", $phoneID);
 	    $stmt->execute();
 	    $phone = $stmt->fetch(PDO::FETCH_NUM, 0);
 	    $stmt->closeCursor();
@@ -778,7 +790,7 @@ class VCardDB
         }
 
         return $vcard;
-    } // fetch_tel_for_vcard_from_db()
+    } // i_fetchTelsForVCard()
 
     static function fetch_email_for_vcard_from_db($connection, $vcard, 
               $contact_id )
