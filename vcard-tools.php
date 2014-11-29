@@ -193,8 +193,8 @@ class VCardDB
 
         foreach(['Name', 'Unit1', 'Unit2'] as $key)
         {
-            $value = empty($org[$key]) ? PDO::PARAM_NULL : $org[$key];
-            $stmt->bindValue(':'.$key, $value);
+            $value = empty($org[$key]) ? null : $org[$key];
+            $stmt->bindValue(':'.$key, $value, PDO::PARAM_STR);
         }
         $stmt->execute();
         $org_id = $this->connection->lastInsertId();
@@ -230,8 +230,8 @@ class VCardDB
                    'PostalCode', 'Country' ]
                  as $key )
         {
-            $value = empty($adr[$key]) ? PDO::PARAM_NULL : $adr[$key];
-            $stmt->bindValue(':'.$key, $value);
+            $value = empty($adr[$key]) ? null : $adr[$key];
+            $stmt->bindValue(':'.$key, $value, PDO::PARAM_STR);
         }
 
         $stmt->execute();
