@@ -615,11 +615,13 @@ class VCardDB
 
         $this->i_fetchOrgsForVCard($vcard, $contactID);
         $this->i_fetchAdrsForVCard($vcard, $contactID);
-        $this->i_fetchNotesForVCard($vcard, $contactID);
         $this->i_fetchDataForVCard($vcard, $contactID);
-        $this->i_fetchTelsForVCard($vcard, $contactID);
-        $this->i_fetchEmailsForVCard($vcard, $contactID);
-        $this->i_fetchCategoriesForVCard($vcard, $contactID);
+
+        foreach (['note', 'email', 'tel', 'categories'] as $property)
+        {
+            $vcard->$property
+                = $this->i_fetchBasicProperty($property, $contactID);
+        }
 
         return $vcard;
     } // i_fetchVCard()
@@ -719,115 +721,64 @@ class VCardDB
     } // fetchAdrsForVCard()
 
     /**
-     * Fetch and attach all note records for a vcard, returning the card.
-     * @param vCard $vcard The card to attach the fetched records to. Not null.
-     * @param unknown $contact_id The Contact ID the records will be found
-     * under. Numeric, not null.
-     * @return The VCard being assembled.
+     * Fetches all records of a basic multi-value property associated with
+     * the given contact ID.
+     * @param string $propertyName The name of the property to return
+     * records for (e.g. email). String, not null.
+     * @param numeric $contactID The contact ID records are associated with.
+     * Numeric, not null.
+     * @return NULL|array Returns an array of associated records, or null if
+     * none found.
      */
-    private function i_fetchNotesForVCard(vCard $vcard, $contactID)
+    private function i_fetchBasicProperty($propertyName, $contactID)
     {
     	assert(isset($this->connection));
-    	assert($vcard !== null);
+    	assert($propertyName !== null);
+    	assert(is_string($propertyName));
     	assert($contactID !== null);
     	assert(is_numeric($contactID));
     	
-        // Fetch a list of note records associated with the contact
-        $stmt = $this->connection->prepare("SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID");
-        $stmt->bindValue(":contactID", $contactID);
-        $stmt->execute();
-
-        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        // Fetch each note record in turn
-        $stmt = $this->connection->prepare("SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:noteID");
-        foreach ($results as $noteID)
-        {
-	    $stmt->bindValue(":noteID", $noteID);
-	    $stmt->execute();
-	    $note = $stmt->fetch(PDO::FETCH_NUM, 0);
-	    $stmt->closeCursor();
-
-	    $vcard->note($note[0]);
-        }
-
-        return $vcard;
-    } // i_fetchNotesForVCard()
-
-    /**
-     * Fetch and attach all TEL records for the given contact ID.
-     * @param vCard $vcard The vCard to attach fetched records to. Not null.
-     * @param unknown $contact_id The ID of the contact the TEL records are
-     * associated with. Numeric, not null.
-     * @return The vCard being assembled.
-     */
-    private function i_fetchTelsForVCard(vCard $vcard, $contactID)
-    {
-    	assert($this->connection !== null);
-    	assert($vcard !== null);
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
+    	static $listRecSql = [
+    	    'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
+    	    'tel'=>'SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID',
+    	    'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
+    	    'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID'
+    	];
     	
-        // Fetch a list of tel records associated with the contact
-        $stmt = $this->connection->prepare("SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID");
-        $stmt->bindValue(":contactID", $contactID);
-        $stmt->execute();
-
-        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        // Fetch each record in turn
-        $stmt = $this->connection->prepare("SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:phoneID");
-        foreach ($results as $phoneID)
-        {
-	    $stmt->bindValue(":phoneID", $phoneID);
-	    $stmt->execute();
-	    $phone = $stmt->fetch(PDO::FETCH_NUM, 0);
-	    $stmt->closeCursor();
-
-	    $vcard->tel($phone[0]);
-        }
-
-        return $vcard;
-    } // i_fetchTelsForVCard()
-
-    /**
-     * Fetch all EMAIL records for a give contact ID and attach them.
-     * @param vCard $vcard The card to attach the records to. Not null.
-     * @param unknown $contactID The contact ID the EMAIL records are
-     * associated with. Numeric, not null.
-     * @return The vcard being assembled.
-     */
-    private function i_fetchEmailsForVCard(vCard $vcard, $contactID)
-    {
-    	assert($this->connection !== null);
-    	assert($vcard !== null);
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
+    	static $getRecSql = [
+            'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:id',
+            'tel'=>"SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:id",
+            'email'=>'SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id',
+            'categories'=>'SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id'
+    	];
     	
-        // Fetch a list of records associated with the contact
-        $stmt = $this->connection->prepare("SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID");
-        $stmt->bindValue(":contactID", $contactID);
-        $stmt->execute();
+    	assert(array_key_exists($propertyName, $listRecSql));
+    	
+    	// Fetch a list of records associated with the contact
+    	$stmt = $this->connection->prepare($listRecSql[$propertyName]);
+    	$stmt->bindValue(":contactID", $contactID);
+    	$stmt->execute();
+    
+    	$results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    	$stmt->closeCursor();
 
-        $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
+    	if (empty($results)) return null;
 
-        // Fetch each record in turn
-        $stmt = $this->connection->prepare("SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id");
-        foreach ($results as $id)
-        {
-	    $stmt->bindValue(":id", $id);
-	    $stmt->execute();
-	    $item = $stmt->fetch(PDO::FETCH_NUM, 0);
-	    $stmt->closeCursor();
-
-	    $vcard->email($item[0]);
-        }
-
-        return $vcard;
-    } // i_fetchEmailsForVCard()
+    	$propList = array();
+    	// Fetch each note record in turn
+    	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
+    	foreach ($results as $id)
+    	{
+    		$stmt->bindValue(":id", $id);
+    		$stmt->execute();
+    		$result = $stmt->fetch(PDO::FETCH_NUM, 0);
+    		$stmt->closeCursor();
+    
+                $propList[] = $result[0];
+    	}
+    
+    	return $propList;
+    } // i_fetchBasicProperty()    
 
     /**
      * Fetch and attach all data records (photo, logo, sound) for a vcard,
