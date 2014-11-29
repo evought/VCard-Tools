@@ -139,6 +139,23 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertEmpty($vcard->fn);
 	return $vcard;
     }
+    
+    /**
+     * Test that the __call magic function is case-insenstive with keys.
+     * @covers VCard::__call, VCard::__unset
+     * @depends testSetFN
+     */
+    public function testSetFNUpperCase(VCard $vcard)
+    {
+    	$expected = "Test FN";
+    	$vcard->FN($expected);
+    	$this->assertNotEmpty($vcard->fn);
+    	$this->assertEquals($expected, $vcard->fn);
+    
+    	unset($vcard->fn);
+    	$this->assertEmpty($vcard->fn);
+    	return $vcard;
+    }
 
     /**
      * @covers VCard::__call, VCard::__unset, VCard::isset
