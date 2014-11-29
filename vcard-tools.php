@@ -631,6 +631,46 @@ class VCardDB
     } // i_fetchVCard()
 
     /**
+     * Fetch the IDs of all properties in a link-table for the named
+     * property (e.g. email). The IDs will only make sense in the context of
+     * the appropriate subsidiary table for that property.
+     * @param string $propertyName The name of the property to find associated
+     * records for. String, not null.
+     * @param numeric $contactID The ID of the CONTACT the records will be
+     * associated with. Numeric, not null.
+     * @return Null|array
+     */
+    private function i_fetchPropertyIDsForContact($propertyName, $contactID)
+    {
+    	assert(isset($this->connection));
+    	assert($propertyName !== null);
+    	assert(is_string($propertyName));
+    	assert(!empty($contactID));
+    	assert(is_numeric($contactID));
+    	
+    	static $listRecSql = [
+    	'org'=>'SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID',
+    	'adr'=>'SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contactID',
+    	'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
+    	'tel'=>'SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID',
+    	'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
+    	'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID'
+    	];
+    	
+    	assert(array_key_exists($propertyName, $listRecSql));
+
+    	// Fetch a list of $propertyName records associated with the contact
+    	$stmt = $this->connection->prepare($listRecSql[$propertyName]);
+    	$stmt->bindValue(":contactID", $contactID);
+    	$stmt->execute();
+    	
+    	$results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    	$stmt->closeCursor();
+
+    	return $results ? $results : null;
+    }
+    
+    /**
      * Fetch all records for the named structured property (e.g. ADR) and
      * return them in an array.
      * @param unknown $propertyName The name of the associate records to
@@ -658,32 +698,23 @@ class VCardDB
                           'COUNTRY' => 'Country'
                         ]
     	        ];
-    	static $listRecSql = [
-    	        'org'=>'SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID',
-    	        'adr'=>'SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contactID',
-        	];
     	static $getRecSql = [
     	        'adr'=>'SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:id',
     	        'org'=>'SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:id'
     	];
     	
-    	assert(array_key_exists($propertyName, $listRecSql));
+    	assert(array_key_exists($propertyName, $getRecSql));
     	
-    	// Fetch a list of $propertyName records associated with the contact
-    	$stmt = $this->connection->prepare($listRecSql[$propertyName]);
-    	$stmt->bindValue(":contactID", $contactID);
-    	$stmt->execute();
-    	
-    	$results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    	$stmt->closeCursor();
+    	$propIDs
+    	    = $this->i_fetchPropertyIDsForContact($propertyName, $contactID);
 
-    	if (empty($results)) return null;
+    	if ($propIDs ===null) return null;
     	 
     	// Fetch each $propertyName record in turn    	
     	$propList = array();
 
     	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
-    	foreach ($results as $id)
+    	foreach ($propIDs as $id)
     	{
     		$stmt->bindValue(":id", $id);
     		$stmt->execute();
@@ -716,14 +747,7 @@ class VCardDB
     	assert(is_string($propertyName));
     	assert($contactID !== null);
     	assert(is_numeric($contactID));
-    	
-    	static $listRecSql = [
-    	    'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
-    	    'tel'=>'SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID',
-    	    'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
-    	    'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID'
-    	];
-    	
+    	    	
     	static $getRecSql = [
             'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:id',
             'tel'=>"SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:id",
@@ -731,22 +755,17 @@ class VCardDB
             'categories'=>'SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id'
     	];
     	
-    	assert(array_key_exists($propertyName, $listRecSql));
-    	
-    	// Fetch a list of records associated with the contact
-    	$stmt = $this->connection->prepare($listRecSql[$propertyName]);
-    	$stmt->bindValue(":contactID", $contactID);
-    	$stmt->execute();
-    
-    	$results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-    	$stmt->closeCursor();
+    	assert(array_key_exists($propertyName, $getRecSql));
+    	    
+    	$propIDs
+    	    = $this->i_fetchPropertyIDsForContact($propertyName, $contactID);
 
-    	if (empty($results)) return null;
+    	if ($propIDs === null) return null;
 
     	$propList = array();
     	// Fetch each note record in turn
     	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
-    	foreach ($results as $id)
+    	foreach ($propIDs as $id)
     	{
     		$stmt->bindValue(":id", $id);
     		$stmt->execute();
