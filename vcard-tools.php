@@ -619,7 +619,7 @@ class VCardDB
         $this->i_fetchDataForVCard($vcard, $contactID);
         $this->i_fetchTelsForVCard($vcard, $contactID);
         $this->i_fetchEmailsForVCard($vcard, $contactID);
-        self::fetch_category_for_vcard_from_db($this->connection, $vcard, $contactID);
+        $this->i_fetchCategoriesForVCard($vcard, $contactID);
 
         return $vcard;
     } // i_fetchVCard()
@@ -870,22 +870,33 @@ class VCardDB
         return $vcard;
     } // i_fetchDataForVCard()
 
-    static function fetch_category_for_vcard_from_db( $connection, $vcard, 
-           $contact_id )
+    /**
+     * Fetch all CATEGORIES records for the given contact ID and attach them.
+     * @param vCard $vcard The vCard to attach records to. Not null.
+     * @param unknown $contactID The contact ID the records are associated
+     * with. Numeric, not null.
+     * @return vCard The vCard being assembled.
+     */
+    private function i_fetchCategoriesForVCard(vCard $vcard, $contactID)
     {
+    	assert($this->connection !== null);
+    	assert($vcard !== null);
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
+    	
         // Fetch a list of records associated with the contact
-        $stmt = $connection->prepare("SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt = $this->connection->prepare('SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID');
+        $stmt->bindValue(':contactID', $contactID);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         // Fetch each record in turn
-        $stmt = $connection->prepare("SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id");
+        $stmt = $this->connection->prepare('SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id');
         foreach ($results as $id)
         {
-	    $stmt->bindValue(":id", $id);
+	    $stmt->bindValue(':id', $id);
 	    $stmt->execute();
 	    $item = $stmt->fetch(PDO::FETCH_NUM, 0);
 	    $stmt->closeCursor();
@@ -894,7 +905,7 @@ class VCardDB
         }
 
         return $vcard;
-    } // fetch_category_for_vcard_from_db()
+    } // i_fetchCategoriesForVCard()
 } // VCardDB
 
 /**
