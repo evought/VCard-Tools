@@ -60,48 +60,29 @@ class VCardDB
     {
         assert(!empty($this->connection));
 
-        $contact_id = $this->i_storeJustContact($vcard);
+        $contactID = $this->i_storeJustContact($vcard);
 
         // FIXME: in case of multiple calls, can optimize by reusing prepared SQL.
         foreach ($vcard->org as $org)
         {
-	    $this->i_storeOrg($org, $contact_id);
+	    $this->i_storeOrg($org, $contactID);
         }
 
         foreach ($vcard->adr as $adr)
         {
-	    $this->i_storeAddress($adr, $contact_id);
+	    $this->i_storeAddress($adr, $contactID);
         }
 
-        foreach ($vcard->note as $note)
+        foreach ( ['photo', 'logo', 'sound', 'note', 'tel',
+        		'email', 'categories'] as $propertyName )
         {
-	    $this->i_storeNote($note, $contact_id);
-        }
-
-        foreach (["photo", "logo", "sound"] as $data_field)
-        {
-	    foreach ($vcard->$data_field as $data_item)
+	    foreach ($vcard->$propertyName as $value)
     	    {
-                $this->i_storeDataProperty($data_field, $data_item, $contact_id);
+    	    	$this->i_storeBasicProperty($propertyName, $value, $contactID);
     	    }
         }
 
-        foreach ($vcard->tel as $tel)
-        {
-	        $this->i_storeTel($tel, $contact_id);
-        }
-
-        foreach ($vcard->email as $item)
-        {
-	        $this->i_storeEmail($item, $contact_id);
-        }
-
-        foreach ($vcard->categories as $item)
-        {
-	        $this->i_storeCategory($item, $contact_id);
-        }
-
-        return $contact_id;
+        return $contactID;
     } // store()
 
 
@@ -246,145 +227,59 @@ class VCardDB
     } // i_storeAddress()
 
     /**
-     * Store the data fields (photo, logo, sound)
-     * Currently only stores URLs, not blobs
-     * @arg $data_field Must be one of: photo, logo, sound.
-     * @arg $url The URL to the data to store. Not empty.
-     * @arg $contact_id The ID of the contact to attach this to. Numeric.
-     * @return The ID of the new Data record in the database.
+     * Store a basic property (multiple simple values) which requires a
+     * subsidiary table/link table and return the ID of the new record.
+     * @param string $propertyName The name of the property to store. String,
+     * not null.
+     * @param unknown $value The value of the property to store. Not empty.
+     * @param unknown $contactID The ID of the CONTACT to associate the new
+     * record with.
+     * @return The ID of the newly created record.
      */
-    private function i_storeDataProperty($data_field, $url, $contact_id)
+    private function i_storeBasicProperty($propertyName, $value, $contactID)
     {
-        assert(in_array($data_field, ['photo', 'logo', 'sound']));
-        assert(!empty($url));
-        assert(is_numeric($contact_id));
-        assert(!empty($this->connection));
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (:data_name, :url)");
-
-        $stmt->bindValue(":data_name", $data_field);
-        $stmt->bindValue(":url", $url);
-        $stmt->execute();
-        $data_id = $this->connection->lastInsertId();
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contact_id, :data_id)");
-        $stmt->bindValue(":contact_id", $contact_id);
-        $stmt->bindValue(":data_id", $data_id);
-        $stmt->execute();
-
-        return $data_id;
-    } // i_storeDataProperty()
-
-    /**
-     * Store the note property.
-     * @arg $note The note property to store. Non-empty string.
-     * @arg $contact_id The ID of the contact to attach the record to.
-     * @return The ID of the new NOTE record.
-     */
-    private function i_storeNote($note, $contact_id)
-    {
-        assert(!empty($note));
-        assert(is_string($note));
-        assert(is_numeric($contact_id));
-        assert(!empty($this->connection));
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_NOTE (NOTE) VALUES (:note)");
-
-        $stmt->bindValue(":note", $note);
-        $stmt->execute();
-        $note_id = $this->connection->lastInsertId();
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contact_id, :note_id)");
-        $stmt->bindValue(":contact_id", $contact_id);
-        $stmt->bindValue(":note_id", $note_id);
-        $stmt->execute();
-
-        return $note_id;
-    } // i_storeNote()
-
-    /**
-     * Store the Tel record.
-     * @arg $tel The value to store. Non-empty string.
-     * @arg $contact_id The ID of the contact record to associate it with.
-     * Numeric.
-     * @return The ID of the new TEL record.
-     */
-    private function i_storeTel($tel, $contact_id)
-    {
-        assert(!empty($tel));
-        assert(is_string($tel));
-        assert(is_numeric($contact_id));
-        assert(!empty($this->connection));
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_PHONE_NUMBER (LOCAL_NUMBER) VALUES (:number)");
-
-        $stmt->bindValue(":number", $tel);
-        $stmt->execute();
-        $phone_id = $this->connection->lastInsertId();
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contact_id, :phone_id)");
-        $stmt->bindValue(":contact_id", $contact_id);
-        $stmt->bindValue(":phone_id", $phone_id);
-        $stmt->execute();
-
-        return $phone_id;
-    } // i_storeTel()
-
-    /**
-     * Store the email property.
-     * @param unknown $email The email address to store (string, not empty).
-     * @param unknown $contact_id The ID of the CONTACT record to associate this with. Numeric.
-     * @return The ID of the new EMAIL record.
-     * FIXME: does not handle TYPE paramters.
-     */
-    private function i_storeEmail($email, $contact_id)
-    {
-        assert(!empty($email));
-        assert(is_string($email));
-        assert(is_numeric($contact_id));
-        assert(!empty($this->connection));
+    	assert($this->connection !== null);
+    	assert($propertyName !== null);
+    	assert(is_string($propertyName));
+    	assert(!empty($value));
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
     	
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:email)");
+    	$storeSQL = [
+    	    'note'=>'INSERT INTO CONTACT_NOTE (NOTE) VALUES (:value)',
+    	    'tel'=>'INSERT INTO CONTACT_PHONE_NUMBER (LOCAL_NUMBER) VALUES (:value)',
+    	    'email'=>'INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:value)',
+    	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:value)',
+    	    'photo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'photo\', :value)',
+    	    'logo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'logo\', :value)',
+    	    'sound'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'sound\', :value)'
+    	];
+    	$linkSQL = [
+    	    'note'=>'INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contactID, :id)',
+    	    'tel'=>'INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contactID, :id)',
+    	    'email'=>'INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contactID, :id)',
+    	    'categories'=>'INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contactID, :id)',
+    	    'photo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
+    	    'logo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
+    	    'sound'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)'
+    	];
 
-        $stmt->bindValue(":email", $email);
-        $stmt->execute();
-        $new_id = $this->connection->lastInsertId();
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contact_id, :new_id)");
-        $stmt->bindValue(":contact_id", $contact_id);
-        $stmt->bindValue(":new_id", $new_id);
-        $stmt->execute();
-        
-        return $new_id;
-    } // i_storeEmail()
-
-    /**
-     * Store a categories property.
-     * @param unknown $category The individual category to store. String, not empty.
-     * @param unknown $contact_id The ID of the CONTACT record to associate this with.
-     * @return The ID of the new CATEGORIES record.
-     */
-    private function i_storeCategory($category, $contact_id)
-    {
-        assert(!empty($category));
-        assert(is_string($category));
-        assert(is_numeric($contact_id));
-        assert(!empty($this->connection));
+    	assert(array_key_exists($propertyName, $storeSQL));
     	
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:category)");
-
-        $stmt->bindValue(":category", $category);
-        $stmt->execute();
-        $new_id = $this->connection->lastInsertId();
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contact_id, :new_id)");
-        $stmt->bindValue(":contact_id", $contact_id);
-        $stmt->bindValue(":new_id", $new_id);
-        $stmt->execute();
-        
-        return $new_id;
-    } // i_storeCategory()
-
+    	$stmt = $this->connection->prepare($storeSQL[$propertyName]);
+    	
+    	$stmt->bindValue(":value", $value);
+    	$stmt->execute();
+    	$id = $this->connection->lastInsertId();
+    	
+    	$stmt = $this->connection->prepare($linkSQL[$propertyName]);
+    	$stmt->bindValue(":contactID", $contactID);
+    	$stmt->bindValue(":id", $id);
+    	$stmt->execute();
+    	
+    	return $id;
+    } // i_storeBasicProperty()
+    
     /**
      * Fetch all vcards from the database.
      * @arg $kind If kind is given, only fetch those of that kind (e.g.
