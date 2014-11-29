@@ -615,7 +615,7 @@ class VCardDB
 
         $this->i_fetchOrgsForVCard($vcard, $contactID);
         $this->i_fetchAdrsForVCard($vcard, $contactID);
-        self::fetch_note_for_vcard_from_db($this->connection, $vcard, $contactID);
+        $this->i_fetchNotesForVCard($vcard, $contactID);
         self::fetch_data_for_vcard_from_db($this->connection, $vcard, $contactID);
         self::fetch_tel_for_vcard_from_db($this->connection, $vcard, $contactID);
         self::fetch_email_for_vcard_from_db($this->connection, $vcard, $contactID);
@@ -718,22 +718,33 @@ class VCardDB
         return $vcard;
     } // fetchAdrsForVCard()
 
-    // Fetch and attach all note records for a vcard, returning the card.
-    static function fetch_note_for_vcard_from_db($connection, $vcard, $contact_id)
+    /**
+     * Fetch and attach all note records for a vcard, returning the card.
+     * @param vCard $vcard The card to attach the fetched records to. Not null.
+     * @param unknown $contact_id The Contact ID the records will be found
+     * under. Numeric, not null.
+     * @return The VCard being assembled.
+     */
+    private function i_fetchNotesForVCard(vCard $vcard, $contactID)
     {
+    	assert(isset($this->connection));
+    	assert($vcard !== null);
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
+    	
         // Fetch a list of note records associated with the contact
-        $stmt = $connection->prepare("SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contact_id");
-        $stmt->bindValue(":contact_id", $contact_id);
+        $stmt = $this->connection->prepare("SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID");
+        $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         // Fetch each note record in turn
-        $stmt = $connection->prepare("SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:note_id");
-        foreach ($results as $note_id)
+        $stmt = $this->connection->prepare("SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:noteID");
+        foreach ($results as $noteID)
         {
-	    $stmt->bindValue(":note_id", $note_id);
+	    $stmt->bindValue(":noteID", $noteID);
 	    $stmt->execute();
 	    $note = $stmt->fetch(PDO::FETCH_NUM, 0);
 	    $stmt->closeCursor();
@@ -742,7 +753,7 @@ class VCardDB
         }
 
         return $vcard;
-    } // fetch_note_for_vcard_from_db()
+    } // i_fetchNotesForVCard()
 
     static function fetch_tel_for_vcard_from_db($connection, $vcard, $contact_id)
     {
