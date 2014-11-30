@@ -7,7 +7,6 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 require_once "vcard-tools.php";
-require_once "vcard.php";
 
 class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 {
