@@ -1,52 +1,47 @@
 <!--
-  -  Ant build file for VCard-Tools
+  -  Phing build file for VCard-Tools
   -  Author: Eric Vought
   -  2014-11
   -  License: MIT (http://opensource.org/licenses/MIT)
   -->
-<project name="VCard-Tools" default="dist" basedir=".">
-    <description>
-    Tools for manipulating VCards (RFC 6350) in PHP, including in-memory 
-    representation, database persistence, and HTML templating.
-    </description>
+<project name="VCard-Tools" default="dist" basedir="."
+	description="Phing build file for VCard-Tools project">
 
   <!-- set global properties for this build -->
-  <property name="sql.dir" location="sql"/>
-  <property name="test.dir" location="tests"/>
-  <property name="dist.dir"  location="dist"/>
-  <property name="doc.dir"  location="docs"/>
+  <property name="sql.dir" value="sql"/>
+  <property name="test.dir" value="tests"/>
+  <property name="dist.dir"  value="dist"/>
+  <property name="doc.dir"  value="docs"/>
+  <property name="apidoc.dir" value="docs/api"/>
 
   <!-- per-user properties for overriding settings, such as db connection -->
-  <property file="${user.name}.properties"/>
+  <property file="${env.USER}.properties"/>
 
   <!-- database properties for testing -->
   <property file="db.properties"/>
 
-  <filterset id="db.unittest.filterset">
-  <!-- NOTE: filtersets cannot contain propertysets in ant 1.9.2;
-     - Do it the hard way. -->
-    <filter token="db.unittest.user"   value="${db.unittest.user}"/>
-    <filter token="db.unittest.passwd" value="${db.unittest.passwd}"/>
-    <filter token="db.unittest.passwd" value="${db.unittest.passwd}"/>
-    <filter token="db.unittest.dbname" value="${db.unittest.dbname}"/>
-    <filter token="db.unittest.dsn"    value="${db.unittest.dsn}"/>
-  </filterset>
+  <filterchain id="db.unittest.filterset">
+    <replacetokens begintoken="@" endtoken="@">
+    <token key="db.unittest.user"   value="${db.unittest.user}"/>
+    <token key="db.unittest.passwd" value="${db.unittest.passwd}"/>
+    <token key="db.unittest.passwd" value="${db.unittest.passwd}"/>
+    <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
+    <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
+    </replacetokens>
+  </filterchain>
 
   <!-- temporary files to tidy up -->
   <patternset id="backupFiles.pattern"
     includes="**/*~ **/*.bak" />
 
   <!-- list of generated configuration files -->
-  <fileset id="configFiles.fileset" dir="${basedir}"
-           includes="phpunit.xml database.php"/>
+  <fileset id="configFiles.fileset" dir="${project.basedir}"
+           includes="database.php"/>
 
   <target name="config"
           description="Substitute macros to create needed configuration files">
-    <copy file="${basedir}/phpunit.xml.in" toFile="${basedir}/phpunit.xml">
-      <filterset refid="db.unittest.filterset"/>
-    </copy>
-    <copy file="${basedir}/database.php.in" toFile="${basedir}/database.php">
-      <filterset refid="db.unittest.filterset"/>
+    <copy file="${project.basedir}/database.php.in" toFile="${project.basedir}/database.php">
+      <filterchain refid="db.unittest.filterset"/>
     </copy>
   </target>
 
@@ -61,6 +56,11 @@
     <tstamp/>
   </target>
 
+  <target name="doc" depends="init"
+	description="Generate API docs">
+    <mkdir dir="${apidoc.dir}"/>
+  </target>
+	
   <target name="dist" depends="init"
         description="generate the distribution" >
     <mkdir dir="${dist.dir}"/>
@@ -68,11 +68,15 @@
 
   <target name="test" depends="init"
           description="Execute PHPUnit test suite">
-    <echo message="Running unit tests with PHPUnit" />
-
-    <exec executable="phpunit" failonerror="true">
-       <arg value="${test.dir}"/>
-    </exec>
+    <phpunit haltonfailure="true" haltonerror="true"
+    	pharlocation="${phpunit.phar}">
+      <formatter type="plain" usefile="false"/>
+      <batchtest>
+        <fileset dir="tests">
+    	  <include name="**/*Test*.php"/>
+        </fileset>
+      </batchtest>
+    </phpunit>
   </target>
 
   <target name="tidy" description="Get rid of temporary and backup files">
@@ -85,25 +89,21 @@
 
   <target name="createUnitDB" depends="config"
       description="Create the database for unit testing">
-    <sql
-      classpath="${db.jdbcdriver}"
-      driver="com.mysql.jdbc.Driver" 
-      url="jdbc:mysql://${db.unittest.host}/" 
+    <pdosqlexec
+      url="${db.unittest.dsn}" 
       userid="${db.devel.user}" 
       password="${db.devel.passwd}"
       autocommit="true"> 
       CREATE DATABASE ${db.unittest.dbname}; 
       GRANT SELECT, INSERT, UPDATE, DELETE on ${db.unittest.dbname}.*
           TO '${db.unittest.user}'@'${db.unittest.host}'; 
-    </sql> 
+    </pdosqlexec>
   </target>
 
   <target name="unitDBSchema" depends="createUnitDB"
           description="Load the table definitions for unit test database.">
-    <sql
-      classpath="${db.jdbcdriver}"
-      driver="com.mysql.jdbc.Driver" 
-      url="jdbc:mysql://${db.unittest.host}/${db.unittest.dbname}" 
+    <pdosqlexec
+      url="${db.unittest.dsn};dbname=${db.unittest.dbname}" 
       userid="${db.devel.user}" 
       password="${db.devel.passwd}"
       autocommit="true"
@@ -112,20 +112,22 @@
 
   <target name="dropUnitDB" depends="config"
       description="Create the database for unit testing">
-    <sql
-      classpath="${db.jdbcdriver}"
-      driver="com.mysql.jdbc.Driver" 
-      url="jdbc:mysql://${db.unittest.host}/${db.unittest.dbname}" 
-      userid="${db.devel.user}" 
-      password="${db.devel.passwd}"
-      autocommit="true"> 
+  <pdosqlexec
+        url="${db.unittest.dsn}"
+  	userid="${db.devel.user}" 
+        password="${db.devel.passwd}"
+        autocommit="true"> 
       DROP DATABASE ${db.unittest.dbname}; 
-    </sql> 
+    </pdosqlexec> 
   </target>
 
-  <target name="clean" depends="tidy"
+  <target name="cleanDocs"
+	description="Remove generated documentation">
+    <delete dir="${apidoc.dir}"/>
+  </target>
+	
+  <target name="clean" depends="tidy,cleanDocs"
         description="clean up" >
-    <!-- Delete the ${build} and ${dist} directory trees -->
     <delete dir="${dist.dir}"/>
   </target>
 </project>

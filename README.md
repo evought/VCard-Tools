@@ -12,7 +12,7 @@ This effort is a set of tools for manipulating VCards (RFC 6350) in PHP, includi
 
 At its outset, the VCard class is one of the more advanced PHP classes for the purpose. I extended it for use in the prototype site where I first used VCard-Tools, added support for some VCard 4.0 behavior, fixed border parsing cases, added the unit tests, rounded out the interface, and performed cleanup. It is therefore heading toward being a fairly robust tool, albeit with a few oddities brought about by the sheer complexity of the VCard 4.0 schema (which I have some ideas about improving). The schema, also adapted toward VCard 4.0 and improved, is likewise reasonably stable. I intend to extend it to handle the remainder of the VCard 4.0 properties and possibly adapt it to handle more than 1 N property.
 
-The vcard-tools.php routines for database persistence, by comparison, are green, in need of refactoring, cleanup, and testing. I anticipate substantial interface repacking/standardization and internal cleanup in the near future. They should be viewed as a demonstration project at this time, *not production code*. The templating mechanism has a great deal of power and flexibility. The format of template definitions themselves are reasonably stable, but the interface will also undergo cleanup.
+The vcard-tools.php routines for database persistence, by comparison, are green. They should be viewed as a demonstration project at this time, *not production code*. The templating mechanism has a great deal of power and flexibility. The format of template definitions themselves are reasonably stable, but the interface will also undergo cleanup.
 
 #License#
 
@@ -20,7 +20,7 @@ All components are under the [MIT License](license.txt).
 
 #Components#
 
-The project consists of the php modules in vcard-tools.php and vcard.php, as well as the default template definitions in vcard-templates.php. The sql schema (MySQL) is defined in sql/, documentation materials in doc/, and PHPUnit test cases under tests/. Setting up the database is described below. There is the beginnings of an [Ant](http://ant.apache.org) script for automating project maintenance tasks.
+The project consists of the php modules in vcard-tools.php and vcard.php, as well as the default template definitions in vcard-templates.php. The sql schema (MySQL) is defined in sql/, documentation materials in doc/, and PHPUnit test cases under tests/. Setting up the database is described below. There is the beginnings of an [Phing](http://www.phing.info/) script for automating project maintenance tasks.
 
 The templating code can be used along with the original VCard class *with or without the database persistence*.
 
@@ -36,11 +36,9 @@ This should be all that is needed to use VCard-Tools.
 
 To develop and run tests, you will additionally need:
 
-* Apache Ant >= 1.9.2 for generating config files and maintenance tasks
+* Phing >=2.9.0 for generating config files and maintenance tasks
 * PHPUnit >= 4.3.5 for running the tests
-* Apache Ant will in turn require a compatible Java Development Kit (I am using
-openJDK 1.8.0, but any JDK which will run Ant should be fine.)
-* The MySQL jdbc driver (used by ant to execute database tasks).
+* PHPDocumentor >= 2.8.1 for generating documentation (install via PEAR)
 
 I am doing most of my development on a Intel-based Fedora Linux 20 workstation.
 
@@ -51,7 +49,7 @@ Aside from the code comments, one of the best resources for using the vcard-tool
 #Database Setup#
 
 To use the software, a database (e.g. VCARD) will be needed to contain the tables and a user with appropriate permissions to access it. Given appropriate settings
-and a user with appropriate permissions in the database, ant will do the actual
+and a user with appropriate permissions in the database, phing will do the actual
 loading of the schema for you.
 
 First off, you need a MySQL user account with permissions to create a database and
@@ -69,24 +67,24 @@ Substituting whatever is appropriate for 'developer' and 'password'. At the same
 
     mysql> create user 'test-vcard'@'localhost' identified by 'password';
 
-Create a ${username}.properties file in your project folder, copying and editing
-values from db.properties to set the username, password, host, database name, etc., for your database. (In other words, I would put these settings in 'evought.properties'). As your personal property file will not be under control of git, you won't have to worry about committing your settings (and password!) back to the repository. The ant build script, build.xml will use these settings
+Create a ${env.USER}.properties file in your project folder, copying and editing
+values from db.properties to set the username, password, host, database name, etc., for your database. (In other words, I would put these settings in 'evought.properties'). As your personal property file will not be under control of git, you won't have to worry about committing your settings (and password!) back to the repository. The phing build script, build.xml will use these settings
 to build some configuration files, initialize the database, and run the tests.
 
-Running 'ant config' will build the configuration files (such as phpunit.xml and database.php) needed. Anytime you change these settings, you will want to run:
+Running 'phing config' will build the configuration files (such as database.php) needed. Anytime you change these settings, you will want to run:
 
-    $ ant cleanConfig && ant config
+    $ phing cleanConfig && phing config
 
 To force them to be rebuilt. You can then:
 
-    $ ant unitDBSchema
+    $ phing unitDBSchema
 
-This will automatically invoke "ant createUnitDB" to create the database and
+This will automatically invoke "phing createUnitDB" to create the database and
 grant permissions to your test user (SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*) and then it will load the schema definitions from sql/vcard.sql. If you need to, you can always load vcard.sql manually from a terminal or by pasting it into a query in PHPMyAdmin.
 
 The unit tests will automatically delete new rows and reset the table state after each run, so you *should not* have to clean and reset the database yourself unless something has happened to disrupt its state or you have intentionally made changes to the data or the schema. If that happens:
 
-   $ ant dropUnitDB && ant createUnitDB
+   $ phing dropUnitDB && phing createUnitDB
 
 Will recreate the tables. The unit tests rely on an xml table dump to set/reset
 the initial state for the testcases. If the schema has changed, you will want to recreate this file by running (e.g.):
@@ -97,7 +95,8 @@ See the PHPUnit Manual, [Database Testing Chapter](https://phpunit.de/manual/cur
 
 # Unit Tests #
 
-Running the unit tests requires [PhpUnit](https://phpunit.de/) to be installed. If it is in the path, the full test suite can be run with the *test* ant task:
+Running the unit tests requires [PhpUnit](https://phpunit.de/) to be installed. If it is in the path, the full test suite can be run with the *test* phing task:
 
-    $ ant test
+    $ phing test
 
+If necessary, you can set/override the location of the phpunit phar as set in db.properties in your personal properties file.

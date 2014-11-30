@@ -7,18 +7,18 @@
  * with db.properties. Edit the values in db.properties.
  */
 
-  $vcard_dsn = "@db.unittest.dsn@";
-  $vcard_username = "@db.unittest.user@";
-  $vcard_password = "@db.unittest.passwd@";
+  const VCARD_DSN = "@db.unittest.dsn@";
+  const VCARD_USERNAME = "@db.unittest.user@";
+  const VCARD_PASSWORD = "@db.unittest.passwd@";
+  const VCARD_DBNAME = "@db.unittest.dbname@";
 
   /**
    * Connect to database and return a PDO connection
    */
   function vcard_db_connect()
   {
-     global $vcard_dsn, $vcard_username, $vcard_password;
-
-     $connection = new PDO($vcard_dsn, $vcard_username, $vcard_password);
+     $connection = new PDO( VCARD_DSN . ';dbname=' . VCARD_DBNAME,
+                            VCARD_USERNAME, VCARD_PASSWORD );
 
      // set the PDO error mode to exception
      $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

@@ -7,6 +7,7 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 require_once "vcard-tools.php";
+require_once "database.php";
 
 class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
 {
@@ -25,14 +26,10 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
         {
             if (self::$pdo == null)
             {
-               self::$pdo = new PDO( $GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], 
-                                     $GLOBALS['DB_PASSWD'] );
-
-               self::$pdo->setAttribute( PDO::ATTR_ERRMODE,
-                                         PDO::ERRMODE_EXCEPTION );
+               self::$pdo = vcard_db_connect();
             }
             $this->conn = $this->createDefaultDBConnection( self::$pdo,
-                                                 $GLOBALS['DB_DBNAME'] );
+                                                 VCARD_DBNAME );
         }
 
         return $this->conn;
