@@ -3,3 +3,4 @@ phpunit.xml
 database.php
 
 /dist/
+/docs/api/
