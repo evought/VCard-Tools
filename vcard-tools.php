@@ -62,17 +62,15 @@ class VCardDB
 
         $contactID = $this->i_storeJustContact($vcard);
 
-        // FIXME: in case of multiple calls, can optimize by reusing prepared SQL.
-        foreach ($vcard->org as $org)
+        foreach ( ['adr', 'org'] as $propertyName)
         {
-	    $this->i_storeOrg($org, $contactID);
+            foreach ($vcard->$propertyName as $value)
+            {
+            	$this->i_storeStructuredProperty( $propertyName, $value,
+            			                  $contactID );
+            }
         }
-
-        foreach ($vcard->adr as $adr)
-        {
-	    $this->i_storeAddress($adr, $contactID);
-        }
-
+        
         foreach ( ['photo', 'logo', 'sound', 'note', 'tel',
         		'email', 'categories'] as $propertyName )
         {
@@ -157,69 +155,50 @@ class VCardDB
     } // i_storeJustContact()
 
     /**
-     * Saves the vcard org data to the database.
-     * @arg $org The VCard org record to write out. Not empty.
-     * @arg $contactID The ID of the contact the org is to be attached to.
-     * Numeric.
-     * @return The id of the new org record in the database.
-     * FIXME: does not handle type property in any way.
+     * Store a structured property (multiple complex values) which requires a
+     * subsidiary table/link table and return the ID of the new record.
+     * @param unknown $propertyName
+     * @param array $propertyValue
+     * @param unknown $contactID
+     * @return string
      */
-    private function i_storeOrg(Array $org, $contactID)
+    private function i_storeStructuredProperty( $propertyName,
+    		                                Array $propertyValue,
+    		                                $contactID )
     {
-        assert($this->connection !== null);
-    	assert(!empty($org));
-        assert($contactID !== null);
-        assert(is_numeric($contactID));
+    	assert($this->connection !== null);
+    	assert($propertyName !== null);
+    	assert(is_string($propertyName));
+    	assert(!empty($propertyValue));
+    	assert($contactID !== null);
+    	assert(is_numeric($contactID));
 
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)");
-
-        foreach(['Name', 'Unit1', 'Unit2'] as $key)
-        {
-            $value = empty($org[$key]) ? null : $org[$key];
-            $stmt->bindValue(':'.$key, $value, PDO::PARAM_STR);
-        }
-        $stmt->execute();
-        $propertyID = $this->connection->lastInsertId();
-
-        $this->i_linkProperty('org', $propertyID, $contactID);
-
-        return $propertyID;
-    } // i_storeOrg()
-
-    /**
-     * Saves the vcard address data to the database, returns the id of the new
-     * address record. Takes the vcard adr record and the id of the contact to
-     * connect it to.
-     * @arg $adr An array with the ADR data from VCard. Not empty.
-     * @arg $contactID The ID of the contact the adr is to be attached to.
-     * Numeric.
-     * @return The ID of the new ADR database record.
-     *
-     * FIXME: does not handle type property in any way.
-     */
-    private function i_storeAddress(Array $adr, $contactID)
-    {
-        assert(!empty($adr));
-        assert(is_numeric($contactID));
-        assert($this->connection !== null);
-
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)");
-
-        foreach( [ 'StreetAddress', 'Locality', 'Region',
-                   'PostalCode', 'Country' ]
-                 as $key )
-        {
-            $value = empty($adr[$key]) ? null : $adr[$key];
-            $stmt->bindValue(':'.$key, $value, PDO::PARAM_STR);
-        }
-
-        $stmt->execute();
-        $propertyID = $this->connection->lastInsertId();
-
-        $this->i_linkProperty('adr', $propertyID, $contactID);
-        return $propertyID;
-    } // i_storeAddress()
-
+    	static $storeSQL = [
+    	    'adr'=>'INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)',
+    	    'org'=>'INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)'
+    	];
+    	
+    	static $fields = [
+    	    'adr'=>[ 'StreetAddress', 'Locality', 'Region',
+    	             'PostalCode', 'Country'],
+    	    'org'=>['Name', 'Unit1', 'Unit2']
+    	];
+    	
+    	$stmt = $this->connection->prepare($storeSQL[$propertyName]);
+    	foreach($fields[$propertyName] as $key)
+    	{
+    		$value = empty($propertyValue[$key])
+    		           ? null : $propertyValue[$key];
+    		$stmt->bindValue(':'.$key, $value, PDO::PARAM_STR);
+    	}
+    	
+    	$stmt->execute();
+    	$propertyID = $this->connection->lastInsertId();
+    	
+    	$this->i_linkProperty($propertyName, $propertyID, $contactID);
+    	return $propertyID;
+    } // i_storeStructuredProperty()
+    
     /**
      * For properties requiring a subsidiary table/link table, add a link
      * between a new property record and a CONTACT.
@@ -254,8 +233,8 @@ class VCardDB
     	assert(array_key_exists($propertyName, $linkSQL));
     	
     	$stmt = $this->connection->prepare($linkSQL[$propertyName]);
-    	$stmt->bindValue(":contactID", $contactID);
-    	$stmt->bindValue(":id", $propertyID);
+    	$stmt->bindValue(':contactID', $contactID);
+    	$stmt->bindValue(':id', $propertyID);
     	$stmt->execute();
     	
     	return;
