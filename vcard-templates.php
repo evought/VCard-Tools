@@ -5,6 +5,7 @@
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license CC-BY 4.0 http://creativecommons.org/licenses/by/4.0/
  */
+namespace vCardTools;
 
 /**
  * Default html output template using divs and spans.

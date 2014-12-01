@@ -1,4 +1,6 @@
 <?php
+namespace vCardTools;
+
 /**
  * vCard class for parsing a vCard and/or creating one
  *
@@ -7,7 +9,7 @@
  * @see RFC 2426, RFC 2425, RFC 6350
  * @license MIT http://opensource.org/licenses/MIT
  */
-class vCard implements Countable, Iterator
+class vCard implements \Countable, \Iterator
 {
     const MODE_SINGLE = 'single';
     const MODE_MULTIPLE = 'multiple';
@@ -415,7 +417,7 @@ class vCard implements Countable, Iterator
      * from a database or POST form) and can have unprectable results.
      * @param string key
      * @param string value
-     * throws DomainException if the $value is not appropriately a string,
+     * throws \DomainException if the $value is not appropriately a string,
      * an array, or an array of arrays.
      */
     public function __set($key, $value)
@@ -429,20 +431,20 @@ class vCard implements Countable, Iterator
 	if ($this->keyIsSingleValueElement($key))
         {
             if (!is_string($value))
-                throw new DomainException( "Elements constraint violation: "
+                throw new \DomainException( "Elements constraint violation: "
                                            . $key
                                            . " requires a single value." );
         } else {
 
 	    if (!is_array($value))
-                throw new DomainException( "Elements constraint violation: "
+                throw new \DomainException( "Elements constraint violation: "
                                            . $key
                                            . " requires an array of values." );
             if ($this->keyIsStructuredElement($key))
             {
                 $result = array_unique(array_filter($value, 'is_array'));
                 if ((!count($result) == 1) && (array_pop($result) != true))
-                throw new DomainException( "Elements constraint violation: "
+                throw new \DomainException( "Elements constraint violation: "
                                            . $key
                                            . " requires an array of arrays." );
             }

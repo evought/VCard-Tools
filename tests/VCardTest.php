@@ -1,13 +1,14 @@
 <?php
-
 /**
- * A start on unit tests for the VCard class to avoid regression as changes
+ * A start on unit tests for the vCard class to avoid regression as changes
  * are made.
  * @author Eric Vought <evought@pobox.com>
  * 2014-11-16
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
+
+use vCardTools\vCard as vCard;
 require_once 'vcard.php';
 
 class VCardTest extends PHPUnit_Framework_TestCase {
@@ -72,8 +73,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testConstructEmptyVCard()
     {
-	$vcard = new VCard();
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard();
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	return $vcard;
     }
 
@@ -145,7 +146,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @covers VCard::__call, VCard::__unset
      * @depends testSetFN
      */
-    public function testSetFNUpperCase(VCard $vcard)
+    public function testSetFNUpperCase(vCard $vcard)
     {
     	$expected = "Test FN";
     	$vcard->FN($expected);
@@ -158,10 +159,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__call, VCard::__unset, VCard::isset
+     * @covers vCard::__call, vCard::__unset, vCard::isset
      * @depends testSetFN
      */
-    public function testIsSet(VCard $vcard)
+    public function testIsSet(vCard $vcard)
     {
         $this->assertFalse(isset($vcard->fn), print_r($vcard, true));
 	$vcard->fn("foo");
@@ -171,10 +172,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      */
-    public function testAssignSingleValueElement(VCard $vcard)
+    public function testAssignSingleValueElement(vCard $vcard)
     {
         $expected = 'foo';
         $this->assertEmpty($vcard->fn);
@@ -188,10 +189,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      */
-    public function testAssignNoValue(VCard $vcard)
+    public function testAssignNoValue(vCard $vcard)
     {
         $expected = 'foo';
         $this->assertEmpty($vcard->fn);
@@ -204,10 +205,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      */
-    public function testAssignElement(VCard $vcard)
+    public function testAssignElement(vCard $vcard)
     {
         $expected = array('foo');
         $this->assertEmpty($vcard->fn);
@@ -221,10 +222,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      */
-    public function testAssignStructuredElement(VCard $vcard)
+    public function testAssignStructuredElement(vCard $vcard)
     {
         $expected = array(array("StreetAddress" => 'foo'));
         $this->assertEmpty($vcard->adr);
@@ -238,56 +239,56 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadSingleValueElement(VCard $vcard)
+    public function testAssignBadSingleValueElement(vCard $vcard)
     {
         $vcard->fn = array("foo");
 	return $vcard;
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadElement(VCard $vcard)
+    public function testAssignBadElement(vCard $vcard)
     {
         $vcard->url = "foo";
 	return $vcard;
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadStructuredElement1(VCard $vcard)
+    public function testAssignBadStructuredElement1(vCard $vcard)
     {
         $vcard->adr = "foo";
 	return $vcard;
     }
 
     /**
-     * @covers VCard::__set, VCard::__get.
+     * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadStructuredElement2(VCard $vcard)
+    public function testAssignBadStructuredElement2(vCard $vcard)
     {
         $vcard->adr = array("foo");
 	return $vcard;
     }
 
     /**
-     * @covers VCard::__call
+     * @covers vCard::__call
      * @depends testSetFN
      * Because FN is a single value element, setting twice should
      * overwrite the first value rather than adding a new value.
      */
-    public function testResetFN(VCard $vcard)
+    public function testResetFN(vCard $vcard)
     {
 	$fn1 = "First FN";
 	$fn2 = "New FN";
@@ -303,10 +304,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__get
+     * @covers vCard::__get
      * @depends testConstructEmptyVCard
      */
-    public function testEmptyCategories(VCard $vcard)
+    public function testEmptyCategories(vCard $vcard)
     {
 	$this->assertEmpty($vcard->categories);
 
@@ -314,10 +315,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__call, VCard->categories
+     * @covers vCard::__call, vCard->categories
      * @depends testEmptyCategories
      */
-    public function testSetSingleCategory(VCard $vcard)
+    public function testSetSingleCategory(vCard $vcard)
     {
 	$category_expected = "computers";
 	$vcard->categories($category_expected);
@@ -332,10 +333,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__call, VCard->categories
+     * @covers vCard::__call, vCard->categories
      * @depends testSetSingleCategory
      */
-    public function testSetTwoCategories(VCard $vcard)
+    public function testSetTwoCategories(vCard $vcard)
     {
 	$category1 = "computers";
 	$category2 = "electronics";
@@ -355,11 +356,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__construct
-     * @covers VCARD::__get
+     * @covers vCard::__construct
+     * @covers vCard::__get
      * @depends testConstructEmptyVCard
      */
-    public function testNoURL(VCard $vcard)
+    public function testNoURL(vCard $vcard)
     {
 	$this->assertEmpty($vcard->url);
 
@@ -367,11 +368,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__call
-     * @covers VCARD::__get
+     * @covers vCard::__call
+     * @covers vCard::__get
      * @depends testNoURL
      */
-    public function testSetSingleURL(VCard $vcard)
+    public function testSetSingleURL(vCard $vcard)
     {
 	$url_expected = "http://golf.com";
 	$vcard->url($url_expected);
@@ -386,11 +387,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__call
-     * @covers VCARD::__get
+     * @covers vCard::__call
+     * @covers vCard::__get
      * @depends testSetSingleURL
      */
-    public function testSetTwoURLs(VCard $vcard)
+    public function testSetTwoURLs(vCard $vcard)
     {
 	$url1 = "http://golf.com";
 	$url2 = "http://espn.com";
@@ -412,7 +413,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @depends testConstructEmptyVCard
      */
-    public function testNoAdr(VCard $vcard)
+    public function testNoAdr(vCard $vcard)
     {
 	$this->assertEmpty($vcard->adr);
 
@@ -422,7 +423,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @depends testNoAdr
      */
-    public function testSetAdrStreetAddress(VCard $vcard)
+    public function testSetAdrStreetAddress(vCard $vcard)
     {
 	$adr_street = "Some Street";
 	$expected = [
@@ -443,7 +444,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @depends testNoAdr
      */
-    public function testSetAdrFields(VCard $vcard)
+    public function testSetAdrFields(vCard $vcard)
     {
 	$address = [
 			'StreetAddress' => '123 Sesame Street',
@@ -473,7 +474,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * moment.
      * @depends testNoAdr
      */
-    public function testSetAdrDeprecatedFields(VCard $vcard)
+    public function testSetAdrDeprecatedFields(vCard $vcard)
     {
 	$address = [
 			'POBox' => '41218',
@@ -503,7 +504,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @depends testConstructEmptyVCard
      */
-    public function testNoKind(VCard $vcard)
+    public function testNoKind(vCard $vcard)
     {
 	$this->assertEmpty($vcard->kind);
 
@@ -511,10 +512,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__call, VCard::__unset
+     * @covers vCard::__call, vCard::__unset
      * @depends testNoKind
      */
-    public function testSetKind(VCard $vcard)
+    public function testSetKind(vCard $vcard)
     {
 	$expected = "Individual";
 	$vcard->kind($expected);
@@ -527,8 +528,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__construct
-     * @covers VCARD::__toString()
+     * @covers vCard::__construct
+     * @covers vCard::__toString()
      * @depends testConstructEmptyVCard
      * FN appears because RFC6350 may not be omitted (and is not
      * supposed to be empty).
@@ -536,7 +537,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testToStringEmptyVCard()
     {
 	$expected = 	[ self::$vcard_empty_fn ];
-	$vcard = new VCard();
+	$vcard = new vCard();
 
 	$output = "";
 	$output .= $vcard;
@@ -556,7 +557,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testToStringFN($unescaped, $escaped)
     {
 	$expected = 	[ "FN:" . $escaped ];
-	$vcard = new VCard();
+	$vcard = new vCard();
 	$vcard->fn($unescaped);
 
 	$output = "";
@@ -579,7 +580,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$expected = [ self::$vcard_empty_fn, "CATEGORIES:" . $escaped ];
 	sort($expected);
 
-	$vcard = new VCard();
+	$vcard = new vCard();
 	$vcard->categories($unescaped);
 
 	$output = "";
@@ -610,7 +611,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	 ];
 	sort($expected);
 
-	$vcard = new VCard();
+	$vcard = new vCard();
 	$vcard->categories($category1);
 	$vcard->categories($category2);
 
@@ -625,7 +626,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCARD::__toString()
+     * @covers vCard::__toString()
      * @depends testToStringEmptyVCard
      * @depends testSetSingleURL
      * @dataProvider stringEscapeProvider
@@ -635,7 +636,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$expected = [ self::$vcard_empty_fn, "URL:" . $escaped ];
 	sort($expected);
 
-	$vcard = new VCard();
+	$vcard = new vCard();
 	$vcard->url($unescaped);
 
 	$output = "";
@@ -665,7 +666,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 		];
 	sort($expected);
 
-	$vcard = new VCard();
+	$vcard = new vCard();
 	$vcard->url($url1);
 	$vcard->url($url2);
 
@@ -704,7 +705,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			];
 	sort($expected);
 
-	$vcard = new VCard();
+	$vcard = new vCard();
 
 	foreach ($address as $key => $value)
 	{
@@ -723,7 +724,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testConstructEmptyVCard
      */
     public function testImportEmptyVCard()
@@ -732,13 +733,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_version . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->fn);
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      */
     public function testImportVCardEmptyFN()
@@ -748,13 +749,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_empty_fn . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->fn);
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportVCardEmptyFN
      * @dataProvider stringEscapeProvider
      */
@@ -765,13 +766,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "FN:" . $escaped . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEquals($unescaped, $vcard->fn);
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      */
     public function testImportVCardNoCategories()
@@ -780,13 +781,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_version . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->categories);
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      */
     public function testImportVCardEmptyCategories()
@@ -796,15 +797,15 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "CATEGORIES:\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertEmpty( $vcard->categories,
 			    print_r($vcard->categories, true) );
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      * @dataProvider stringEscapeProvider
      */
@@ -815,8 +816,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "CATEGORIES:" . $escaped . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
@@ -826,7 +827,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportVCardOneCategory
      */
     public function testImportVCardTwoCategories()
@@ -839,8 +840,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "CATEGORIES:" . $category2 . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
@@ -853,7 +854,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      */
     public function testImportVCardNoURL()
@@ -862,13 +863,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_version . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->url);
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      */
     public function testImportVCardEmptyURL()
@@ -878,15 +879,15 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "URL:\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertEmpty( $vcard->url,
 			    print_r($vcard->url, true) );
     }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      * @dataProvider stringEscapeProvider
      */
@@ -897,8 +898,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "URL:" . $escaped . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
@@ -908,7 +909,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportVCardOneURL
      */
     public function testImportVCardOneURLUnescape()
@@ -921,8 +922,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "URL:" . $url . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
@@ -932,7 +933,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
 
     /**
-     * @covers VCard::__construct
+     * @covers vCard::__construct
      * @depends testImportEmptyVCard
      */
     public function testImportVCardTwoURLs()
@@ -945,8 +946,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "URL:" . $url2 . "\n"
 			. self::$vcard_end . "\n";
 
-	$vcard = new VCard(false, $input);
-	$this->assertInstanceOf('VCard', $vcard);
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
@@ -959,16 +960,16 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
    /**
     * Make sure the magic __call method works correctly for call chaining.
-    * @covers VCard::__set
+    * @covers vCard::__set
     * @depends testSetTwoURLs
     */
-   public function testSetChaining(VCard $vcard)
+   public function testSetChaining(vCard $vcard)
    {
    	$url1 = "foo";
    	$url2 = "baz";
    	$tel  = "999-454-3212";
    	
-   	$vcard =  new VCard();
+   	$vcard =  new vCard();
    	
    	$vcard  ->url($url1)
    	        ->url($url2)

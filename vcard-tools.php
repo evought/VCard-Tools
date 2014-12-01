@@ -1,4 +1,6 @@
 <?php
+namespace vCardTools;
+
 /**
  * A toolbox for manipulating the vcard and related input data.
  * Uses the vcard.php class and vcard.sql schema. Includes default templates
@@ -22,21 +24,21 @@ class VCardDB
     const VCARD_PRODUCT_ID = '-//VCard Tools//1.0//en';
 
     /**
-     * The PDO connection used for storage and retrieval.
+     * The \PDO connection used for storage and retrieval.
      */
     private $connection;
 
     /**
-     * Retrieve the current PDO connection.
+     * Retrieve the current \PDO connection.
      */
     public function getConnection() {return $this->connection;}
 
     /**
-     * @arg $connection A PDO connection to read from/write to. Not null. Caller
+     * @arg $connection A \PDO connection to read from/write to. Not null. Caller
      * retains responsibility for connection, but this class shall ensure that
      * the reference is cleared upon clean-up.
      */
-    public function __construct(PDO $connection)
+    public function __construct(\PDO $connection)
     {
         assert(!empty($connection));
         $this->connection = $connection;
@@ -56,7 +58,7 @@ class VCardDB
      * Returns the new contact_id
      * FIXME: None of these routines deal with ENCODING.
      */
-    function store(VCard $vcard)
+    function store(vCard $vcard)
     {
         assert(!empty($this->connection));
 
@@ -89,7 +91,7 @@ class VCardDB
      * new connection record.
      * Stores JUST the info from the CONTACT table itself, no sub-tables.
      */
-    private function i_storeJustContact(VCard $vcard)
+    private function i_storeJustContact(vCard $vcard)
     {
         assert(!empty($this->connection));
 
@@ -98,7 +100,7 @@ class VCardDB
         $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
 
         $stmt->bindValue( ':kind', empty($vcard->kind)
-                                ? null : $vcard->kind, PDO::PARAM_STR );
+                                ? null : $vcard->kind, \PDO::PARAM_STR );
         $stmt->bindValue(':fn', $vcard->fn);
 
         // NOTE: The VCard spec allows a contact to have multiple names.
@@ -111,16 +113,16 @@ class VCardDB
               'Suffixes' ] as $n_key)
         {
             $n_value = empty($n[$n_key]) ? null : $n[$n_key];
-            $stmt->bindValue(':n_'.$n_key, $n_value, PDO::PARAM_STR);
+            $stmt->bindValue(':n_'.$n_key, $n_value, \PDO::PARAM_STR);
         }
 
         $stmt->bindValue( ':nickname',
         		  empty($vcard->nickname) 
         		          ? null : $vcard->nickname[0],
-        		  PDO::PARAM_STR );
+        		  \PDO::PARAM_STR );
         
         if (empty($vcard->bday))
-           $stmt->bindValue( ':bday', null, PDO::PARAM_NULL);
+           $stmt->bindValue( ':bday', null, \PDO::PARAM_NULL);
         else 
            $stmt->bindValue( ':bday', $vcard->bday);
         
@@ -129,24 +131,24 @@ class VCardDB
         $geo = $vcard->geo;
         if (empty($geo))
         {
-            $stmt->bindValue(':geolat', null, PDO::PARAM_NULL);
-            $stmt->bindValue(':geolon', null, PDO::PARAM_NULL);
+            $stmt->bindValue(':geolat', null, \PDO::PARAM_NULL);
+            $stmt->bindValue(':geolon', null, \PDO::PARAM_NULL);
         } else {
             $stmt->bindValue(':geolat', $geo[0]["Lattitude"]);
             $stmt->bindValue(':geolon', $geo[0]["Longitude"]);
         }
 
         $stmt->bindValue( ':role', empty($vcard->role)
-                          ? null : $vcard->role[0], PDO::PARAM_STR );
+                          ? null : $vcard->role[0], \PDO::PARAM_STR );
         $stmt->bindValue( ':title', empty($vcard->title)
-        		  ? null : $vcard->title[0], PDO::PARAM_STR );
+        		  ? null : $vcard->title[0], \PDO::PARAM_STR );
 
         $stmt->bindValue( ':rev', empty($vcard->rev)
-        		  ? null : $vcard->rev, PDO::PARAM_STR );
+        		  ? null : $vcard->rev, \PDO::PARAM_STR );
         $stmt->bindValue( ':uid', empty($vcard->uid)
-        		  ? null : $vcard->uid, PDO::PARAM_STR );
+        		  ? null : $vcard->uid, \PDO::PARAM_STR );
         $stmt->bindValue( ':url', empty($vcard->url)
-        		  ? null : $vcard->url[0], PDO::PARAM_STR );
+        		  ? null : $vcard->url[0], \PDO::PARAM_STR );
     
         $stmt->execute();
         $contact_id = $this->connection->lastInsertId();
@@ -189,7 +191,7 @@ class VCardDB
     	{
     		$value = empty($propertyValue[$key])
     		           ? null : $propertyValue[$key];
-    		$stmt->bindValue(':'.$key, $value, PDO::PARAM_STR);
+    		$stmt->bindValue(':'.$key, $value, \PDO::PARAM_STR);
     	}
     	
     	$stmt->execute();
@@ -286,7 +288,7 @@ class VCardDB
      * Fetch all vcards from the database.
      * @arg $kind If kind is given, only fetch those of that kind (e.g.
      * organization).
-     * @return An array of VCards keyed by contact id.
+     * @return An array of vCards keyed by contact id.
      */
     public function fetchAll($kind='%')
     {
@@ -296,7 +298,7 @@ class VCardDB
     	$stmt->bindValue(":kind", $kind);
 
         $stmt->execute();
-        $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $result = $stmt->setFetchMode(\PDO::FETCH_ASSOC);
 
         $vcards = array();
 
@@ -327,7 +329,7 @@ class VCardDB
         $stmt->bindValue(":searchString", $searchString);
         $stmt->execute();
 
-        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
  
         $contactIDs += $this->fetchIDsForCategory( $searchString,
@@ -344,7 +346,7 @@ class VCardDB
      * be a SQL pattern. String, not empty.
      * @arg $kind If kind is provided, limit results to a specific Kind (e.g.
      * individual.
-     * @return The list of contact ids. Actual VCards are not fetched.
+     * @return The list of contact ids. Actual vCards are not fetched.
      */
     public function fetchIDsForOrganization($organizationName, $kind="%")
     {
@@ -355,19 +357,19 @@ class VCardDB
         $stmt = $this->connection->prepare("SELECT ORG_ID FROM CONTACT_ORG WHERE NAME LIKE :organizationName");
         $stmt->bindValue(":organizationName", $organizationName);
         $stmt->execute();
-        $orgIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $orgIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         if (empty($orgIDs)) return array();
 
-        // HACK: PDO does not support bind an array to an IN parameter, so
+        // HACK: \PDO does not support bind an array to an IN parameter, so
         // we just add the list as a string to the query. We aren't re-executing
         // the query and there is no worry of SQL injection here, so it doesn't
         // matter but it's clunky.
         $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_ORG WHERE ORG_ID IN ("
 	    . implode(",", $orgIDs) . ")");
         $stmt->execute();
-        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         return $this->filterIDsByKind($contactIDs, $kind);
@@ -390,7 +392,7 @@ class VCardDB
 	. implode(",", $contactIDs) . ") AND KIND LIKE :kind");
         $stmt->bindValue(":kind", $kind);
         $stmt->execute();
-        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         return $contactIDs;    
@@ -401,7 +403,7 @@ class VCardDB
      * @arg $category The string representing the category to search for.
      * May be a SQL pattern. Not empty.
      * @arg $kind If given, the kind (e.g. individual) to filter by.
-     * @return An array of contact IDs. No VCards are fetched.
+     * @return An array of contact IDs. No vCards are fetched.
      */
     public function fetchIDsForCategory($category, $kind="%")
     {
@@ -412,28 +414,28 @@ class VCardDB
         $stmt = $this->connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY_NAME LIKE :category");
         $stmt->bindValue(":category", $category);
         $stmt->execute();
-        $categoryIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $categoryIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         if (empty($categoryIDs)) return array();
 
-        // HACK: PDO does not support bind an array to an IN parameter, so
+        // HACK: \PDO does not support bind an array to an IN parameter, so
         // we just add the list as a string to the query. We aren't re-executing
         // the query and there is no worry of SQL injection here, so it doesn't
         // matter but it's clunky.
         $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_CATEGORIES WHERE CATEGORY_ID IN ("
 	    . implode(",", $categoryIDs) . ")");
         $stmt->execute();
-        $contactIDs = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
         return $this->filterIDsByKind($contactIDs, $kind);
     } // fetchIDsForCategory()
 
     /**
-     * Retrieve VCard records for the given Contact IDs.
+     * Retrieve vCard records for the given Contact IDs.
      * @param unknown $contactIDs
-     * @return An array of VCards indexed by contact ID.
+     * @return An array of vCards indexed by contact ID.
      */
     public function fetchByID(Array $contactIDs)
     {
@@ -465,7 +467,7 @@ class VCardDB
         $stmt->execute();
         assert($stmt->rowCount() <= 1);
                 
-        $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $result = $stmt->setFetchMode(\PDO::FETCH_ASSOC);
 
         $vcard = false;
 
@@ -563,7 +565,7 @@ class VCardDB
     	$stmt->bindValue(":contactID", $contactID);
     	$stmt->execute();
     	
-    	$results = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    	$results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
     	$stmt->closeCursor();
 
     	return $results ? $results : null;
@@ -617,7 +619,7 @@ class VCardDB
     	{
     		$stmt->bindValue(":id", $id);
     		$stmt->execute();
-    		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+    		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
     		$stmt->closeCursor();
     	
     		$record = array();
@@ -671,7 +673,7 @@ class VCardDB
     	{
     		$stmt->bindValue(":id", $id);
     		$stmt->execute();
-    		$result = $stmt->fetch(PDO::FETCH_NUM, 0);
+    		$result = $stmt->fetch(\PDO::FETCH_NUM, 0);
     		$stmt->closeCursor();
     
                 $propList[] = $result[0];
