@@ -8,17 +8,21 @@
 namespace vCardTools;
 
 /**
- * Default html output template using divs and spans.
+ * A template processor for turning vCards into HTML (or potentially,
+ * any other output format, but it is well-suited to tree-structured markup).
+ * The processor works from a collection of named html fragments, starts
+ * with the entry 'vcard', and recursively builds the output string.
+ *  
  * Each entry is itself a template: a named piece of html output. It is best
  * if you can have each template be a complete tag (e.g. div or span) or
- * attribute so that there are no errors with unmatch closing tags.
+ * attribute so that there are no errors with unmatched closing tags.
  * output_vcard() starts with the "vcard" entry.
  *
  * Pairs of curly braces "{{" and "}}" surrounding text are substituted with
  * another template from the same table. So "{{content}}" will be
  * substituted by looking up "content" in the same table. If there is no
  * template by that name (or you have a typo), it will be skipped.
- * The text within inside the curly braces will be referred to as the "key".
+ * The text inside the curly braces will be referred to as the "key".
  *
  * By following these substitutions, the html output gets built one template at
  * a time as a tree and can be quite sophisticated.
@@ -29,7 +33,7 @@ namespace vCardTools;
  * the same thing.
  *
  * The simplest key part is just a template name as with
- * "content" or "email_block", above. 
+ * "content" or "email_block", above.
  *
  * If the key part starts with a bang ("!"), the contents of the matching
  * vcard field are substituted for the key (e.g. "{{!email}}" or
@@ -66,6 +70,9 @@ namespace vCardTools;
  * Order of subkeys does not matter: "{{my_template, ?email}}" and
  * "{{?email, my_template}}" do the same thing.
  * 
+ * Subkeys starting with an underscore *are reserved*, as are subkeys beginning
+ * with a percent sign.
+ *
  * Do not edit this template here. Create your own similar template,
  * name it something else, and pass it to output_vcard().
  * If you pass your own template, this default template will
@@ -73,7 +80,7 @@ namespace vCardTools;
  * You can then create a template which will output as a table,
  * for instance, instead of divs and spans, or will output just summary
  * information. Build slowly and test a piece at a time.
- * 
+ *
  * As an aid to making your own templates, _fallback is treated specially.
  * When you set _fallback in your template to be another template array,
  * the template processor will look in _fallback for any definitions it is
@@ -91,7 +98,12 @@ namespace vCardTools;
  * may cause an error, or may hatch chickens. It also may do something different
  * in future versions.
  */
-$vcard_templates = [
+class Template
+{
+  /**
+   * Default html output template using divs and spans.
+   */
+  static $templates = [
 	"vcard" 
 		=>	'<div id="{{!_id}}" class="vcard" {{role_attrib, ?kind}}>{{content}}</div>',
         "role_attrib"
@@ -177,4 +189,231 @@ $vcard_templates = [
 		=>	'<span class="category">{{!categories}}</span>'
 	];
 
+	/**
+	 * Produce HTML output from the given vcard via the assoc array
+	 * of HTML templates.
+	 * @arg vCard vcard The vcard to output. Not null.
+	 * @arg array $templates An assoc array of named HTML templates. If not provided,
+	 * the static $templates will be used.
+	 * @return string The resulting HTML.
+	 */
+	static function output_vcard(vCard $vcard, Array $templates = null)
+	{
+	    assert(null !== $vcard);
+	    	
+	    $vcard->setFNAppropriately();
+	
+	    return self::i_process( $vcard,
+	    		 (null === $templates) ? self::$templates : $templates,
+			 'vcard'
+		);
+	} //output_vcard()
+	
+	/**
+	 * Parses a template substitution key in a template.
+	 * @arg string key The key to tokenize. Not null.
+	 * @return array An associative array containing "key": the full original key,
+	 * "quest": the part after any question mark indicating what field the
+	 * substitution depends on, "lookup": the bang-field indicating the contents of
+	 * a field to look up and substitute, and "iter_over" contains the part after a
+	 * hash mark which indicates a field with multiple instances we are to iterate
+	 * over.
+	 */
+	static private function i_parse_key($key)
+	{
+		assert($key !== null);
+		assert(is_string($key));
+		
+		$key_struct = array("key" => $key);
+	
+		// separate by commas, ignore leading and trailing space
+		$key_parts = array_map("trim", explode(",", $key));
+	
+		foreach ($key_parts as $part)
+		{
+			// if we have multiples of the same type, last one clobbers
+	
+			// figure out what it is and store it
+			if (substr($part, 0, 1) == "!")
+				$key_struct["look_up"] = substr($part, 1);
+			else if (substr($part, 0, 1) == "?")
+				$key_struct["quest"] = substr($part, 1);
+			else if (substr($part, 0, 1) == "#")
+				$key_struct["iter_over"] = substr($part, 1);
+			else
+				$key_struct["template"] = $part;
+		}
+		return $key_struct;
+	} // i_parse_key()
+	
+	/**
+	 * Finds the required template by $key in $templates and returns it if
+	 * found. Looks for the magic _fallback key in templates, and, if
+	 * there, expects it to be another associative array.
+	 * If the current key is not in $templates, searches in _fallback
+	 * (potentially recursively).
+	 * @arg string $key The key of the template to locate. Not null.
+	 * @arg array $templates An associative array of named HTML templates.
+	 * Not null.
+	 * @return string|null The requested template, if found.
+	 * @throws \DomainException If a fallback template is not an array.
+	 */
+	static private function i_find_template($key, Array $templates)
+	{
+	    assert($key !== null);
+	    assert(is_string($key));
+	    assert($templates !== null);
+		
+	    if (array_key_exists($key, $templates))
+	    {
+                return $templates[$key];
+	    } else if ( array_key_exists("_fallback", $templates) ) {
+	        $fallback = $templates["_fallback"];
+		if (!is_array($fallback))
+		{
+		    throw new \DomainException( 
+		        '$templates["_fallback"] is NOT an array.' );
+		}
+		return self::i_find_template($key, $fallback);
+	    } else {
+		return false;
+	    }
+	} // i_find_template()
+	
+	/**
+	 * Internal helper for producing HTML for vcard from templates.
+	 * Recurses from $key, processing substitutions and returning its portion
+	 * of the HTML tree.
+	 *
+	 * @arg vCard $vcard The vcard being written out.
+	 * @arg array $templates An assoc array of named html templates like
+	 * the static $templates.
+	 * @arg string $key The current template entry being processed.
+	 * Not null.
+	 * @arg string $iter_over The current vcard field being iterated over,
+	 * if any.
+	 * @arg mixed $iter_item The current element of the vcard field being iterated over,
+	 *   if any.
+	 * @return string The portion of the HTML tree output.
+	 */
+	static private function i_process( vCard $vcard,
+			Array $templates, $key, $iter_over="", $iter_item=null )
+	{
+	    assert(null !== $vcard);
+	    assert(null !== $templates);
+	    assert(null !== $key);
+	    assert(is_string($key));
+	    
+	    $key_struct = self::i_parse_key($key);
+	
+	    // if we are conditional on a field and it isn't there, bail.
+	    if (!empty($key_struct["quest"]))
+	    {
+		$quest_for = $key_struct["quest"];
+		$quest_item = $vcard->$quest_for;
+		if (empty($quest_item))
+		    return "";
+	    } // if quest
+	
+	    $value = "";
+	
+	    // If we are supposed to iterate over a field, do it and then bail
+	    // Actual output will be built in the sub-calls
+	    if (!empty($key_struct["iter_over"]))
+	    {
+                $iter_over = $key_struct["iter_over"];
+		$iter_items = $vcard->$iter_over;
+	
+		// if it is there, and is an array (multiple values), we need to
+		// handle them all.
+		if (is_array($iter_items))
+		{
+		    $iter_strings = array();
+		    foreach($iter_items as $iter_item)
+		        array_push( $iter_strings,
+			            self::i_process( $vcard, $templates,
+			    	                     $key_struct["template"],
+			    	        	     $iter_over, $iter_item ) );
+		    return join(" ", $iter_strings);
+		}
+	    } // if iter_over
+	
+	
+	    // If the key references a field we need to look up, do it.
+	    if (!empty($key_struct["look_up"]))
+	    {
+	        $look_up = $key_struct["look_up"];
+	
+		// if there is a space in the key, it's a structured element
+		$compound_key = explode(" ", $look_up);
+		if (count($compound_key) == 2)
+		{
+		    // if we are already processing a list of #items...
+		    if ($compound_key[0] == $iter_over)
+		    {
+                        $value = $iter_item[$compound_key[1]];
+		    } else {
+		    // otherwise look it up and *take first one found*
+	            // NOTE: vcard->__call() can be fragile.
+	            $items = $vcard->$compound_key[0];
+	            if (!empty($items))
+	            	$value = htmlspecialchars(
+			    array_key_exists($compound_key[1], $items[0])
+			    ? $items[0][$compound_key[1]] : ""
+			);
+		    }
+		} else if ($iter_over == $look_up) {
+		    $value = htmlspecialchars($iter_item);
+		} else if ($look_up == "_id") {
+		    $value = urlencode($vcard->fn);
+		} else if ($look_up == "_rawvcard") {
+		    $value .= $vcard;
+		} else {
+		    $items = $vcard->$look_up;
+		    if (!empty($items))
+		    {
+		        if (is_array($items))
+			    $value = htmlspecialchars(implode(" ", $items));
+			else
+			    $value = htmlspecialchars($items);
+		    }
+		}
+            } //if look_up
+	
+	    // if we already have a value or we don't have a template, bail
+	    if (!empty($value) || !array_key_exists("template", $key_struct))
+                return $value;
+	
+	    // Template processing
+	    $template = self::i_find_template(
+	    		$key_struct["template"], $templates );
+	    if (!empty($template))
+	    {
+                $low = 0;
+	
+		// FIXME: ugly loop
+		$high = strpos($template, "{{", $low);
+		while ($high !== false)
+		{
+		    // Strip and output until we hit a template marker
+		    $value .= substr($template, $low, $high - $low);
+	
+		    // strip the front marker
+		    $low = $high + 2;
+		    $high = strpos($template, "}}", $low);
+	
+		    // Remove and process the new marker
+		    $new_key = substr($template, $low, $high - $low);
+		    $high += 2;
+		    $low = $high;
+		    $value .= self::i_process( $vcard, $templates,
+					$new_key, $iter_over, $iter_item );
+		    $high = strpos($template, "{{", $low);
+		}
+		$value .= substr($template, $low);
+	    } // if template
+	
+	    return $value;
+	} //i_process()
+} // Template
 ?>
