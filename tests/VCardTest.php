@@ -66,6 +66,121 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	    array ( 'BEGIN:VCARD',		'BEGIN\:VCARD' )
 	);
     }
+        
+    /**
+     * Return the property values to build a sample vcard.
+     * @return array
+     */
+    public function getSeinarAPLInputs()
+    {
+    	$inputs = [
+    	    'org_Name'    => 'Seinar Fleet Systems',
+    	    'org_Unit1'   => 'Seinar Advanced Projects Laboratory',
+    	    'org_Unit2'   => 'TIE AO1X Division',
+    	    'fn'          => 'Seinar APL TIE AO1X Division',
+    	    'logo'        => 'http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg',
+    	    'category1'   => 'military industrial',
+    	    'category2'   => 'empire',
+    	    'category3'   => 'Research and Development',
+    	    'kind'        => 'organization'
+    	];
+    	 
+    	return $inputs;
+    }
+    
+    /**
+     * Return the property values to build a sample vcard.
+     * @return array
+     */
+    public function getDDBinksInputs()
+    {
+    	$inputs = [
+    	            'n_FirstName' => 'Darth',
+    	            'n_AdditionalNames' => 'Darth',
+    	            'n_LastName'  => 'Binks',
+    	            'org'       => 'Sith',
+    	            'fn'          => 'Darth Darth Binks',
+    	            'kind'        => 'individual'
+    	];
+    	return $inputs;
+    }
+    
+    /**
+     * Return the property values to build a sample vcard.
+     * @return array
+     */
+    public function getRaithSeinarInputs()
+    {
+    	$inputs = [
+    	'n_FirstName' => 'Raith',
+    	'n_LastName'  => 'Seinar',
+    	'org'       => 'Seinar Fleet Systems',
+    	'title'	     => 'CEO',
+    	'fn'          => 'Raith Seinar',
+    	'category1'   => 'military industrial',
+    	'category2'   => 'empire',
+    	'kind'        => 'individual'
+    			];
+    	 
+    	return $inputs;
+    }
+
+    public function getDDBinks()
+    {
+    	$inputs = $this->getDDBinksInputs();
+    	
+    	$dDBinks = new vCard();
+    	$dDBinks -> n($inputs['n_FirstName'], 'FirstName')
+    	-> n($inputs['n_LastName'], 'LastName')
+    	-> n($inputs['n_AdditionalNames'], 'AdditionalNames')
+    	-> org($inputs['org'], 'Name')
+    	-> fn($inputs['fn'])
+    	-> kind($inputs['kind']);
+
+    	return $dDBinks; 
+    }
+    
+    /**
+     * Fetch a pre-constructed sample vcard.
+     * @return an individual VCard.
+     */
+    public function getSeinarAPL()
+    {
+    	$raithSeinar = new VCard();
+    	$inputs = $this->getSeinarAPLInputs();
+    
+    	$seinarAPL = new VCard();
+    	$seinarAPL -> org($inputs['org_Name'], 'Name')
+    	-> org($inputs['org_Unit1'], 'Unit1')
+    	-> org($inputs['org_Unit2'], 'Unit2')
+    	-> fn($inputs['fn'])
+    	-> logo($inputs['logo'])
+    	-> categories($inputs['category1'])
+    	-> categories($inputs['category2'])
+    	-> categories($inputs['category3'])
+    	-> kind($inputs['kind']);
+    	return $seinarAPL;
+    }
+    	
+    /**
+     * Fetch a pre-constructed sample vcard.
+     * @return an individual VCard.
+     */
+    public function getRaithSeinar()
+    {
+    	$raithSeinar = new VCard();
+    	$inputs = $this->getRaithSeinarInputs();
+    	
+    	$raithSeinar -> n('Raith', 'FirstName')
+    	-> n('Seinar', 'LastName')
+    	-> org('Seinar Fleet Systems', 'Name')
+    	-> title('CEO')
+    	-> fn('Raith Seinar')
+    	-> categories('military industrial')
+    	-> categories('empire')
+    	-> kind('individual');
+    	return $raithSeinar;
+    }
 
     /**
      * @covers VCard::__construct
@@ -722,7 +837,130 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	sort($lines);
 	$this->assertEquals($expected, $lines);
     }
+    
+    /**
+     * @depends testToStringEmptyVCard
+     */
+    public function testToStringWithOneN()
+    {
+    	$name = [
+    	          'FirstName'       => 'Luna',
+    	          'AdditionalNames' => 'Charlotte',
+    	          'LastName'        => 'Begtrup',
+    	          'Prefixes'        => 'Ms.',
+    	          'Suffixes'        => 'PhD'
+    		];
+    	$fn = 'Ms. Luna C. Begtrup PhD';
+    	
+    	$expected = [
+    	              'N:' . $name['LastName'] . ';' . $name['FirstName']
+    	                   . ';' . $name['AdditionalNames'] . ';'
+    	                   . $name['Prefixes'] . ';' . $name['Suffixes'],
+    	              'FN:' . $fn
+    	            ];
 
+    	sort($expected);
+    	
+    	$vcard = new vCard();
+    	
+    	foreach ($name as $key => $value)
+    	{
+    		$vcard->n($value, $key);
+    	}
+    	$vcard->fn($fn);
+    	
+    	$output = "";
+    	$output .= $vcard;
+    	
+    	$lines = $this->checkAndRemoveSkeleton($output);
+    	
+    	// These can appear in any order
+    	sort($lines);
+    	$this->assertEquals($expected, $lines);
+    }
+    
+    /**
+     * @depends testToStringEmptyVCard
+     */
+    public function testToStringRaithSeinar()
+    {
+    	$inputs = $this->getRaithSeinarInputs();
+    	$expected = [
+    	'N:'.$inputs['n_LastName'].';'.$inputs['n_FirstName'].';;;',
+        'ORG:'.$inputs['org'].';;',
+        'TITLE:'.$inputs['title'],
+        'FN:'.$inputs['fn'],
+        'CATEGORIES:'.$inputs['category1'],
+        'CATEGORIES:'.$inputs['category2'],
+        'KIND:'.$inputs['kind']   
+    	];
+    	sort($expected);
+    	
+    	$vcard = $this->getRaithSeinar();
+    	
+    	$output = "";
+    	$output .= $vcard;
+    	$lines = $this->checkAndRemoveSkeleton($output);
+    	
+	// These can appear in any order
+	sort($lines);
+	$this->assertEquals($expected, $lines);
+    }
+
+    /**
+     * @depends testToStringEmptyVCard
+     */
+    public function testToStringDDBinks()
+    {
+    	$inputs = $this->getDDBinksInputs();
+    	$expected = [
+    	    'N:' . $inputs['n_LastName'] . ';' . $inputs['n_FirstName']
+    	         . ';' . $inputs['n_AdditionalNames'] . ';;',
+            'ORG:'.$inputs['org'].';;',
+            'FN:'.$inputs['fn'],
+            'KIND:'.$inputs['kind']   
+    	];
+    	sort($expected);
+    	
+    	$vcard = $this->getDDBinks();
+    	
+    	$output = "";
+    	$output .= $vcard;
+    	$lines = $this->checkAndRemoveSkeleton($output);
+    	
+	// These can appear in any order
+	sort($lines);
+	$this->assertEquals($expected, $lines);
+    }
+    
+    /**
+     * @depends testToStringEmptyVCard
+     */
+    public function testToStringSeinarAPL()
+    {
+    	$inputs = $this->getSeinarAPLInputs();
+    	$expected = [
+    	'ORG:'.$inputs['org_Name'].';'.$inputs['org_Unit1'].';'.$inputs['org_Unit2'],
+    	'FN:'.$inputs['fn'],
+    	'LOGO:'.addcslashes($inputs['logo'], "\\\n,:;"),
+    	'CATEGORIES:'.$inputs['category1'],
+    	'CATEGORIES:'.$inputs['category2'],
+    	'CATEGORIES:'.$inputs['category3'],
+    	'KIND:'.$inputs['kind']
+    	];
+    	sort($expected);
+    	 
+    	$vcard = $this->getSeinarAPL();
+    	 
+    	$output = "";
+    	$output .= $vcard;
+    	$lines = $this->checkAndRemoveSkeleton($output);
+    	 
+    	// These can appear in any order
+    	sort($lines);
+    	$this->assertEquals($expected, $lines);
+    }
+    
     /**
      * @covers vCard::__construct
      * @depends testConstructEmptyVCard
@@ -958,6 +1196,95 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 				print_r($vcard->url, true) );
 
    }
+   
+   /**
+    * @depends testImportEmptyVCard
+    * @depends testToStringDDBinks
+    */
+   public function testImportVCardDDBinks()
+   {
+       $vcard = $this->getDDBinks();
+       $vcard_string = '' . $vcard;
+       
+       $vcard2 = new vCard(null, $vcard_string);
+       unset($vcard2->version);
+       $this->assertEquals($vcard, $vcard2);
+   }
+   
+   /**
+    * @depends testImportEmptyVCard
+    * @depends testToStringRaithSeinar
+    */
+   public function testImportVCardRaithSeinar()
+   {
+   	$vcard = $this->getRaithSeinar();
+   	$vcard_string = '' . $vcard;
+   	 
+   	$vcard2 = new vCard(null, $vcard_string);
+   	unset($vcard2->version);
+   	$this->assertEquals($vcard, $vcard2);
+   }
+
+   /**
+    * @depends testImportEmptyVCard
+    * @depends testToStringSeinarAPL
+    */
+   public function testImportVCardSeinarAPL()
+   {
+   	$vcard = $this->getSeinarAPL();
+   	$vcard_string = '' . $vcard;
+   	 
+   	$vcard2 = new vCard(null, $vcard_string);
+   	unset($vcard2->version);
+   	$this->assertEquals($vcard, $vcard2);
+   }
+
+   /**
+    * @depends testImportEmptyVCard
+    * @depends testToStringDDBinks
+    */
+   public function testImportVCardDDBinksFromFile()
+   {
+   	$path = 'tests/vcards/DDBinks.vcf';
+   	$vcard = $this->getDDBinks();
+   	 
+   	$vcard2 = new vCard($path);
+   	unset($vcard2->version);
+   	 
+   	$this->assertEquals($vcard, $vcard2);
+   }   
+   
+   /**
+    * @depends testImportEmptyVCard
+    * @depends testToStringRaithSeinar
+    */
+   public function testImportVCardRaithSeinarFromFile()
+   {
+   	$path = 'tests/vcards/RaithSeinar.vcf';
+   	$vcard = $this->getRaithSeinar();
+   	 
+   	$vcard2 = new vCard($path);
+   	unset($vcard2->version);
+   
+   	$this->assertEquals($vcard, $vcard2);
+   }
+    
+   
+   /**
+    * @depends testImportEmptyVCard
+    * @depends testToStringSeinarAPL
+    */
+   public function testImportVCardSeinarAPLFromFile()
+   {
+   	$path = 'tests/vcards/SeinarAPL.vcf';
+   	$vcard = $this->getSeinarAPL();
+   	 
+   	$vcard2 = new vCard($path);
+   	unset($vcard2->version);
+   	
+   	$this->assertEquals($vcard, $vcard2);
+   }
+   
    /**
     * Make sure the magic __call method works correctly for call chaining.
     * @covers vCard::__set

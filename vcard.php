@@ -20,9 +20,7 @@ class vCard implements \Countable, \Iterator
      * @var string Current object mode - single or multiple
      * (for a single vCard within a file and multiple combined vCards)
      */
-    private $Mode;  //single, multiple
-
-    private $Path = '';
+    private $Mode = self::MODE_SINGLE;  //single, multiple
 
     /**
      * @var array Internal options container. Options:
@@ -108,10 +106,9 @@ class vCard implements \Countable, \Iterator
 	if ($Path)
 	{
 	    if (!is_readable($Path))
-	    throw new Exception('vCard: Path not accessible (' . $Path . ')');
+	    throw new \Exception('vCard: Path not accessible (' . $Path . ')');
 
-	    $this -> Path = $Path;
-	    $RawData = file_get_contents($this -> Path);
+	    $RawData = file_get_contents($Path);
 	}
 
        if (!$RawData) return true;
@@ -729,7 +726,8 @@ class vCard implements \Countable, \Iterator
 
 	foreach (self::$Spec_StructuredElements[$Key] as $Index => $StructurePart)
 	{
-	    $Result[$StructurePart] = isset($Text[$Index]) ? $Text[$Index] : null;
+	    if (!empty($Text[$Index]))
+	        $Result[$StructurePart] = $Text[$Index];
 	}
 	return $Result;
     } // ParseStructuredValue(
