@@ -108,6 +108,7 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
    	unset($vcard->version);
    	return $vcard;
     }
+
     /**
      * Ensure that we can instantiate a VCardDB instance.
      */
