@@ -79,16 +79,10 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function getRaithSeinar()
     {
-    	$raithSeinar = new VCard();
-    	$raithSeinar -> n('Raith', 'FirstName')
-    	             -> n('Seinar', 'LastName')
-    	             -> org('Seinar Fleet Systems', 'Name')
-    	             -> title('CEO')
-    	             -> fn('Raith Seinar')
-    	             -> categories('military industrial')
-    	             -> categories('empire')
-    	             -> kind('individual');
-    	return $raithSeinar;
+    	$path = 'tests/vcards/RaithSeinar.vcf';
+    	$vcard = new vCard($path);
+    	unset($vcard->version); // don't want version to cause == to fail.
+    	return $vcard;
     }
     
     /**
@@ -97,17 +91,10 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function getSeinarAPL()
     {
-    	$seinarAPL = new VCard();
-    	$seinarAPL -> org('Seinar Fleet Systems', 'Name')
-    	           -> org('Seinar Advanced Projects Laboratory', 'Unit1')
-    	           -> org('TIE AO1X Division', 'Unit2')
-    	           -> fn('Seinar APL TIE AO1X Division')
-    	           -> logo('http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg')
-    	           -> categories('military industrial')
-    	           -> categories('empire')
-    	           -> categories('Research and Development')
-    	           -> kind('organization');
-	return $seinarAPL;    	 
+    	$path = 'tests/vcards/SeinarAPL.vcf';
+   	$vcard = new vCard($path); // don't want version to cause == to fail.
+   	unset($vcard->version);
+   	return $vcard;    	 
     }
 
     /**
@@ -116,13 +103,10 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function getDDBinks()
     {
-    	$dDBinks = new vCard();
-    	$dDBinks -> n('Darth Darth', 'FirstName')
-    	         -> n('Binks', 'LastName')
-    	         -> org('Sith', 'Name')
-    	         -> fn('Darth Darth Binks')
-    	         -> kind('individual');
-        return $dDBinks;
+    	$path = 'tests/vcards/DDBinks.vcf';
+   	$vcard = new vCard($path); // don't want version to cause == to fail.
+   	unset($vcard->version);
+   	return $vcard;
     }
     /**
      * Ensure that we can instantiate a VCardDB instance.
