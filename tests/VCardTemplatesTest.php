@@ -153,4 +153,39 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     			print_r($output, true) );
     }
     
+    /**
+     * @depends testInsideSubsitution
+     */
+    public function testSubstitutionTree()
+    {
+    	$templates = [
+    	               'vcard'     => '{{A}}, {{One}}',
+    	               'A'         => 'a {{B}} {{C}}',
+    	               'B'         => 'b',
+    	               'C'         => 'c',
+    	               'One'       => '1 {{Two}} {{Three}}',
+    	               'Two'       => '2',
+    	               'Three'     => '3'
+    		     ];
+    	$vcard = new vCard();
+    	
+    	$output = Template::output_vcard($vcard, $templates);
+    	
+    	$this->assertEquals( 'a b c, 1 2 3', $output,
+    			print_r($output, true) );
+    }
+    
+    /**
+     * @depends testLiteralTemplate
+     */
+    public function testFallback()
+    {
+    	$templates_fallback = ["vcard" => "Fallback"];
+    	$templates = ['_fallback' => $templates_fallback];
+    	
+    	$vcard = new vCard();
+    	
+    	$output = Template::output_vcard($vcard, $templates);
+        $this->assertEquals('Fallback', $output);
+    } // testFallBack()
 }
