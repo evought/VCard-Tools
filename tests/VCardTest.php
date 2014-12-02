@@ -125,6 +125,44 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	return $inputs;
     }
 
+    /**
+     * Property values for a complex vCard for developing further tests,
+     * particularly with round-trip TYPE and other parameter support.
+     * @return multitype:string multitype:string
+     */
+    public function getJohnDoeInputs()
+    {
+    	$inputs = [
+		'n_FirstName'       => 'John',
+		'n_LastName'        => 'Doe',
+		'n_AdditionalNames' => 'Q., Public',
+		'fn'                => 'John Doe',
+		'fn_charset'        => 'UTF-8',
+		'tel1'		    => '(111) 555-1212',
+		'tel1_type'	    => 'WORK, VOICE',
+		'tel2'              => '(404) 555-1212',
+		'tel2_type'         => 'HOME, VOICE',
+		'tel3'              => '(404) 555-1213',
+		'tel3_type1'        => 'HOME',
+		'tel3_type2'        => 'VOICE',
+		'email1'            => 'forrestgump@example.com',
+		'email1_type'       => 'PREF, INTERNET',
+		'email2'            => 'example@example.com',
+		'email2_type'       => 'INTERNET',
+		'adr_StreetAddress' => '42 Plantation St.',
+		'adr_Locality'      => 'Baytown',
+		'adr_Region'        => 'LA',
+		'adr_Postal'        => '30314',
+		'adr_Country'       => 'United States of America',
+		'adr_type'          => 'HOME',
+		'url'               => 'https://www.google.com/',
+		'photo'             => 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Example_svg.svg/200px-Example_svg.svg.png',
+		'photo_parameters'   => ['VALUE' => 'URL', 'TYPE' => 'PNG']			
+    	];
+    	
+    	return $inputs;    	   
+    }
+    
     public function getDDBinks()
     {
     	$inputs = $this->getDDBinksInputs();
@@ -181,7 +219,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	-> kind('individual');
     	return $raithSeinar;
     }
-
+    
     /**
      * @covers VCard::__construct
      * @covers VCARD::__get
