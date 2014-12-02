@@ -9,6 +9,42 @@ require_once 'vcard-templates.php';
 
 class VCardTemplatesTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * Some cards for testing.
+     * @return an individual VCard.
+     */
+    public function getRaithSeinar()
+    {
+	$path = 'tests/vcards/RaithSeinar.vcf';
+	$vcard = new vCard($path);
+	unset($vcard->version); // don't want version to cause == to fail.
+	return $vcard;
+    }
+	
+    /**
+     * Some cards for testing.
+     * @return an organization VCard.
+     */
+    public function getSeinarAPL()
+    {
+	$path = 'tests/vcards/SeinarAPL.vcf';
+	$vcard = new vCard($path); // don't want version to cause == to fail.
+	unset($vcard->version);
+	return $vcard;
+    }
+	
+    /**
+     * Some cards for testing.
+     * @return an individual VCard.
+     */
+    public function getDDBinks()
+    {
+	$path = 'tests/vcards/DDBinks.vcf';
+	$vcard = new vCard($path); // don't want version to cause == to fail.
+	unset($vcard->version);
+	return $vcard;
+    }
+	
     public function testTrivialTemplate()
     {
     	$templates = [];
