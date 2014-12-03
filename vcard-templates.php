@@ -390,11 +390,9 @@ class Template
 	{
             $low = 0;
 	
-	    // FIXME: ugly loop
-	    $high = strpos($template, "{{", $low);
-	    while ($high !== false)
+	    while(($high = strpos($template, "{{", $low)) !== false)
 	    {
-	        // Strip and output until we hit a template marker
+	    	// Strip and output until we hit a template marker
 		$value .= substr($template, $low, $high - $low);
 	
 		// strip the front marker
@@ -407,7 +405,6 @@ class Template
 		$low = $high;
 		$value .= self::i_process( $vcard, $templates,
 					$new_key, $iter_over, $iter_item );
-		$high = strpos($template, "{{", $low);
             }
 	    $value .= substr($template, $low);
 	} // if template
