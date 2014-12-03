@@ -449,6 +449,11 @@ class Substitution
     
     private function __construct(){}
     
+    /**
+     * Parse the given text to produce and return a Substitution.
+     * @param string $text
+     * @return \vCardTools\Substitution
+     */
     public static function fromText($text)
     {
     	assert($text !== null);
@@ -475,6 +480,11 @@ class Substitution
     	return $substitution;
     }
     
+    /**
+     * Build and return a Substitution from the key of a fragment.
+     * @param unknown $fragment
+     * @return \vCardTools\Substitution
+     */
     public static function fromFragment($fragment)
     {
     	$substitution = new Substitution();
