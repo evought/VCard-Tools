@@ -103,7 +103,7 @@ class Template
   /**
    * Default html output template using divs and spans.
    */
-  static $templates = [
+  static public $defaultFragments = [
 	"vcard" 
 		=>	'<div id="{{!_id}}" class="vcard" {{role_attrib, ?kind}}>{{content}}</div>',
         "role_attrib"
@@ -190,23 +190,77 @@ class Template
 	];
 
     /**
-     * Produce HTML output from the given vcard via the assoc array
-     * of HTML templates.
+     * The array of named html fragments used to output a vCard.
+     * @var Array
+     */
+    private $fragments;
+        
+    /**
+     * The fallback Template to use for undefined keys.
+     * @var Template
+     */
+    private $fallback;
+    
+    /**
+     * The default Template instance.
+     * @var Template
+     */
+    static private $defaultTemplate;
+    
+    /**
+     * Return the default Template instance.
+     * @return \vCardTools\Template
+     */
+    static public function getDefaultTemplate()
+    {
+    	if (null === self::$defaultTemplate)
+    		self::$defaultTemplate = new Template(self::$defaultFragments);
+    	return self::$defaultTemplate;
+    }
+    
+    /**
+     * Create a new template.
+     * @param array $fragments A an array of named html fragments use to output
+     * a vCard. Not null.
+     * @param Template $fallback Another Template instance to fall back to for
+     * any keys not found in $fragments. Often, this should be
+     * getDefaultFragment().
+     */
+    public function __construct(Array $fragments, Template $fallback = null)
+    {
+    	assert(null !== $fragments);
+    	$this->fragments = $fragments;
+    	$this->fallback = $fallback;
+    }
+    
+    /**
+     * Returns the array of named html fragments this Template will use to
+     * output vCards.
+     * @return Array
+     */
+    public function getFragments() {return $this->fragments;}
+    
+    /**
+     * Return the Template this Template will use to look up undefined keys,
+     * or null if none defined.
+     * @return \vCardTools\Template
+     */
+    public function getFallback() {return $this->fallback;}
+
+    /**
+     * Produce HTML output from the given vcard by applying named fragments
+     * starting from 'vcard'.
      * @arg vCard vcard The vcard to output. Not null.
-     * @arg array $templates An assoc array of named HTML templates. If not provided,
-     * the static $templates will be used.
      * @return string The resulting HTML.
      */
-    static function output_vcard(vCard $vcard, Array $templates = null)
+    public function output(vCard $vcard)
     {
         assert(null !== $vcard);
+        assert($this->fragments !== null);
 	    	
         $vcard->setFNAppropriately();
 
-        return self::i_process( $vcard,
-	    		 (null === $templates) ? self::$templates : $templates,
-			 'vcard'
-	    );
+        return $this->i_process($vcard, 'vcard');
     } //output_vcard()
 	
     /**
@@ -241,54 +295,40 @@ class Template
 	    else if (substr($part, 0, 1) == "#")
 		$key_struct["iter_over"] = substr($part, 1);
 	    else
-		$key_struct["template"] = $part;
+		$key_struct['fragment'] = $part;
 	}
 		return $key_struct;
     } // i_parse_key()
 	
     /**
-     * Finds the required template by $key in $templates and returns it if
-     * found. Looks for the magic _fallback key in templates, and, if
-     * there, expects it to be another associative array.
-     * If the current key is not in $templates, searches in _fallback
+     * Finds the required template by $key in $fragments and returns it if
+     * found.
+     * If the current key is not in $fragments, searches in $fallback
      * (potentially recursively).
      * @arg string $key The key of the template to locate. Not null.
-     * @arg array $templates An associative array of named HTML templates.
-     * Not null.
      * @return string|null The requested template, if found.
-     * @throws \DomainException If a fallback template is not an array.
      */
-    static private function i_find_template($key, Array $templates)
+    private function i_findFragment($key)
     {
         assert($key !== null);
 	assert(is_string($key));
-	assert($templates !== null);
+	assert($this->fragments !== null);
 		
-	if (array_key_exists($key, $templates))
-	{
-            return $templates[$key];
-	} else if ( array_key_exists("_fallback", $templates) ) {
-	    $fallback = $templates["_fallback"];
-            if (!is_array($fallback))
-	    {
-	        throw new \DomainException( 
-		        '$templates["_fallback"] is NOT an array.' );
-	    }
-	    return self::i_find_template($key, $fallback);
-	} else {
-	    return false;
-	}
-    } // i_find_template()
+	if (array_key_exists($key, $this->fragments))
+            return $this->fragments[$key];
+	else if (null !== $this->fallback)
+	    return $this->fallback->i_findFragment($key);
+	else
+	    return null;
+    } // i_findFragment()
 	
     /**
-     * Internal helper for producing HTML for vcard from templates.
+     * Internal helper for producing HTML for vcard from fragments.
      * Recurses from $key, processing substitutions and returning its portion
      * of the HTML tree.
      *
      * @arg vCard $vcard The vcard being written out.
-     * @arg array $templates An assoc array of named html templates like
-     * the static $templates.
-     * @arg string $key The current template entry being processed.
+     * @arg string $key The current fragment entry being processed.
      * Not null.
      * @arg string $iter_over The current vcard field being iterated over,
      * if any.
@@ -296,11 +336,11 @@ class Template
      *   if any.
      * @return string The portion of the HTML tree output.
      */
-    static private function i_process( vCard $vcard,
-			Array $templates, $key, $iter_over="", $iter_item=null )
+    private function i_process( vCard $vcard, $key, $iter_over="",
+    		                $iter_item=null )
     {
 	assert(null !== $vcard);
-	assert(null !== $templates);
+	assert(null !== $this->fragments);
 	assert(null !== $key);
 	assert(is_string($key));
 	    
@@ -331,8 +371,8 @@ class Template
 	        $iter_strings = array();
 		foreach($iter_items as $iter_item)
 		    array_push( $iter_strings,
-			        self::i_process( $vcard, $templates,
-			    	                 $key_struct["template"],
+			        $this->i_process( $vcard,
+			    	                 $key_struct["fragment"],
 			    	        	 $iter_over, $iter_item ) );
 		return join(" ", $iter_strings);
             }
@@ -380,33 +420,33 @@ class Template
             }
         } //if look_up
 	
-	// if we already have a value or we don't have a template, bail
-	if (!empty($value) || !array_key_exists("template", $key_struct))
+	// if we already have a value or we don't have a fragment, bail
+	if (!empty($value) || !array_key_exists('fragment', $key_struct))
             return $value;
 	
-	// Template processing
-	$template = self::i_find_template($key_struct["template"], $templates);
-	if (!empty($template))
+	// Fragment processing
+	$fragment = $this->i_findFragment($key_struct['fragment']);
+	if (null !== $fragment)
 	{
             $low = 0;
 	
-	    while(($high = strpos($template, "{{", $low)) !== false)
+	    while(($high = strpos($fragment, "{{", $low)) !== false)
 	    {
 	    	// Strip and output until we hit a template marker
-		$value .= substr($template, $low, $high - $low);
+		$value .= substr($fragment, $low, $high - $low);
 	
 		// strip the front marker
 		$low = $high + 2;
-		$high = strpos($template, "}}", $low);
+		$high = strpos($fragment, "}}", $low);
 	
 		// Remove and process the new marker
-		$new_key = substr($template, $low, $high - $low);
+		$new_key = substr($fragment, $low, $high - $low);
 		$high += 2;
 		$low = $high;
-		$value .= self::i_process( $vcard, $templates,
-					$new_key, $iter_over, $iter_item );
+		$value .= self::i_process( $vcard, $new_key, $iter_over,
+				$iter_item );
             }
-	    $value .= substr($template, $low);
+	    $value .= substr($fragment, $low);
 	} // if template
 	
 	return $value;

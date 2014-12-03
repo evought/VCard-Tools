@@ -71,13 +71,33 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	}
 	return $vcard;
     }
-	
+
+    public function testGetDefault()
+    {
+    	$template = Template::getDefaultTemplate();
+    	$this->assertInstanceOf('vCardTools\Template', $template);
+    	
+    	$this->assertSame( Template::$defaultFragments,
+    			   $template->getFragments() );
+    	$this->assertNull($template->getFallback());
+    }
+    
+    public function testConstructWFragments()
+    {
+    	$fragments = [];
+    	$template = new Template($fragments);
+    	$this->assertInstanceOf('vCardTools\Template', $template);
+    	
+    	$this->assertSame($fragments, $template->getFragments());
+    	$this->assertNull($template->getFallback());
+    }
+    
     public function testTrivialTemplate()
     {
-    	$templates = [];
-    	$vcard = new VCard();
+    	$template = new Template([]);
+    	$vcard = new vCard();
 
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	
     	$this->assertEmpty($output, print_r($output, true));
     }
@@ -87,13 +107,13 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testLiteralTemplate()
     {
-    	$templates = ['vcard' => 'LiteralOutput'];
-    	$vcard = new VCard();
+    	$fragments = ['vcard' => 'LiteralOutput'];
+    	$template = new Template($fragments);
+    	$vcard = new vCard();
     
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	 
-    	$this->assertEquals( $templates['vcard'], $output,
-    			     print_r($output, true) );
+    	$this->assertEquals($fragments['vcard'], $output);
     }
     
     /**
@@ -101,16 +121,16 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testOneRecursion()
     {
-    	$templates = [
+    	$fragments = [
     	               'vcard'     => '{{content}}',
     	               'content'   => 'OneRecursion'
                      ];
-    	$vcard = new VCard();
+    	$template = new Template($fragments);
+    	$vcard = new vCard();
     
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     
-    	$this->assertEquals( $templates['content'], $output,
-    			print_r($output, true) );
+    	$this->assertEquals( $fragments['content'], $output);
     }
     
     /**
@@ -118,13 +138,11 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testOneRecursionNoMatch()
     {
-    	$templates = [
-    	'vcard'     => '{{content}}'
-    			];
-    	$vcard = new VCard();
+    	$fragments = ['vcard'     => '{{content}}'];
+    	$template = new Template($fragments);
+    	$vcard = new vCard();
     
-    	$output = Template::output_vcard($vcard, $templates);
-    
+    	$output = $template->output($vcard);    
     	$this->assertEmpty($output, print_r($output, true));
     }
     
@@ -133,18 +151,18 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testSeveralLayers()
     {
-    	$templates = [
-    	'vcard'     => '{{layer1}}',
-    	'layer1'    => '{{layer2}}',
-    	'layer2'    => '{{layer3}}',
-    	'layer3'    => 'Layer3Output'
-    			];
-    	$vcard = new VCard();
+    	$fragments = [
+    	               'vcard'     => '{{layer1}}',
+    	               'layer1'    => '{{layer2}}',
+    	               'layer2'    => '{{layer3}}',
+    	               'layer3'    => 'Layer3Output'
+    		     ];
+    	$template = new Template($fragments);
+    	$vcard = new vCard();
     
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     
-    	$this->assertEquals( $templates['layer3'], $output,
-    			print_r($output, true) );
+    	$this->assertEquals($fragments['layer3'], $output);
     }
 
     /**
@@ -152,16 +170,16 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testInsideSubsitution()
     {
-    	$templates = [
+    	$fragments = [
     	'vcard'     => 'Content {{content}} here.',
     	'content'   => 'goes'
     			];
-    	$vcard = new VCard();
+    	$template = new Template($fragments);
+    	$vcard = new vCard();
     
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     
-    	$this->assertEquals( 'Content goes here.', $output,
-    			print_r($output, true) );
+    	$this->assertEquals('Content goes here.', $output);
     }
 
     /**
@@ -169,15 +187,13 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testInsideSubsitutionEmpty()
     {
-    	$templates = [
-    	'vcard'     => 'Empty [{{content}}]'
-    			];
-    	$vcard = new VCard();
+    	$fragments = ['vcard'     => 'Empty [{{content}}]'];
+    	$template = new Template($fragments);
+    	$vcard = new vCard();
     
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     
-    	$this->assertEquals( 'Empty []', $output,
-    			print_r($output, true) );
+    	$this->assertEquals( 'Empty []', $output);
     }
     
     /**
@@ -185,7 +201,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testSubstitutionTree()
     {
-    	$templates = [
+    	$fragments = [
     	               'vcard'     => '{{A}}, {{One}}',
     	               'A'         => 'a {{B}} {{C}}',
     	               'B'         => 'b',
@@ -194,12 +210,12 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	               'Two'       => '2',
     	               'Three'     => '3'
     		     ];
+    	$template = new Template($fragments);
     	$vcard = new vCard();
     	
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	
-    	$this->assertEquals( 'a b c, 1 2 3', $output,
-    			print_r($output, true) );
+    	$this->assertEquals( 'a b c, 1 2 3', $output);
     }
     
     /**
@@ -207,12 +223,12 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testFallback()
     {
-    	$templates_fallback = ["vcard" => "Fallback"];
-    	$templates = ['_fallback' => $templates_fallback];
+    	$template_fallback = new Template(["vcard" => "Fallback"]);
+    	$template = new Template([], $template_fallback);
     	
     	$vcard = new vCard();
     	
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
         $this->assertEquals('Fallback', $output);
     } // testFallBack()
     
@@ -221,11 +237,11 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testFNLookupEmpty()
     {
-    	$templates = ['vcard' => '{{!fn}}'];
+    	$template = new Template(['vcard' => '{{!fn}}']);
     	 
     	$vcard = new vCard();
     	 
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	$this->assertEmpty($output);
     }
     
@@ -234,12 +250,12 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testFNLookup()
     {
-    	$templates = ['vcard' => '{{!fn}}'];
+    	$template = new Template(['vcard' => '{{!fn}}']);
     	
     	$vcard = $this->getRaithSeinar();
     	$this->assertNotEmpty($vcard->fn); // precondition
     	
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	$this->assertEquals($vcard->fn, $output);
     }
     
@@ -248,13 +264,14 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testNLastNameLookup()
     {
-    	$templates = ['vcard' => '{{!n LastName}}'];
+    	$template = new Template(['vcard' => '{{!n LastName}}']);
     	 
     	$vcard = $this->getRaithSeinar();
+    	//preconditions
     	$this->assertNotEmpty($vcard->n, print_r($vcard, true));
-    	$this->assertNotEmpty($vcard->n[0]['LastName'], print_r($vcard, true)); // precondition
+    	$this->assertNotEmpty($vcard->n[0]['LastName'], print_r($vcard, true));
     	 
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	$this->assertEquals($vcard->n[0]['LastName'], $output);
     }
     
@@ -263,12 +280,13 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testQuestFNNo()
     {
-    	$templates = ['vcard' => '{{output,?fn}}', 'output' => 'Output'];
+    	$fragments = ['vcard' => '{{output,?fn}}', 'output' => 'Output'];
+    	$template = new Template($fragments);
     	
     	$vcard = new vCard();
     	$this->assertEmpty($vcard->fn); // precondition
     	
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	$this->assertEmpty($output, $output);
     }
     
@@ -277,12 +295,13 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testQuestFNYes()
     {
-    	$templates = ['vcard' => '{{output,?fn}}', 'output' => 'Output'];
+    	$fragments = ['vcard' => '{{output,?fn}}', 'output' => 'Output'];
+    	$template = new Template($fragments);
     	 
     	$vcard = $this->getRaithSeinar();
     	$this->assertNotEmpty($vcard->fn); // precondition
     	 
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	$this->assertEquals('Output', $output);
     }
     
@@ -291,12 +310,12 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testCategoriesIterEmpty()
     {
-    	$templates = ['vcard' => '{{#categories}}'];
+    	$template = new Template(['vcard' => '{{#categories}}']);
     	
     	$vcard = new vCard();
     	$this->assertEmpty($vcard->categories); // precondition
     	
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	$this->assertEmpty($output);
     }
     
@@ -305,17 +324,18 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testCategoriesIter()
     {
-    	$templates = [
+    	$fragments = [
     			'vcard'    => '{{each,#categories}}',
     			'each'     => '{{!categories}}|'
 		     ];
+    	$template = new Template($fragments);
     	 
     	$vcard = $this->getSeinarApl();
     	$this->assertNotEmpty($vcard->categories); // precondition
     	$expected = $vcard->categories;
     	sort($expected);
     	 
-    	$output = Template::output_vcard($vcard, $templates);
+    	$output = $template->output($vcard);
     	$this->assertNotEmpty($output);
     	
     	$output_array = explode('|', $output);
