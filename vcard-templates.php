@@ -264,41 +264,17 @@ class Template
     } //output_vcard()
 	
     /**
-     * Parses a template substitution key in a template.
-     * @arg string key The key to tokenize. Not null.
-     * @return array An associative array containing "key": the full original key,
-     * "quest": the part after any question mark indicating what field the
-     * substitution depends on, "lookup": the bang-field indicating the contents of
-     * a field to look up and substitute, and "iter_over" contains the part after a
-     * hash mark which indicates a field with multiple instances we are to iterate
-     * over.
+     * Parses a substitution string in a fragment.
+     * @arg string text The text to tokenize. Not null.
+     * @return Substitution
      */
-    static private function i_parse_key($key)
+    protected function i_parseSubstitution($text)
     {
-	assert($key !== null);
-	assert(is_string($key));
+	assert($text !== null);
+	assert(is_string($text));
 
-	$key_struct = array("key" => $key);
-	
-	// separate by commas, ignore leading and trailing space
-	$key_parts = array_map("trim", explode(",", $key));
-	
-	foreach ($key_parts as $part)
-	{
-	    // if we have multiples of the same type, last one clobbers
-	
-	    // figure out what it is and store it
-	    if (substr($part, 0, 1) == "!")
-		$key_struct["look_up"] = substr($part, 1);
-	    else if (substr($part, 0, 1) == "?")
-		$key_struct["quest"] = substr($part, 1);
-	    else if (substr($part, 0, 1) == "#")
-		$key_struct["iter_over"] = substr($part, 1);
-	    else
-		$key_struct['fragment'] = $part;
-	}
-		return $key_struct;
-    } // i_parse_key()
+	return new Substitution($text);
+    } // i_parseSubstitution()
 	
     /**
      * Finds the required template by $key in $fragments and returns it if
@@ -336,22 +312,22 @@ class Template
      *   if any.
      * @return string The portion of the HTML tree output.
      */
-    private function i_process( vCard $vcard, $key, $iter_over="",
-    		                $iter_item=null )
+    private function i_process( vCard $vcard, $key, $iterOver="",
+    		                $iterItem=null )
     {
 	assert(null !== $vcard);
 	assert(null !== $this->fragments);
 	assert(null !== $key);
 	assert(is_string($key));
 	    
-	$key_struct = self::i_parse_key($key);
+	$substitution = $this->i_parseSubstitution($key);
 	
 	// if we are conditional on a field and it isn't there, bail.
-	if (!empty($key_struct["quest"]))
+	if (!empty($substitution->quest))
 	{
-	    $quest_for = $key_struct["quest"];
-	    $quest_item = $vcard->$quest_for;
-	    if (empty($quest_item))
+	    $questFor = $substitution->quest;
+	    $questItem = $vcard->$questFor;
+	    if (empty($questItem))
 	        return "";
 	} // if quest
 	
@@ -359,42 +335,44 @@ class Template
 	
 	// If we are supposed to iterate over a field, do it and then bail
 	// Actual output will be built in the sub-calls
-        if (!empty($key_struct["iter_over"]))
+        if (!empty($substitution->iterOver))
 	{
-            $iter_over = $key_struct["iter_over"];
-	    $iter_items = $vcard->$iter_over;
+            $iterOver = $substitution->iterOver;
+	    $iterItems = $vcard->$iterOver;
 	
+ 
 	    // if it is there, and is an array (multiple values), we need to
 	    // handle them all.
-	    if (is_array($iter_items))
+	    //FIXME: What happens if $iter_items is NOT an array?
+	    if (is_array($iterItems))
 	    {
-	        $iter_strings = array();
-		foreach($iter_items as $iter_item)
-		    array_push( $iter_strings,
+	        $iterStrings = array();
+		foreach($iterItems as $iterItem)
+		    array_push( $iterStrings,
 			        $this->i_process( $vcard,
-			    	                 $key_struct["fragment"],
-			    	        	 $iter_over, $iter_item ) );
-		return join(" ", $iter_strings);
+			    	                 $substitution->fragment,
+			    	        	 $iterOver, $iterItem ) );
+		return join(" ", $iterStrings);
             }
-	} // if iter_over
+	} // if iterOver
 	
 	
 	// If the key references a field we need to look up, do it.
-	if (!empty($key_struct["look_up"]))
+	if (!empty($substitution->lookUp))
 	{
-	    $look_up = $key_struct["look_up"];
+	    $lookUp = $substitution->lookUp;
 	
 	    // if there is a space in the key, it's a structured element
-	    $compound_key = explode(" ", $look_up);
+	    $compound_key = explode(" ", $lookUp);
 	    if (count($compound_key) == 2)
 	    {
 	        // if we are already processing a list of #items...
-		if ($compound_key[0] == $iter_over)
+		if ($compound_key[0] == $iterOver)
 		{
-                    $value = $iter_item[$compound_key[1]];
+                    $value = $iterItem[$compound_key[1]];
 		} else {
 		    // otherwise look it up and *take first one found*
-	            // NOTE: vcard->__call() can be fragile.
+	            // NOTE: vcard->__get can be fragile.
 	            $items = $vcard->$compound_key[0];
 	            if (!empty($items))
 	            	$value = htmlspecialchars(
@@ -402,14 +380,14 @@ class Template
 			    ? $items[0][$compound_key[1]] : ""
 			);
 		}
-	    } else if ($iter_over == $look_up) {
-		$value = htmlspecialchars($iter_item);
-            } else if ($look_up == "_id") {
+	    } else if ($iterOver == $lookUp) {
+		$value = htmlspecialchars($iterItem);
+            } else if ($lookUp == "_id") {
 		$value = urlencode($vcard->fn);
-            } else if ($look_up == "_rawvcard") {
+            } else if ($lookUp == "_rawvcard") {
 	        $value .= $vcard;
 	    } else {
-	        $items = $vcard->$look_up;
+	        $items = $vcard->$lookUp;
 	        if (!empty($items))
 	        {
 	            if (is_array($items))
@@ -418,14 +396,14 @@ class Template
 			$value = htmlspecialchars($items);
 		}
             }
-        } //if look_up
+        } //if lookUp
 	
 	// if we already have a value or we don't have a fragment, bail
-	if (!empty($value) || !array_key_exists('fragment', $key_struct))
+	if (!empty($value) || (null === $substitution->fragment))
             return $value;
 	
 	// Fragment processing
-	$fragment = $this->i_findFragment($key_struct['fragment']);
+	$fragment = $this->i_findFragment($substitution->fragment);
 	if (null !== $fragment)
 	{
             $low = 0;
@@ -440,11 +418,11 @@ class Template
 		$high = strpos($fragment, "}}", $low);
 	
 		// Remove and process the new marker
-		$new_key = substr($fragment, $low, $high - $low);
+		$newSubstitution = substr($fragment, $low, $high - $low);
 		$high += 2;
 		$low = $high;
-		$value .= self::i_process( $vcard, $new_key, $iter_over,
-				$iter_item );
+		$value .= self::i_process( $vcard, $newSubstitution, $iterOver,
+				$iterItem );
             }
 	    $value .= substr($fragment, $low);
 	} // if template
@@ -452,4 +430,56 @@ class Template
 	return $value;
     } //i_process()
 } // Template
+
+class Substitution
+{
+    /**
+     * The name of the fragment to output, or null.
+     * @var string
+     */
+    public $fragment = null;
+	    
+    /**
+     * The name of the vCard Property this substitution is contingent on,
+     * or null;
+     * @var string
+     */
+    public $quest = null;
+    
+    /**
+     * The name of a vCard Property to lookup or null.
+     * @var string
+     */
+    public $lookUp = null;
+    
+    /**
+     * The name of a vCard Property to iterate over or null.
+     * @var string
+     */
+    public $iterOver = null;
+    
+    public function __construct($text)
+    {
+    	assert($text !== null);
+    	assert(is_string($text));
+    	    	
+    	// separate by commas, ignore leading and trailing space
+    	$text_parts = array_map("trim", explode(",", $text));
+    	
+    	foreach ($text_parts as $part)
+    	{
+    		// if we have multiples of the same type, last one clobbers
+    	
+    		// figure out what it is and store it
+    		if (substr($part, 0, 1) == "!")
+    			$this->lookUp = substr($part, 1);
+    		else if (substr($part, 0, 1) == "?")
+    			$this->quest = substr($part, 1);
+    		else if (substr($part, 0, 1) == "#")
+    			$this->iterOver = substr($part, 1);
+    		else
+    			$this->fragment = $part;
+    	}
+    }
+}
 ?>
