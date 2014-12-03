@@ -260,22 +260,9 @@ class Template
 	    	
         $vcard->setFNAppropriately();
 
-        return $this->i_process($vcard, 'vcard');
+        return $this->i_process($vcard, Substitution::fromFragment('vcard'));
     } //output_vcard()
-	
-    /**
-     * Parses a substitution string in a fragment.
-     * @arg string text The text to tokenize. Not null.
-     * @return Substitution
-     */
-    protected function i_parseSubstitution($text)
-    {
-	assert($text !== null);
-	assert(is_string($text));
-
-	return new Substitution($text);
-    } // i_parseSubstitution()
-	
+		
     /**
      * Finds the required template by $key in $fragments and returns it if
      * found.
@@ -304,7 +291,7 @@ class Template
      * of the HTML tree.
      *
      * @arg vCard $vcard The vcard being written out.
-     * @arg string $key The current fragment entry being processed.
+     * @arg Substitution $substitution The current Substitution being processed.
      * Not null.
      * @arg string $iter_over The current vcard field being iterated over,
      * if any.
@@ -312,22 +299,18 @@ class Template
      *   if any.
      * @return string The portion of the HTML tree output.
      */
-    private function i_process( vCard $vcard, $key, $iterOver="",
-    		                $iterItem=null )
+    private function i_process( vCard $vcard, Substitution $substitution,
+    		                $iterOver="", $iterItem=null )
     {
 	assert(null !== $vcard);
 	assert(null !== $this->fragments);
-	assert(null !== $key);
-	assert(is_string($key));
-	    
-	$substitution = $this->i_parseSubstitution($key);
-	
+	assert(null !== $substitution);
+	    	
 	// if we are conditional on a field and it isn't there, bail.
-	if (!empty($substitution->quest))
+	if ($substitution->hasQuest())
 	{
-	    $questFor = $substitution->quest;
-	    $questItem = $vcard->$questFor;
-	    if (empty($questItem))
+	    $questFor = $substitution->getQuest();
+	    if (empty($vcard->$questFor))
 	        return "";
 	} // if quest
 	
@@ -335,32 +318,30 @@ class Template
 	
 	// If we are supposed to iterate over a field, do it and then bail
 	// Actual output will be built in the sub-calls
-        if (!empty($substitution->iterOver))
+        if ($substitution->iterates())
 	{
-            $iterOver = $substitution->iterOver;
-	    $iterItems = $vcard->$iterOver;
-	
+            $iterOver = $substitution->getIterOver();	
  
 	    // if it is there, and is an array (multiple values), we need to
 	    // handle them all.
-	    //FIXME: What happens if $iter_items is NOT an array?
-	    if (is_array($iterItems))
+            //FIXME: tortured handling of Substitution to avoid infinite loop
+	    if (is_array($vcard->$iterOver))
 	    {
 	        $iterStrings = array();
-		foreach($iterItems as $iterItem)
+		foreach($vcard->$iterOver as $iterItem)
 		    array_push( $iterStrings,
 			        $this->i_process( $vcard,
-			    	                 $substitution->fragment,
+			    	Substitution::fromFragment($substitution->getFragment()),
 			    	        	 $iterOver, $iterItem ) );
 		return join(" ", $iterStrings);
             }
-	} // if iterOver
+	} // if iterates
 	
 	
 	// If the key references a field we need to look up, do it.
-	if (!empty($substitution->lookUp))
+	if ($substitution->shouldLookUp())
 	{
-	    $lookUp = $substitution->lookUp;
+	    $lookUp = $substitution->getLookUp();
 	
 	    // if there is a space in the key, it's a structured element
 	    $compound_key = explode(" ", $lookUp);
@@ -399,11 +380,11 @@ class Template
         } //if lookUp
 	
 	// if we already have a value or we don't have a fragment, bail
-	if (!empty($value) || (null === $substitution->fragment))
+	if (!empty($value) || (!$substitution->hasFragment()))
             return $value;
 	
 	// Fragment processing
-	$fragment = $this->i_findFragment($substitution->fragment);
+	$fragment = $this->i_findFragment($substitution->getFragment());
 	if (null !== $fragment)
 	{
             $low = 0;
@@ -418,7 +399,7 @@ class Template
 		$high = strpos($fragment, "}}", $low);
 	
 		// Remove and process the new marker
-		$newSubstitution = substr($fragment, $low, $high - $low);
+		$newSubstitution = Substitution::fromText(substr($fragment, $low, $high - $low));
 		$high += 2;
 		$low = $high;
 		$value .= self::i_process( $vcard, $newSubstitution, $iterOver,
@@ -437,49 +418,68 @@ class Substitution
      * The name of the fragment to output, or null.
      * @var string
      */
-    public $fragment = null;
+    private $fragment = null;
+    public function getFragment() {return $this->fragment;}
+    public function hasFragment() {return $this->fragment !== null;}
 	    
     /**
      * The name of the vCard Property this substitution is contingent on,
      * or null;
      * @var string
      */
-    public $quest = null;
+    private $quest = null;
+    public function getQuest() {return $this->quest;}
+    public function hasQuest() {return $this->quest !== null;}
     
     /**
      * The name of a vCard Property to lookup or null.
      * @var string
      */
-    public $lookUp = null;
+    private $lookUp = null;
+    public function getLookUp() {return $this->lookUp;}
+    public function shouldLookUp() {return $this->lookUp !== null;}
     
     /**
      * The name of a vCard Property to iterate over or null.
      * @var string
      */
-    public $iterOver = null;
+    private $iterOver = null;
+    public function getIterOver() {return $this->iterOver;}
+    public function iterates() {return $this->iterOver !== null;}
     
-    public function __construct($text)
+    private function __construct(){}
+    
+    public static function fromText($text)
     {
     	assert($text !== null);
     	assert(is_string($text));
-    	    	
+    	
+    	$substitution = new Substitution();
     	// separate by commas, ignore leading and trailing space
     	$text_parts = array_map("trim", explode(",", $text));
-    	
+    	 
     	foreach ($text_parts as $part)
     	{
-    		// if we have multiples of the same type, last one clobbers
-    	
-    		// figure out what it is and store it
+    		// If we have multiples of the same type, last one clobbers
+    		// Figure out what it is and store it
     		if (substr($part, 0, 1) == "!")
-    			$this->lookUp = substr($part, 1);
+    			$substitution->lookUp = substr($part, 1);
     		else if (substr($part, 0, 1) == "?")
-    			$this->quest = substr($part, 1);
+    			$substitution->quest = substr($part, 1);
     		else if (substr($part, 0, 1) == "#")
-    			$this->iterOver = substr($part, 1);
+    			$substitution->iterOver = substr($part, 1);
     		else
-    			$this->fragment = $part;
+    			$substitution->fragment = $part;
     	}
+    	
+    	return $substitution;
+    }
+    
+    public static function fromFragment($fragment)
+    {
+    	$substitution = new Substitution();
+    	$substitution->fragment = $fragment;
+    	return $substitution;
     }
 }
 ?>
