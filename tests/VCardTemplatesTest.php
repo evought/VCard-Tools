@@ -348,4 +348,25 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	sort($output_array);
     	$this->assertEquals($expected, $output_array);
     }
+    
+    /**
+     * Border case. Using iteration on a single-value property.
+     * Principle of least surprise: should substitute once.
+     * @depends testCategoriesIter
+     */
+    public function testFNITer()
+    {
+	$fragments = [
+    			'vcard'    => '{{each,#fn}}',
+    			'each'     => '{{!fn}}'
+		     ];
+    	$template = new Template($fragments);
+    	 
+    	$vcard = $this->getSeinarApl();
+    	$this->assertNotEmpty($vcard->fn); // precondition
+    	$expected = $vcard->fn;
+    	 
+    	$output = $template->output($vcard);
+    	$this->assertEquals($expected, $output);
+    }
 }

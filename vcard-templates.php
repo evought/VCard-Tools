@@ -260,7 +260,7 @@ class Template
 	    	
         $vcard->setFNAppropriately();
 
-        return $this->i_process($vcard, Substitution::fromFragment('vcard'));
+        return $this->i_processFragment($vcard, 'vcard');
     } //output_vcard()
 		
     /**
@@ -299,8 +299,9 @@ class Template
      *   if any.
      * @return string The portion of the HTML tree output.
      */
-    private function i_process( vCard $vcard, Substitution $substitution,
-    		                $iterOver="", $iterItem=null )
+    private function i_processSubstitution( vCard $vcard,
+    		                            Substitution $substitution,
+    		                            $iterOver="", $iterItem=null )
     {
 	assert(null !== $vcard);
 	assert(null !== $this->fragments);
@@ -316,28 +317,9 @@ class Template
 	
 	$value = "";
 	
-	// If we are supposed to iterate over a field, do it and then bail
-	// Actual output will be built in the sub-calls
         if ($substitution->iterates())
-	{
-            $iterOver = $substitution->getIterOver();	
- 
-	    // if it is there, and is an array (multiple values), we need to
-	    // handle them all.
-            //FIXME: tortured handling of Substitution to avoid infinite loop
-	    if (is_array($vcard->$iterOver))
-	    {
-	        $iterStrings = array();
-		foreach($vcard->$iterOver as $iterItem)
-		    array_push( $iterStrings,
-			        $this->i_process( $vcard,
-			    	Substitution::fromFragment($substitution->getFragment()),
-			    	        	 $iterOver, $iterItem ) );
-		return join(" ", $iterStrings);
-            }
-	} // if iterates
-	
-	
+		return $this->i_processIteration($vcard, $substitution);
+		
 	// If the key references a field we need to look up, do it.
 	if ($substitution->shouldLookUp())
 	{
@@ -383,33 +365,68 @@ class Template
 	if (!empty($value) || (!$substitution->hasFragment()))
             return $value;
 	
-	// Fragment processing
-	$fragment = $this->i_findFragment($substitution->getFragment());
+	return $this->i_processFragment( $vcard, $substitution->getFragment(),
+	        $iterOver, $iterItem );
+    } //i_processSubstitution()
+    
+    private function i_processIteration(vCard $vcard, Substitution $substitution)
+    {
+    	$iterOver = $substitution->getIterOver();
+    	
+    	// if it is there, and is an array (multiple values), we need to
+    	// handle them all.
+    	if (is_array($vcard->$iterOver))
+    	{
+    		$iterStrings = array();
+    		foreach($vcard->$iterOver as $iterItem)
+    			array_push( $iterStrings,
+    					$this->i_processFragment( $vcard,
+    							$substitution->getFragment(),
+    							$iterOver, $iterItem ) );
+    		return join(" ", $iterStrings);
+    	} else if (($iterItem = $vcard->$iterOver) !== null) {
+    		return $this->i_processFragment( $vcard,
+    				$substitution->getFragment(),
+    				$iterOver, $iterItem );
+    	} else {
+    		return "";
+    	}
+    	 
+    }
+    
+    private function i_processFragment( vCard $vcard, $fragmentKey, $iterOver=null,
+    		                        $iterItem=null)
+    {
+    	assert(null !== $fragmentKey);
+    	assert(is_string($fragmentKey));
+    	
+    	$fragment = $this->i_findFragment($fragmentKey);
+    	$value = '';
+    	
 	if (null !== $fragment)
 	{
             $low = 0;
 	
-	    while(($high = strpos($fragment, "{{", $low)) !== false)
+	    while(($high = strpos($fragment, '{{', $low)) !== false)
 	    {
 	    	// Strip and output until we hit a template marker
 		$value .= substr($fragment, $low, $high - $low);
 	
 		// strip the front marker
 		$low = $high + 2;
-		$high = strpos($fragment, "}}", $low);
+		$high = strpos($fragment, '}}', $low);
 	
 		// Remove and process the new marker
 		$newSubstitution = Substitution::fromText(substr($fragment, $low, $high - $low));
 		$high += 2;
 		$low = $high;
-		$value .= self::i_process( $vcard, $newSubstitution, $iterOver,
-				$iterItem );
+		$value .= self::i_processSubstitution( $vcard, $newSubstitution,
+				$iterOver, $iterItem );
             }
 	    $value .= substr($fragment, $low);
-	} // if template
-	
+	} // if fragment
 	return $value;
-    } //i_process()
+    }
 } // Template
 
 class Substitution
