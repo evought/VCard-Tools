@@ -154,11 +154,58 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     	$this->assertFalse($substitution->hasQuest());
     
-    	$this->assertTrue($substitution->shouldLookUp());
-    	$this->assertEquals('n', $substitution->getLookUp());
+    	$this->assertTrue( $substitution->shouldLookUp(),
+                           print_r($substitution->getLookUp(), true) );
+    	$this->assertEquals('n', $substitution->getLookUp()['property']);
+    	
+    	$this->assertFalse($substitution->lookUpIsStructured());
     
     	$this->assertFalse($substitution->iterates());
     }
+    
+    public function testSubstitutionFromTextLookupStructured()
+    {
+    	$substitution = Substitution::fromText('!n FirstName');
+    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    
+    	$this->assertFalse($substitution->hasFragment());
+    
+    	$this->assertFalse($substitution->hasQuest());
+    
+    	$this->assertTrue( $substitution->shouldLookUp(),
+    			print_r($substitution->getLookUp(), true) );
+    	$this->assertEquals('n', $substitution->getLookUp()['property']);
+    	 
+    	$this->assertTrue($substitution->lookUpIsStructured());
+    	$this->assertEquals('FirstName', $substitution->getLookUp()['field']);
+    
+    	$this->assertFalse($substitution->iterates());
+    }
+    
+    public function testSubstitutionFromTextLookupMagic()
+    {
+    	$substitution = Substitution::fromText('!_id');
+    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    
+    	$this->assertFalse($substitution->hasFragment());
+    	$this->assertFalse($substitution->hasQuest());
+    
+    	$this->assertTrue($substitution->shouldLookUp());
+    	$this->assertFalse($substitution->lookUpIsStructured());
+    	$this->assertTrue($substitution->isMagic());
+    	$this->assertEquals('_id', $substitution->getLookUp()['property']);
+    
+    	$this->assertFalse($substitution->iterates());
+    }
+
+    /**
+     * @expectedException \DomainException
+     */
+    public function testSubstitutionFromTextLookupBadMagic()
+    {
+    	$substitution = Substitution::fromText('!_abacadabra');
+    }
+    
     
     public function testSubstitutionFromTextIterates()
     {
