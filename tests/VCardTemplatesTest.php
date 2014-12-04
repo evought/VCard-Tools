@@ -80,6 +80,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	
     	$this->assertSame( Template::$defaultFragments,
     			   $template->getFragments() );
+    	$this->assertSame($template, Template::getTemplate('default'));
     	$this->assertNull($template->getFallback());
     }
     
@@ -91,6 +92,159 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	
     	$this->assertSame($fragments, $template->getFragments());
     	$this->assertNull($template->getFallback());
+    }
+    
+    public function testGetTemplateNoneExists()
+    {
+    	$template = Template::getTemplate('testGetTemplateNoneExists');
+    	$this->assertNull($template, print_r($template, true));
+    }
+    
+    /**
+     * @depends testConstructWFragments
+     */
+    public function testRegisterTemplate()
+    {
+    	$template = new Template([]);
+    	Template::registerTemplate('testRegisterTemplate', $template);
+    	$this->assertSame( $template,
+    			   Template::getTemplate('testRegisterTemplate') );
+    }
+    
+    /**
+     * @testConstructWFragments
+     */
+    public function testFromININoName()
+    {
+    	$template
+    	    = Template::fromINI('tests/templates/testFromININoName.ini');
+    	$this->assertNotNull($template);
+    	
+    	$fragments = $template->getFragments();
+    	$this->assertNotNull($fragments);
+    	
+    	$this->assertEquals(['vcard'=>'content'], $fragments);
+    	
+    	$this->assertNull($template->getFallback());
+    }
+    
+    /**
+     * @testFromININoName
+     */
+    public function testFromINIWithName()
+    {
+    	$expected = [
+    	              'vcard' => 'content',
+                      'template_name' => 'testFromINIWithName'
+                    ];
+    	
+    	$template
+    	    = Template::fromINI('tests/templates/testFromINIWithName.ini');
+    	$this->assertNotNull($template);
+    	 
+    	$fragments = $template->getFragments();
+    	$this->assertNotNull($fragments);
+    	 
+    	$this->assertEquals($expected, $fragments);
+    	 
+    	$this->assertNull($template->getFallback());
+    	
+    	$registeredTemplate = Template::getTemplate('testFromINIWithName');
+    	$this->assertSame($template, $registeredTemplate);
+    }
+    
+    /**
+     * @testFromINIWithName
+     */
+    public function testFromINIWithNameExplicitFallback()
+    {
+    	$expected = [
+    	              'vcard' => 'content',
+    	              'template_name' => 'testFromINIWithNameExplicitFallback'
+    		    ];
+    	 
+    	$template = Template::fromINI(
+    	    'tests/templates/testFromINIWithNameExplicitFallback.ini',
+            Template::getDefaultTemplate() );
+    	$this->assertNotNull($template);
+    
+    	$fragments = $template->getFragments();
+    	$this->assertNotNull($fragments);
+    
+    	$this->assertEquals($expected, $fragments);
+    
+    	$this->assertSame( Template::getDefaultTemplate(),
+    			   $template->getFallback() );
+    	 
+    	$registeredTemplate
+    	    = Template::getTemplate('testFromINIWithNameExplicitFallback');
+    	$this->assertSame($template, $registeredTemplate);
+    }
+    
+    /**
+     * @testFromINIWithName
+     */
+    public function testFromINIWithFallback()
+    {
+    	// precondition
+    	$this->assertNotNull(Template::getTemplate('testFromINIWithName'));
+    	
+    	$expected = [
+    	              'vcard' => 'content',
+    	              'template_name' => 'testFromINIWithFallback',
+    	              '_fallback'     => 'testFromINIWithName'
+    		     ];
+    
+    	$template = Template::fromINI(
+    			'tests/templates/testFromINIWithFallback.ini' );
+    	$this->assertNotNull($template);
+    
+    	$fragments = $template->getFragments();
+    	$this->assertNotNull($fragments);
+    
+    	$this->assertEquals($expected, $fragments);
+    
+    	$this->assertNotNull($template->getFallback());
+    	$this->assertSame( Template::getTemplate('testFromINIWithName'),
+    			   $template->getFallback() );
+    
+    	$registeredTemplate
+    	= Template::getTemplate('testFromINIWithFallback');
+    	$this->assertSame($template, $registeredTemplate);
+    }
+    
+    /**
+     * @testFromINIWithName
+     */
+    public function testFromINILoadFallback()
+    {
+    	// precondition
+    	$this->assertNull(
+    		Template::getTemplate('testFromINILoadFallbackFallback') );
+    	 
+    	$expected = [
+    	              'vcard' => 'content',
+    	              'template_name' => 'testFromINILoadFallback',
+    	              '_fallback'     => 'testFromINILoadFallbackFallback',
+    	              '_fallback_file' => 'tests/templates/testFromINILoadFallbackFallback.ini'
+    		    ];
+    
+    	$template = Template::fromINI(
+    			'tests/templates/testFromINILoadFallback.ini' );
+    	$this->assertNotNull($template);
+    
+    	$fragments = $template->getFragments();
+    	$this->assertNotNull($fragments);
+    
+    	$this->assertEquals($expected, $fragments);
+    
+    	$this->assertNotNull($template->getFallback());
+    	$this->assertSame( Template::getTemplate('testFromINILoadFallbackFallback'),
+    			$template->getFallback() );
+    
+    	$registeredTemplate
+    	= Template::getTemplate('testFromINILoadFallback');
+    	$this->assertSame($template, $registeredTemplate);
     }
     
     public function testTrivialTemplate()

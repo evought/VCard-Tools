@@ -207,6 +207,8 @@ class Template
      */
     static private $defaultTemplate;
     
+    static private $templateRegistry = [];
+    
     /**
      * Return the default Template instance.
      * @return \vCardTools\Template
@@ -219,11 +221,97 @@ class Template
     }
     
     /**
+     * Add $template to the registry of named Templates for later retrieval.
+     * Overwrites any existing value for $name.
+     * @param string $name The name to register the Template under. Not null.
+     * @param Template $template The Template instance to store.
+     */
+    static public function registerTemplate($name, Template $template)
+    {
+    	assert(null !== $name);
+    	assert(is_string($name));
+    	assert($template != null);
+    	
+    	self::$templateRegistry[$name] = $template;
+    }
+    
+    /**
+     * Retrieves the named Template from the registry or null if none is found.
+     * 'default' should always be defined and return a default HTML template. 
+     * @param string $name
+     * @return Template|NULL
+     */
+    static public function getTemplate($name)
+    {
+    	assert(null !== $name);
+    	assert(is_string($name));
+    	
+    	if ('default' === $name) return self::getDefaultTemplate();
+
+    	if (array_key_exists($name, self::$templateRegistry))
+    	{
+            assert(is_a(self::$templateRegistry[$name], 'vCardTools\Template'));
+            return self::$templateRegistry[$name];
+    	} else {
+    	    return null;
+    	}
+    }
+    
+    /**
+     * Creates and returns a Template from an INI file. The INI file should
+     * create a conformant array of fragments.
+     * If the 'template_name' key is set in the INI file, then the new Template
+     * will be registered by that name.
+     * If the '_fallback' key is set in the INI file (and it is not provided
+     * explicitly), then an attempt is made to look up a registered Template
+     * by that name and set it as the fallback for the new template.
+     * Lastly, if no registered Template by that name is found, but a key
+     * named '_fallback_file' is found in the INI, then an attempt will be
+     * made to load THAT INI, and do so recursively if appropriate.
+     * @param string $filename Must be a filename for a readable file.
+     * @param Template $fallback If not null, will be set as the fallback
+     * Template for the newly created instance.
+     * @throws \DomainException If the filename is not readable.
+     * @throws \RuntimeException If the file cannot be loaded.
+     * @return \vCardTools\Template
+     */
+    static public function fromINI($filename, Template $fallback = null)
+    {
+    	assert(!empty($filename), '$filename may not be empty');
+    	if (!(is_readable($filename)))
+    	    throw new \DomainException(
+    	    	'Filename, ' . $filename . 'must exist and be readable' );
+    	$fragments = parse_ini_file($filename);
+    	if (false === $fragments)
+    	{
+    	    throw new \RuntimeException('Failed to load INI file '.$filename);
+    	}
+    	
+    	if ( (null === $fallback)
+    	     && (array_key_exists('_fallback', $fragments)) )
+    	{
+    	    $fallback = self::getTemplate($fragments['_fallback']);
+    	}
+    	if ( (null === $fallback)
+    	     && (array_key_exists('_fallback_file', $fragments)) )
+    	{
+    	    $fallback = self::fromINI($fragments['_fallback_file']);
+    	}
+    	
+    	$template = new Template($fragments, $fallback);
+    	
+    	if (array_key_exists('template_name', $fragments))
+    	    self::registerTemplate($fragments['template_name'], $template);
+    	
+    	return $template;
+    }
+    
+    /**
      * Create a new template.
      * @param array $fragments A an array of named html fragments use to output
      * a vCard. Not null.
      * @param Template $fallback Another Template instance to fall back to for
-     * any keys not found in $fragments. Often, this should be
+     * any keys not found in $fragments. Often, this should be set with
      * getDefaultFragment().
      */
     public function __construct(Array $fragments, Template $fallback = null)
