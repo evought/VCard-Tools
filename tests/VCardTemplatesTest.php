@@ -4,6 +4,7 @@
  */
 use vCardTools\vCard as vCard;
 use vCardTools\Template;
+use vCardTools\Substitution as Substitution;
 require_once 'vcard.php';
 require_once 'vcard-templates.php';
 
@@ -116,8 +117,68 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertEquals($fragments['vcard'], $output);
     }
     
+    public function testSubstitutionFromTextFragment()
+    {
+    	$substitution = Substitution::fromText('key');
+    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    	 
+    	$this->assertTrue($substitution->hasFragment());
+    	$this->assertEquals('key', $substitution->getFragment());
+    	 
+    	$this->assertFalse($substitution->hasQuest());
+    	$this->assertFalse($substitution->shouldLookUp());
+    	$this->assertFalse($substitution->iterates());
+    }
+    
+    public function testSubstitutionFromTextQuest()
+    {
+    	$substitution = Substitution::fromText('key, ?adr');
+    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    
+    	$this->assertTrue($substitution->hasFragment());
+    	$this->assertEquals('key', $substitution->getFragment());
+    
+    	$this->assertTrue($substitution->hasQuest());
+    	$this->assertEquals('adr', $substitution->getQuest());
+    	 
+    	$this->assertFalse($substitution->shouldLookUp());
+    	$this->assertFalse($substitution->iterates());
+    }
+    
+    public function testSubstitutionFromTextLookup()
+    {
+    	$substitution = Substitution::fromText('!n');
+    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    
+    	$this->assertFalse($substitution->hasFragment());
+    
+    	$this->assertFalse($substitution->hasQuest());
+    
+    	$this->assertTrue($substitution->shouldLookUp());
+    	$this->assertEquals('n', $substitution->getLookUp());
+    
+    	$this->assertFalse($substitution->iterates());
+    }
+    
+    public function testSubstitutionFromTextIterates()
+    {
+    	$substitution = Substitution::fromText('key, #n');
+    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    
+    	$this->assertTrue($substitution->hasFragment());
+    	$this->assertEquals('key', $substitution->getFragment());
+    
+    	$this->assertFalse($substitution->hasQuest());
+    
+    	$this->assertFalse($substitution->shouldLookUp());
+    
+    	$this->assertTrue($substitution->iterates());
+    	$this->assertEquals('n', $substitution->getIterOver());
+    }
+    
     /**
      * @depends testLiteralTemplate
+     * @depends testSubstitutionFromTextFragment
      */
     public function testOneRecursion()
     {
@@ -135,6 +196,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testLiteralTemplate
+     * @depends testSubstitutionFromTextFragment
      */
     public function testOneRecursionNoMatch()
     {
@@ -234,6 +296,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testLiteralTemplate
+     * @depends testSubstitutionFromTextLookup
      */
     public function testFNLookupEmpty()
     {
@@ -247,6 +310,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testLiteralTemplate
+     * @depends testSubstitutionFromTextLookup
      */
     public function testFNLookup()
     {
@@ -261,6 +325,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testLiteralTemplate
+     * @depends testSubstitutionFromTextLookup
      */
     public function testNLastNameLookup()
     {
@@ -277,6 +342,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testFNLookup
+     * @depends testSubstitutionFromTextQuest
      */
     public function testQuestFNNo()
     {
@@ -292,6 +358,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testFNLookup
+     * @depends testSubstitutionFromTextQuest
      */
     public function testQuestFNYes()
     {
@@ -307,6 +374,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testFNLookup
+     * @depends testSubstitutionFromTextIterates
      */
     public function testCategoriesIterEmpty()
     {
@@ -321,6 +389,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testFNLookup
+     * @depends testSubstitutionFromTextIterates
      */
     public function testCategoriesIter()
     {
@@ -353,6 +422,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      * Border case. Using iteration on a single-value property.
      * Principle of least surprise: should substitute once.
      * @depends testCategoriesIter
+     * @depends testSubstitutionFromTextIterates
      */
     public function testFNITer()
     {
@@ -366,6 +436,58 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertNotEmpty($vcard->fn); // precondition
     	$expected = $vcard->fn;
     	 
+    	$output = $template->output($vcard);
+    	$this->assertEquals($expected, $output);
+    }
+    
+    /**
+     * Border case. Using iteration on a single-value property, not set.
+     * Principle of least surprise: should do nothing.
+     * @depends testCategoriesIter
+     * @depends testSubstitutionFromTextIterates
+     */
+    public function testFNITerEmpty()
+    {
+    	$fragments = [
+    	'vcard'    => '{{each,#fn}}',
+    	'each'     => '{{!fn}}'
+    			];
+    	$template = new Template($fragments);
+    
+    	$vcard = new vCard();
+    	$this->assertEmpty($vcard->fn); // precondition
+    
+    	$output = $template->output($vcard);
+    	$this->assertEmpty($output);
+    }
+    
+    /**
+     * @depends testOneRecursion
+     * @depends testSubstitutionFromTextFragment
+     */
+    public function testMagicID()
+    {
+    	$template = new Template(['vcard' => '{{!_id}}']);
+    	
+    	$vcard = $this->getRaithSeinar();
+    	$this->assertNotEmpty($vcard->fn); // precondition
+    	
+    	$output = $template->output($vcard);
+    	$this->assertEquals(urlencode($vcard->fn), $output);
+    }
+    
+    /**
+     * @depends testOneRecursion
+     * @depends testSubstitutionFromTextFragment
+     */
+    public function testMagicRawVCard()
+    {
+    	$template = new Template(['vcard' => '{{!_rawvcard}}']);
+    	 
+    	$vcard = $this->getRaithSeinar();
+        $expected = '' . htmlspecialchars($vcard);
+        $this->assertNotEmpty($expected);
+    	
     	$output = $template->output($vcard);
     	$this->assertEquals($expected, $output);
     }
