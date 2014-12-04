@@ -309,69 +309,58 @@ class Template
 	    	
 	// if we are conditional on a field and it isn't there, bail.
 	if ($substitution->hasQuest())
-	{
-	    $questFor = $substitution->getQuest();
-	    if (empty($vcard->$questFor))
-	        return "";
-	} // if quest
-	
-	$value = "";
+	    if ($this->i_questFails($vcard, $substitution->getQuest()))
+	    	return '';
 	
         if ($substitution->iterates())
 		return $this->i_processIteration($vcard, $substitution);
-		
+
+        $value = '';
 	// If the key references a field we need to look up, do it.
 	if ($substitution->shouldLookUp())
-	{
-	    $lookUp = $substitution->getLookUp();
+	    $value = $this->i_processLookUp( $vcard, $substitution->getLookUp(),
+	    		                     $iterOver, $iterItem );
 	
-	    // if there is a space in the key, it's a structured element
-	    $compound_key = explode(" ", $lookUp);
-	    if (count($compound_key) == 2)
-	    {
-	        // if we are already processing a list of #items...
-		if ($compound_key[0] == $iterOver)
-		{
-                    $value = $iterItem[$compound_key[1]];
-		} else {
-		    // otherwise look it up and *take first one found*
-	            // NOTE: vcard->__get can be fragile.
-	            $items = $vcard->$compound_key[0];
-	            if (!empty($items))
-	            	$value = htmlspecialchars(
-			    array_key_exists($compound_key[1], $items[0])
-			    ? $items[0][$compound_key[1]] : ""
-			);
-		}
-	    } else if ($iterOver == $lookUp) {
-		$value = htmlspecialchars($iterItem);
-            } else if ($lookUp == "_id") {
-		$value = urlencode($vcard->fn);
-            } else if ($lookUp == "_rawvcard") {
-	        $value .= $vcard;
-	    } else {
-	        $items = $vcard->$lookUp;
-	        if (!empty($items))
-	        {
-	            if (is_array($items))
-                        $value = htmlspecialchars(implode(" ", $items));
-		    else
-			$value = htmlspecialchars($items);
-		}
-            }
-        } //if lookUp
-	
-	// if we already have a value or we don't have a fragment, bail
-	if (!empty($value) || (!$substitution->hasFragment()))
-            return $value;
-	
-	return $this->i_processFragment( $vcard, $substitution->getFragment(),
-	        $iterOver, $iterItem );
+	if (empty($value) && $substitution->hasFragment())
+	    $value = $this->i_processFragment( $vcard,
+	    		  $substitution->getFragment(), $iterOver, $iterItem );
+	return $value;
     } //i_processSubstitution()
     
+    /**
+     * Return true if the re-Quested property is empty, false otherwise.
+     * @param vCard $vcard not null.
+     * @param string $questFor The name of the property to check. Not null.
+     * @return boolean
+     */
+    private function i_questFails(vCard $vcard, $questFor)
+    {
+    	assert(null !== $vcard);
+    	assert(null !== $questFor);
+    	assert(is_string($questFor));
+    	
+    	if (empty($vcard->$questFor))
+    		return true;
+    	else
+    		return false;
+    }
+    
+    /**
+     * Iterate over a vCard property, substituting the specified fragment
+     * for each value of the property.
+     * @param vCard $vcard The vcard to find the property in. Not null.
+     * @param Substitution $substitution The substitution contains the property
+     * to iterate over and the fragment to substitute. Not null. iterOver
+     * must be non-null.
+     * @return string
+     */
     private function i_processIteration(vCard $vcard, Substitution $substitution)
     {
+    	assert(null !== $vcard);
+    	assert(null !== $substitution);
+    	
     	$iterOver = $substitution->getIterOver();
+    	assert(null !== $iterOver);
     	
     	// if it is there, and is an array (multiple values), we need to
     	// handle them all.
@@ -389,14 +378,82 @@ class Template
     				$substitution->getFragment(),
     				$iterOver, $iterItem );
     	} else {
-    		return "";
+    		return '';
     	}
     	 
-    }
+    } //i_processIteration()
     
+    /**
+     * Look-up and return the requested property value or magic value.
+     * @param vCard $vcard The vcard to find the property in.
+     * @param string $lookUp The name of the property or magic value. Not null.
+     * @param string $iterOver The name of a property being iterated over, or
+     * null.
+     * @param unknown $iterItem The current value of the property being
+     * iterated over, or null.
+     * @return string
+     */
+    private function i_processLookUp( vCard $vcard, $lookUp,
+    		                      $iterOver, $iterItem )
+    {
+	assert(null !== $vcard);
+	assert(null !== $lookUp);
+	assert(is_string($lookUp));
+
+	$value = '';
+	
+    	// if there is a space in the key, it's a structured element
+    	$compound_key = explode(" ", $lookUp, 2);
+    	if (count($compound_key) == 2)
+    	{
+    	    // if we are already processing a list of #items...
+    	    if ($compound_key[0] == $iterOver)
+    	    {
+    		$value = $iterItem[$compound_key[1]];
+    	    } else {
+    		// otherwise look it up and *take first one found*
+    		// NOTE: vcard->__get can be fragile.
+    		$items = $vcard->$compound_key[0];
+    		if (!empty($items))
+    		    $value = htmlspecialchars(
+    		        array_key_exists($compound_key[1], $items[0])
+    			? $items[0][$compound_key[1]] : ""
+    			);
+    	    }
+    	} else if ($iterOver == $lookUp) {
+    	    $value = htmlspecialchars($iterItem);
+    	} else if ($lookUp == "_id") {
+    	    $value = urlencode($vcard->fn);
+    	} else if ($lookUp == "_rawvcard") {
+    	    $value .= $vcard;
+    	} else {
+    	    $items = $vcard->$lookUp;
+    	    if (!empty($items))
+    	    {
+                if (is_array($items))
+    		    $value = htmlspecialchars(implode(" ", $items));
+    		else
+    		    $value = htmlspecialchars($items);
+    	    }
+    	}
+    	return $value;
+    } // i_processLookup()
+    
+    /**
+     * Process and return the requested fragment, making further substitutions
+     * as necessary.
+     * @param vCard $vcard The card to look up values in. Not null.
+     * @param string $fragmentKey The key to the fragment to output, not null.
+     * @param string $iterOver The name of any property being iterated over,
+     * or null.
+     * @param string $iterItem The current value of any property being iterated
+     * over, or null.
+     * @return string
+     */
     private function i_processFragment( vCard $vcard, $fragmentKey, $iterOver=null,
     		                        $iterItem=null)
     {
+    	assert(null !== $vcard);
     	assert(null !== $fragmentKey);
     	assert(is_string($fragmentKey));
     	
@@ -426,7 +483,7 @@ class Template
 	    $value .= substr($fragment, $low);
 	} // if fragment
 	return $value;
-    }
+    } //i_processFragment()
 } // Template
 
 class Substitution
