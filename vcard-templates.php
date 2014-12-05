@@ -10,13 +10,11 @@ namespace vCardTools;
 /**
  * A template processor for turning vCards into HTML (or potentially,
  * any other output format, but it is well-suited to tree-structured markup).
- * The processor works from a collection of named html fragments, starts
- * with the entry 'vcard', and recursively builds the output string.
- *  
- * Each entry is itself a template: a named piece of html output. It is best
- * if you can have each template be a complete tag (e.g. div or span) or
- * attribute so that there are no errors with unmatched closing tags.
- * output_vcard() starts with the "vcard" entry.
+ * The processor works from a collection of named html fragments, and
+ * recursively builds the output string. It is best if you can have each
+ * fragment be a complete tag (e.g. div/span) or attribute so that there are
+ * no errors with unmatched closing tags.
+ * output() starts with the "vcard" entry.
  *
  * Pairs of curly braces "{{" and "}}" surrounding text are substituted with
  * another template from the same table. So "{{content}}" will be
@@ -27,12 +25,12 @@ namespace vCardTools;
  * By following these substitutions, the html output gets built one template at
  * a time as a tree and can be quite sophisticated.
  *
- * The key can have multiple key parts separated by commas to control
- * how the template is substituted. e.g. "{{email_block,?email}}". Extra
- * space around the key parts is ignored, so "{{email_block, ?email}}" will do
- * the same thing.
+ * The substitution key can have multiple key parts separated by commas to
+ * control how the fragment is substituted. e.g. "{{email_block,?email}}".
+ * Extra space around the key parts is ignored, so "{{email_block, ?email}}"
+ * will do the same thing.
  *
- * The simplest key part is just a template name as with
+ * The simplest key part is just a fragment name as with
  * "content" or "email_block", above.
  *
  * If the key part starts with a bang ("!"), the contents of the matching
@@ -52,19 +50,20 @@ namespace vCardTools;
  * mark and the vcard field is not found, then the rest of the key parts
  * are ignored. This can be used to turn off an entire tree of substitutions.
  *
- * If the key part starts with a pound sign ("#"), then the template will
+ * If the key part starts with a pound sign ("#"), then the fragment will
  * be substituted once *for each value* of the vcard field named after the #.
  * So, if tell_span is defined as '<span class="tel">{{!tell}}</span>',
  * then '<div class="tel_block">{{tell_span, #tel}}</div>' might produce:
  * '<div class="tel_block"><span class="tel">555-1212</span> <span class="tel">999-4121</span></div' or it
  * might produce just '<div class="tel_block"></div>'. Using a # with a
  * ? somewhere up the tree gives a lot of control over what structural html
- * tags you produce. This default template has examples.
+ * tags you produce. This default template has examples and the unit tests
+ * also demonstrate various combinations.
  *
- * Lastly, you can combine a ! key part and a template name. If the field
+ * Lastly, you can combine a ! key part and a fragment name. If the field
  * is not there, the named template will be substituted instead.
  * "{{!email, no_email}}" will either substitute the contents of the email
- * vcard field(s) if it is there OR it will look up the no_email template and
+ * vcard field(s) if it is there OR it will look up the no_email fragment and
  * process it instead.
  *
  * Order of subkeys does not matter: "{{my_template, ?email}}" and
@@ -73,122 +72,50 @@ namespace vCardTools;
  * Subkeys starting with an underscore *are reserved*, as are subkeys beginning
  * with a percent sign.
  *
- * Do not edit this template here. Create your own similar template,
- * name it something else, and pass it to output_vcard().
- * If you pass your own template, this default template will
- * be ignored.
+ * Do not edit the default template. Create your own array of fragments and
+ * initialize a new Template instance.
  * You can then create a template which will output as a table,
  * for instance, instead of divs and spans, or will output just summary
  * information. Build slowly and test a piece at a time.
- *
- * As an aid to making your own templates, _fallback is treated specially.
- * When you set _fallback in your template to be another template array,
- * the template processor will look in _fallback for any definitions it is
- * missing. You can then add only those definitions to your template that you
- * need to change and let output_vcard fallback to these templates for
- * everything else.
+ * 
+ * You may also create a new Template and set its $fallback parameter to
+ * look up any undefined fragments in the fallback Template. This means that
+ * you may create a new Template, set $fallback to the default template, and
+ * only set the specific fragments that you wish to change. When the Template
+ * is output, any fragments you set will be used and any you do not define will
+ * fall back to the default. You can chain templates via $fallback to any depth.
+ * 
+ * There is also a mechanism to get and register templates by name or load them
+ * from .ini files.
  *
  * !_id and !_rawvcard are magic: they return a urlencoded version of fname
  * (suitable for using in an href for the whole vcard) and a raw text
  * export of the vcard, respectively.
  *
- * WARNING: Using multiple similar key parts in the same key has undefined
+ * _WARNING_ Using multiple similar key parts in the same key has undefined
  * results. In other words, "{{my_template, ?email, ?adr}}" or
  * "{{!email, !role}}" or {{template1, template2}} may do something,
  * may cause an error, or may hatch chickens. It also may do something different
  * in future versions.
+ * 
+ * @example
+ * // use the default template to output $myvcard
+ * Template::getDefaultTemplate()->output($myvcard);
+ * 
+ * @example
+ * // create your own simple template and output $myvcard
+ * $fragments = [vcard => '{{!fn}}'];
+ * $template = new Template($fragments)->output($myvcard);
+ * 
+ * @example
+ * // create your own template with a custom URL, falling back to the default
+ * // for everything else and output myvcard
+ * $fragments = [fn_href_url => 'http://example.com/view.html?id=447'];
+ * $template = new Template($fragments, Template::getDefaultTemplate());
+ * $template->output($myvcard);
  */
 class Template
 {
-  /**
-   * Default html output template using divs and spans.
-   */
-  static public $defaultFragments = [
-	"vcard" 
-		=>	'<div id="{{!_id}}" class="vcard" {{role_attrib, ?kind}}>{{content}}</div>',
-        "role_attrib"
-		=>	'role="{{!kind}}"',
-	"content"
-		=>	'{{prod_id_span}} {{fn_span}} {{graphics_block}} {{n_block,?n}} {{title_block,?title}} {{role_block,?role}} {{orgs_block,?org}} {{note_block,?note}} {{contact_block}} {{category_block,?categories}} {{raw_block}}',
-	"prod_id_span"
-		=>	'<span class="prodid" hidden>{{!prodid}}</span>',
-	"graphics_block"
-		=>	'<div class="graphics">{{photo_tag,#photo}} {{logo_tag,#logo}}</div>',
-	"photo_tag"
-		=>	'<img class="photo" src="{{!photo}}" alt="{{!fn}} photo" />',
-	"logo_tag"
-		=>	'<img class="logo" src="{{!logo}}" alt="{{!org Name}} logo" />',
-        "fn_span"
-		=>	'<span class="fn">{{fn_href}}{{!fn}}{{fn_href_trailing}}</span>',
-	"fn_href"
-		=>	'<a role="vcardurl" href="{{fn_href_url}}"><!-- Must match with closing anchor! -->',
-	"fn_href_trailing"
-		=>	'</a><!-- Must match with fn_href! -->',
-	"fn_href_url"
-		=>	'{{!url}}',
-	"n_block"
-		=>	'<div class="n">{{prefix_span}} {{givenname_span}} {{addit_name_span}} {{familyname_span}} {{suffix_span}}</div>',
-	"prefix_span"
-		=>      '<span class="prefix">{{!n Prefixes}}</span>',
-	"givenname_span"
-		=>	'<span class="givenname">{{!n FirstName}}</span>',
-	"addit_name_span"
-		=>	'<span class="additionalname">{{!n AdditionalNames}}</span>',
-	"familyname_span"
-		=>	'<span class="familyname">{{!n LastName}}</span>',
-	"suffix_span"
-		=>	'<span class="suffix">{{!n Suffixes}}</span>',
-	"title_block"
-		=>	'<div class="title">{{!title}}</div>',
-	"role_block"
-		=>	'<div class="role">{{role}}</div>',
-	"contact_block"
-		=>	'<div class="contact">{{email_block,?email}} {{tel_block,?tel}} {{adrs_block,?adr}}</div>',
-	"email_block"
-		=>	'<div class="emails">{{email_span,#email}}</div>',
-	"email_span"
-		=>	'<span class="email"><a href="mailto:{{!email}}">{{!email}}</a></span>',
-	"adrs_block"
-		=>	'<div class="adrs">{{adr_block,#adr}}</div>',
-	"adr_block"
-		=>	'<div class="adr">{{street_address_span}} {{locality_span}} {{region_span}} {{postal_code_span}} {{country_span}}</div>',
-
-	"street_address_span"
-		=>	'<span class="streetaddress">{{!adr StreetAddress}}</span>',
-	"locality_span"
-		=>	'<span class="locality">{{!adr Locality}}</span>',
-	"region_span"
-		=>	'<span class="region">{{!adr Region}}</span>',
-	"postal_code_span"
-		=>	'<span class="postalcode">{{!adr PostalCode}}</span>',
-	"country_span"
-		=>	'<span class="country">{{!adr Country}}</span>',
-	"orgs_block"
-		=>	'<div class="orgs">{{org_block,#org}}</div>',
-	"org_block"
-		=>	'<div class="org">{{org_name_span}} {{org_unit1_span}} {{org_unit2_span}}</div>',
-	"org_name_span"
-		=>	'<span class="name">{{!org Name}}</span>',
-	"org_unit1_span"
-		=>	'<span class="unit">{{!org Unit1}}</span>',
-	"org_unit2_span"
-		=>	'<span class="unit">{{!org Unit2}}</span>',
-	"raw_block"
-		=>	'<pre class="vcardraw" hidden>{{!_rawvcard}}</pre>',
-	"note_block"
-		=>	'<div class="notes">{{note_span,#note}}</div>',
-	"note_span"
-		=>	'<span class="note">{{!note}}</span>',
-	"tel_block"
-		=>	'<div class="tels">{{tel_span,#tel}}</div>',
-	"tel_span"
-		=>	'<span class="tel">{{!tel}}</span>',
-	"category_block"
-		=>	'<div class="categories">{{category_span,#categories}}</div>',
-	"category_span"
-		=>	'<span class="category">{{!categories}}</span>'
-	];
-
     /**
      * The array of named html fragments used to output a vCard.
      * @var Array
@@ -201,11 +128,24 @@ class Template
      */
     private $fallback;
     
+    static private $initialized = false;
+    
+    static private function i_init()
+    {
+    	if (self::$initialized === true) return;
+    	
+    	// FIXME: location awareness
+    	self::$defaultTemplate
+    	    = self::i_fromINI('templates/defaultTemplate.ini');
+    	
+    	self::$initialized = true;
+    }
+    
     /**
      * The default Template instance.
      * @var Template
      */
-    static private $defaultTemplate;
+    static private $defaultTemplate = null;
     
     static private $templateRegistry = [];
     
@@ -215,8 +155,7 @@ class Template
      */
     static public function getDefaultTemplate()
     {
-    	if (null === self::$defaultTemplate)
-    		self::$defaultTemplate = new Template(self::$defaultFragments);
+        if (self::$initialized === false) self::i_init();
     	return self::$defaultTemplate;
     }
     
@@ -232,6 +171,8 @@ class Template
     	assert(is_string($name));
     	assert($template != null);
     	
+        if (self::$initialized === false) self::i_init();
+    	
     	self::$templateRegistry[$name] = $template;
     }
     
@@ -246,8 +187,8 @@ class Template
     	assert(null !== $name);
     	assert(is_string($name));
     	
-    	if ('default' === $name) return self::getDefaultTemplate();
-
+        if (self::$initialized === false) self::i_init();
+    	
     	if (array_key_exists($name, self::$templateRegistry))
     	{
             assert(is_a(self::$templateRegistry[$name], 'vCardTools\Template'));
@@ -278,6 +219,16 @@ class Template
     static public function fromINI($filename, Template $fallback = null)
     {
     	assert(!empty($filename), '$filename may not be empty');
+    	
+        if (self::$initialized === false) self::i_init();    	
+    	
+    	return self::i_fromINI($filename, $fallback);
+    }
+    
+    private static function i_fromINI($filename, Template $fallback = null)
+    {
+    	assert(!empty($filename), '$filename may not be empty');
+    	
     	if (!(is_readable($filename)))
     	    throw new \DomainException(
     	    	'Filename, ' . $filename . 'must exist and be readable' );
@@ -288,22 +239,24 @@ class Template
     	}
     	
     	if ( (null === $fallback)
-    	     && (array_key_exists('_fallback', $fragments)) )
+    	     && (array_key_exists('_fallback', $fragments))
+             && (array_key_exists( $fragments['_fallback'],
+             		           self::$templateRegistry ) ) )
     	{
-    	    $fallback = self::getTemplate($fragments['_fallback']);
+    	    $fallback = self::$templateRegistry[$fragments['_fallback']];
     	}
     	if ( (null === $fallback)
     	     && (array_key_exists('_fallback_file', $fragments)) )
     	{
-    	    $fallback = self::fromINI($fragments['_fallback_file']);
+    	    $fallback = self::i_fromINI($fragments['_fallback_file']);
     	}
     	
     	$template = new Template($fragments, $fallback);
     	
     	if (array_key_exists('template_name', $fragments))
-    	    self::registerTemplate($fragments['template_name'], $template);
+    	    self::$templateRegistry[$fragments['template_name']] = $template;
     	
-    	return $template;
+    	return $template;    	 
     }
     
     /**

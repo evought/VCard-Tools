@@ -77,11 +77,14 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     {
     	$template = Template::getDefaultTemplate();
     	$this->assertInstanceOf('vCardTools\Template', $template);
-    	
-    	$this->assertSame( Template::$defaultFragments,
-    			   $template->getFragments() );
-    	$this->assertSame($template, Template::getTemplate('default'));
+    	    	
+    	$this->assertNotNull($template->getFragments());
     	$this->assertNull($template->getFallback());
+    	
+    	$registeredTemplate = Template::getTemplate('default');
+    	$this->assertNotNull($registeredTemplate);
+    	$this->assertSame( $template, $registeredTemplate,
+                           print_r($registeredTemplate, true) );
     }
     
     public function testConstructWFragments()
@@ -129,7 +132,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
-     * @testFromININoName
+     * @depends testFromININoName
      */
     public function testFromINIWithName()
     {
@@ -154,7 +157,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
-     * @testFromINIWithName
+     * @depends testFromINIWithName
      */
     public function testFromINIWithNameExplicitFallback()
     {
@@ -182,7 +185,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
-     * @testFromINIWithName
+     * @depends testFromINIWithName
      */
     public function testFromINIWithFallback()
     {
