@@ -2,12 +2,7 @@
 namespace vCardTools;
 
 /**
- * A toolbox for manipulating the vcard and related input data.
- * Uses the vcard.php class and vcard.sql schema. Includes default templates
- * in vcard-templates.php.
- * This tool contains functions for storing vcard class to and reading from
- * the database. There is also a templating engine for creating HTML from
- * a vcard.
+ * A tool for storing/retrieving vCards from a database.
  * @author Eric Vought evought@pobox.com 2014-11-16
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
@@ -16,6 +11,12 @@ namespace vCardTools;
 require_once "vcard.php";
 require_once "vcard-templates.php";
 
+/**
+ * A class for storing and retrieving vCard instances from a database, using
+ * the RDBMS schema defined for vCardTools.
+ * @author evought
+ *
+ */
 class VCardDB
 {
 // FIXME: Add a method to fetch all contact IDs (without loading the records).
