@@ -109,7 +109,7 @@ class vCard implements \Countable, \Iterator
      * @var array
      */
     private static $Spec_SingleElements
-        = array('fn', 'kind', 'bday', 'anniversary', 'prodid', 'rev');
+        = array('fn', 'kind', 'bday', 'anniversary', 'prodid', 'rev', 'uid');
 
     /**
      * vCard constructor

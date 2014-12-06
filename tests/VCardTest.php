@@ -330,14 +330,20 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testAssignSingleValueElement(vCard $vcard)
     {
+    	$properties = [ 'fn', 'kind', 'bday', 'anniversary',
+    	                'prodid', 'rev', 'uid' ];
         $expected = 'foo';
-        $this->assertEmpty($vcard->fn);
-        $vcard->fn = $expected;
-	$this->assertNotEmpty($vcard->fn);
-	$this->assertEquals($expected, $vcard->fn);
-
-	unset($vcard->fn);
-	$this->assertEmpty($vcard->fn);
+        
+        foreach ($properties as $property)
+        {
+            $this->assertEmpty($vcard->$property);
+            $vcard->$property = $expected;
+	    $this->assertNotEmpty($vcard->$property);
+	    $this->assertEquals($expected, $vcard->$property);
+	
+	    unset($vcard->$property);
+	    $this->assertEmpty($vcard->$property);
+        }
 	return $vcard;
     }
 

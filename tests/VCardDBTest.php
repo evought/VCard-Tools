@@ -299,6 +299,28 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
         $this->compareVCards($vcard, $resultVCard);    	 
     } //testStoreAndRetrieveWAddress()
+    
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWUID(VCardDB $vcardDB)
+    {
+    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+    			"Precondition" );
+    
+    	$expected = 'someUIDValue';
+
+    	$vcard = new vCard();
+    	$vcard->uid = $expected;
+    	$vcard->fn = 'nothingInteresting';
+    
+    	$contactID = $vcardDB->store($vcard);
+    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+    			"After storing " . $contactID );
+    	$resultVCard = $vcardDB->fetchOne($contactID);
+    
+    	$this->compareVCards($vcard, $resultVCard);
+    }
 
     /**
      * @depends testStoreAndRetrieveVCard
