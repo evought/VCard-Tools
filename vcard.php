@@ -160,6 +160,9 @@ class vCard implements \Countable, \Iterator
      */
     protected function checkRawDataAndSetMode($rawData)
     {
+    	assert(null !== $rawData);
+    	assert(is_string($rawData));
+    	
         // Counting the begin/end separators. If none or the count doesn't match,
         // there is a problem with the file. If there is only one, this is a 
         // single vCard, if more, multiple vCards are combined.
@@ -191,6 +194,9 @@ class vCard implements \Countable, \Iterator
      */
     protected function processMultipleRawCards($rawData)
     {
+    	assert(null !== $rawData);
+    	assert(is_string($rawData));
+    	
         $rawData = explode('BEGIN:VCARD', $rawData);
         $rawData = array_filter($rawData);
 
@@ -213,6 +219,9 @@ class vCard implements \Countable, \Iterator
      */
     protected function processSingleRawCard($rawData)
     {
+    	assert(null !== $rawData);
+    	assert(is_string($rawData));
+    	
         // Protect the BASE64 final = sign (detected by the line beginning 
         // with whitespace), otherwise the next replace will get rid of it
         $rawData = preg_replace('{(\n\s.+)=(\n)}', '$1-base64=-$2', $rawData);
@@ -390,12 +399,15 @@ class vCard implements \Countable, \Iterator
      * Magic method to get the various vCard values as object members, e.g.
      *	a call to $vCard -> N gets the "N" value
      *
-     * @param string $Key
+     * @param string $Key The name of the property to get. Not null.
      *
-     * @return mixed $Value
+     * @return mixed $Value All values of the named property (may return
+     * scalar or array).
      */
     public function __get($Key)
     {
+    	assert(null !== $Key);
+    	
         $Key = strtolower($Key);
         if (isset($this -> Data[$Key]))
         {
@@ -444,13 +456,16 @@ class vCard implements \Countable, \Iterator
      * for completeness and because the __call syntax makes it very difficult
      * to construct and add a set of values in a batch (say, loading VCards
      * from a database or POST form) and can have unprectable results.
-     * @param string $key
-     * @param string $value
+     * @param string $key The name of the property to set.
+     * @param string $value An appropriate value/values for the property.
      * @throws \DomainException if the $value is not appropriately a string,
      * an array, or an array of arrays.
      */
     public function __set($key, $value)
     {
+    	assert(null !== $key);
+    	assert(is_string($key));
+    	
 	if (empty($value))
         {
             unset($this->Data[$key]);
@@ -493,6 +508,9 @@ class vCard implements \Countable, \Iterator
      */
     public function SaveFile($Key, $Index = 0, $TargetPath = '')
     {
+    	assert(null !== $Key);
+    	assert(is_string($key));
+    	
 	if (!isset($this -> Data[$Key]))
 	{
 	    return false;
@@ -530,10 +548,13 @@ class vCard implements \Countable, \Iterator
 
     /**
      * Clear all values of the named element.
-     * @param string $key Not null.
+     * @param string $key The property to unset. Not null.
      */
     public function __unset($key)
     {
+    	assert(null !== $key);
+    	assert(is_string($key));
+    	
         if (array_key_exists($key, $this->Data))
 	    unset($this->Data["$key"]);
 	    return $this;
@@ -542,24 +563,30 @@ class vCard implements \Countable, \Iterator
     /**
      * Return true if the named element has at least one value,
      * false otherwise.
-     * @param string $key Not null.
+     * @param string $key The name of the property to test. Not null.
      * @return bool
      */
     public function __isset($key)
     {
+    	assert(null !== $key);
+    	assert(is_string($key));
+    	
         return isset($this->Data[$key]);
     } // __isset()
 
     /**
      * Magic method for adding data to the vCard
      *
-     * @param string $Key
-     * @param string $Arguments Method call arguments. First element is value.
+     * @param string $Key The name of the property to set values on.
+     * @param array $Arguments Method call arguments. First element is value.
      *
      * @return vCard Current object for method chaining
      */
-    public function __call($Key, $Arguments)
+    public function __call($Key, Array $Arguments)
     {
+    	assert(null !== $Key);
+    	assert(is_string($Key));
+    	
 	$Key = strtolower($Key);
 
 	$Value = isset($Arguments[0]) ? $Arguments[0] : false;
@@ -716,7 +743,7 @@ class vCard implements \Countable, \Iterator
      * @param array $Type The array of type values to prepare. Not null.
      * @return string
      */
-    private static function PrepareTypeStrForOutput($Type)
+    private static function PrepareTypeStrForOutput(Array $Type)
     {
         return implode(',', array_map('strtoupper', $Type));
     }
@@ -732,6 +759,9 @@ class vCard implements \Countable, \Iterator
      */
     private static function Unescape($Text)
     {
+    	assert(null !== $Text);
+    	assert(is_string($Text));
+    	
         return stripcslashes($Text);
     }
 
@@ -746,6 +776,9 @@ class vCard implements \Countable, \Iterator
      */
     private static function Escape($text)
     {
+    	assert(null !== $text);
+    	assert(is_string($text));
+    	
         return addcslashes($text, "\\\n,:;");
     }
 
@@ -761,6 +794,11 @@ class vCard implements \Countable, \Iterator
      */
     private static function ParseStructuredValue($Text, $Key)
     {
+    	assert(null !== $Text);
+    	assert(is_string($Text));
+    	assert(null !== $Key);
+    	assert(is_string($Key));
+    	
         $Text = array_map('trim', explode(';', $Text));
 
 	$Result = array();
@@ -782,6 +820,8 @@ class vCard implements \Countable, \Iterator
      */
     private static function ParseMultipleTextValue($Text)
     {
+    	assert(null !== $Text);
+    	assert(is_string($Text));
 	// split by commas, except that a comma escaped by
 	// a backslash does not count except that a backslash
 	// escaped by a backslash does not count...
@@ -801,6 +841,10 @@ class vCard implements \Countable, \Iterator
      */
     private static function ParseParameters($Key, array $RawParams = null)
     {
+    	assert(null !== $Key);
+    	assert(is_string($Key));
+    	assert(null !== $RawParams);
+    	
         if (!$RawParams)
 	{
 	    return array();
@@ -951,41 +995,56 @@ class vCard implements \Countable, \Iterator
     }
 
     /**
+     * @param string $key The name of the property to test. Not null.
      * @return bool True if the specified key is a single value VCard element,
      * false otherwise.
      */
     public function keyIsSingleValueElement($key)
     {
+    	assert(null !== $key);
+    	assert(is_string($key));
+    	
 	return in_array($key, self::$Spec_SingleElements);
     }
 
     /**
+     * @param string $key The name of the property to test. Not null.
      * @return bool True if the specified key is a multiple-value VCard element,
      * (is able to contain multiple values on the same line separated by commas) 
      * false otherwise.
      */
     public function keyIsMultipleValueElement($key)
     {
+    	assert(null !== $key);
+    	assert(is_string($key));
+    	
 	return in_array($key, self::$Spec_MultipleValueElements);
     }
 
     /**
+     * @param string $key The name of the property to test. Not null.
      * @return bool True if the specified key is a structured VCard element,
      * false otherwise.
      */
     public function keyIsStructuredElement($key)
     {
+    	assert(null !== $key);
+    	assert(is_string($key));
+    	
         return isset(self::$Spec_StructuredElements[$key]);
     }
 
     /**
      * Returns true if a named property is a file property (it potentially
      * contains a blob or reference to external data), false otherwise.
-     * @param string $key Not null.
+     * @param string $key The name of the property to test. Not null.
      * @return boolean
      */
     public function keyIsFileElement($key)
     {
+    	assert(null !== $key);
+    	assert(is_string($key));
+    	
 	return in_array($key, self::$Spec_FileElements);
     }
 } // VCard
