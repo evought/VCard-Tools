@@ -5,6 +5,7 @@
 use vCardTools\vCard as vCard;
 use vCardTools\Template;
 use vCardTools\Substitution as Substitution;
+use vCardTools\TemplateInfo;
 require_once 'vcard.php';
 require_once 'vcard-templates.php';
 
@@ -72,7 +73,40 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	}
 	return $vcard;
     }
+    
+    public function testTemplateInfoFromArrayEmpty()
+    {
+    	$info = TemplateInfo::fromArray([]);
+    	 
+    	$this->assertNull($info->getName());
+    	$this->assertNull($info->getDescription());
+    	$this->assertNull($info->getUsage());
+    	$this->assertNull($info->getSee());
+    	$this->assertEmpty($info->getInfo());
+    }
+    
+    public function testTemplateInfoFromArray()
+    {
+    	$data = [ 'name' => 'George',
+    	          'description' => 'My cuddly little TemplateInfo',
+    	          'usage' => 'I shall hug him and pet him and squeeze him...',
+                  'see' => 'https://www.youtube.com/watch?v=ArNz8U7tgU4',
+                  'license' => 'artistic'
+                ];
+    	$info = TemplateInfo::fromArray($data);
+    	
+    	$this->assertEquals('George', $info->getName());
+    	$this->assertEquals($data['description'], $info->getDescription());
+    	$this->assertEquals($data['usage'], $info->getUsage());
+    	$this->assertEquals($data['see'], $info->getSee());
+    	$this->assertEquals(['license'=>'artistic'], $info->getInfo());
+    	$this->assertTrue(isset($info->license));
+    	$this->assertEquals('artistic', $info->license);
+    }
 
+    /**
+     * @depends testTemplateInfoFromArray
+     */
     public function testGetDefault()
     {
     	$template = Template::getDefaultTemplate();
@@ -95,6 +129,18 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	
     	$this->assertSame($fragments, $template->getFragments());
     	$this->assertNull($template->getFallback());
+    }
+    
+    public function testConstructWInfo()
+    {	
+    	$fragments = [];
+    	$template = new Template($fragments, null, new TemplateInfo('George'));
+    	$this->assertInstanceOf('vCardTools\Template', $template);
+
+    	$this->assertSame($fragments, $template->getFragments());
+    	$this->assertEquals('George', $template->getName());
+    	$this->assertNull($template->getFallback());
+    	 
     }
     
     public function testGetTemplateNoneExists()
@@ -133,17 +179,17 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     /**
      * @depends testFromININoName
+     * @depends testTemplateInfoFromArray
      */
     public function testFromINIWithName()
     {
-    	$expected = [
-    	              'vcard' => 'content',
-                      'template_name' => 'testFromINIWithName'
-                    ];
+    	$expected = ['vcard' => 'content'];
     	
     	$template
     	    = Template::fromINI('tests/templates/testFromINIWithName.ini');
     	$this->assertNotNull($template);
+    	
+    	$this->assertEquals('testFromINIWithName', $template->getName());
     	 
     	$fragments = $template->getFragments();
     	$this->assertNotNull($fragments);
@@ -161,15 +207,15 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testFromINIWithNameExplicitFallback()
     {
-    	$expected = [
-    	              'vcard' => 'content',
-    	              'template_name' => 'testFromINIWithNameExplicitFallback'
-    		    ];
+    	$expected = ['vcard' => 'content'];
     	 
     	$template = Template::fromINI(
     	    'tests/templates/testFromINIWithNameExplicitFallback.ini',
             Template::getDefaultTemplate() );
     	$this->assertNotNull($template);
+    	
+    	$this->assertEquals( 'testFromINIWithNameExplicitFallback',
+                             $template->getName() );
     
     	$fragments = $template->getFragments();
     	$this->assertNotNull($fragments);
@@ -192,15 +238,13 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	// precondition
     	$this->assertNotNull(Template::getTemplate('testFromINIWithName'));
     	
-    	$expected = [
-    	              'vcard' => 'content',
-    	              'template_name' => 'testFromINIWithFallback',
-    	              '_fallback'     => 'testFromINIWithName'
-    		     ];
+    	$expected = ['vcard' => 'content'];
     
     	$template = Template::fromINI(
     			'tests/templates/testFromINIWithFallback.ini' );
     	$this->assertNotNull($template);
+    	
+    	$this->assertEquals('testFromINIWithFallback', $template->getName());
     
     	$fragments = $template->getFragments();
     	$this->assertNotNull($fragments);
@@ -225,16 +269,13 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertNull(
     		Template::getTemplate('testFromINILoadFallbackFallback') );
     	 
-    	$expected = [
-    	              'vcard' => 'content',
-    	              'template_name' => 'testFromINILoadFallback',
-    	              '_fallback'     => 'testFromINILoadFallbackFallback',
-    	              '_fallback_file' => 'tests/templates/testFromINILoadFallbackFallback.ini'
-    		    ];
+    	$expected = ['vcard' => 'content'];
     
     	$template = Template::fromINI(
     			'tests/templates/testFromINILoadFallback.ini' );
     	$this->assertNotNull($template);
+    	
+    	$this->assertEquals('testFromINILoadFallback', $template->getName());
     
     	$fragments = $template->getFragments();
     	$this->assertNotNull($fragments);
