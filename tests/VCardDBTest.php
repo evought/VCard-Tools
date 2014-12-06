@@ -12,7 +12,7 @@ use vCardTools\VCardDB as VCardDB;
 require_once "vcard-db.php";
 require_once "database.php";
 
-class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
+class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 {
     // only instantiate pdo once for test clean-up/fixture load
     static private $pdo = null;
@@ -694,5 +694,5 @@ class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
     	return $vcardDB;
     }
     
-} // VCardToolsTest
+} // VCardDBTest
 ?>
