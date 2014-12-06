@@ -78,7 +78,7 @@ namespace vCardTools;
  * for instance, instead of divs and spans, or will output just summary
  * information. Build slowly and test a piece at a time.
  * 
- * You may also create a new Template and set its $fallback parameter to
+ * You may create a new Template and set its $fallback parameter to
  * look up any undefined fragments in the fallback Template. This means that
  * you may create a new Template, set $fallback to the default template, and
  * only set the specific fragments that you wish to change. When the Template
@@ -90,7 +90,11 @@ namespace vCardTools;
  *
  * !_id and !_rawvcard are magic: they return a urlencoded version of fname
  * (suitable for using in an href for the whole vcard) and a raw text
- * export of the vcard, respectively.
+ * export of the vcard, respectively. Key parts beginning with '!_' are
+ * reserved for future magic values.
+ * 
+ * Fragment names starting with '_template' or '_fallback' are reserved and
+ * should not be used for your own fragments.
  *
  * _WARNING_ Using multiple similar key parts in the same key has undefined
  * results. In other words, "{{my_template, ?email, ?adr}}" or
@@ -206,8 +210,10 @@ class Template
     /**
      * Creates and returns a Template from an INI file. The INI file should
      * create a conformant array of fragments.
-     * If the 'template_name' key is set in the INI file, then the new Template
-     * will be registered by that name.
+     * If the '_template' key is set in the INI file, then this is expected
+     * define keys and values for populating a TemplateInfo structure.
+     * In particular, if '_template[name]' is provided, the Template will be
+     * registered by that name. See the default template file for an example. 
      * If the '_fallback' key is set in the INI file (and it is not provided
      * explicitly), then an attempt is made to look up a registered Template
      * by that name and set it as the fallback for the new template.
@@ -220,6 +226,7 @@ class Template
      * @throws \DomainException If the filename is not readable.
      * @throws \RuntimeException If the file cannot be loaded.
      * @return \vCardTools\Template
+     * @see TemplateInfo
      */
     static public function fromINI($filename, Template $fallback = null)
     {
