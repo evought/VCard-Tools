@@ -1,20 +1,20 @@
 <?php
-namespace vCardTools;
-
 /**
  * A tool for storing/retrieving vCards from a database.
  * @author Eric Vought evought@pobox.com 2014-11-16
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
+namespace vCardTools;
+
 
 require_once "vcard.php";
-require_once "vcard-templates.php";
 
 /**
  * A class for storing and retrieving vCard instances from a database, using
  * the RDBMS schema defined for vCardTools.
  * @author evought
+ * @api
  *
  */
 class VCardDB
@@ -35,7 +35,8 @@ class VCardDB
     public function getConnection() {return $this->connection;}
 
     /**
-     * @arg $connection A \PDO connection to read from/write to. Not null. Caller
+     * Construct a new instance.
+     * @param PDO $connection A \PDO connection to read from/write to. Not null. Caller
      * retains responsibility for connection, but this class shall ensure that
      * the reference is cleared upon clean-up.
      */
@@ -56,8 +57,9 @@ class VCardDB
     /**
      * Store the whole vcard to the database, calling sub-functions to store
      * related tables (e.g. address) as necessary.
-     * Returns the new contact_id
      * FIXME: None of these routines deal with ENCODING.
+     * @param vCard $vcard The record to store.
+     * @return integer The new contact id.
      */
     function store(vCard $vcard)
     {
@@ -91,6 +93,8 @@ class VCardDB
      * Saves the vcard contact data to the database, returns the id of the
      * new connection record.
      * Stores JUST the info from the CONTACT table itself, no sub-tables.
+     * @param vCard $vcard The record to store.
+     * @return integer The new contact id.
      */
     private function i_storeJustContact(vCard $vcard)
     {
@@ -160,10 +164,10 @@ class VCardDB
     /**
      * Store a structured property (multiple complex values) which requires a
      * subsidiary table/link table and return the ID of the new record.
-     * @param unknown $propertyName
+     * @param string $propertyName
      * @param array $propertyValue
-     * @param unknown $contactID
-     * @return string
+     * @param integer $contactID
+     * @return integer The new property record id.
      */
     private function i_storeStructuredProperty( $propertyName,
     		                                Array $propertyValue,
@@ -205,10 +209,10 @@ class VCardDB
     /**
      * For properties requiring a subsidiary table/link table, add a link
      * between a new property record and a CONTACT.
-     * @param unknown $propertyName The name of the property to link. String,
+     * @param string $propertyName The name of the property to link. String,
      * not null.
-     * @param unknown $propertyID The ID of the new record. Numeric, not null.
-     * @param unknown $contactID The ID of the CONTACT to link to. Numeric,
+     * @param integer $propertyID The ID of the new record. Numeric, not null.
+     * @param integer $contactID The ID of the CONTACT to link to. Numeric,
      * not null.
      */
     private function i_linkProperty($propertyName, $propertyID, $contactID)
@@ -248,10 +252,10 @@ class VCardDB
      * subsidiary table/link table and return the ID of the new record.
      * @param string $propertyName The name of the property to store. String,
      * not null.
-     * @param unknown $value The value of the property to store. Not empty.
-     * @param unknown $contactID The ID of the CONTACT to associate the new
+     * @param mixed $value The value of the property to store. Not empty.
+     * @param integer $contactID The ID of the CONTACT to associate the new
      * record with.
-     * @return The ID of the newly created record.
+     * @return integer The ID of the newly created record.
      */
     private function i_storeBasicProperty($propertyName, $value, $contactID)
     {
@@ -287,9 +291,9 @@ class VCardDB
     
     /**
      * Fetch all vcards from the database.
-     * @arg $kind If kind is given, only fetch those of that kind (e.g.
+     * @param string $kind If kind is given, only fetch those of that kind (e.g.
      * organization).
-     * @return An array of vCards keyed by contact id.
+     * @return array An array of vCards keyed by contact id.
      */
     public function fetchAll($kind='%')
     {
@@ -316,10 +320,11 @@ class VCardDB
     /**
      * Returns all vcards where the fn or categories match the requested search
      * string.
-     * @arg $searchString The pattern to search for (SQL matching rules). If
+     * @param string $searchString The pattern to search for (SQL matching rules). If
      * omitted, match all cards.
-     * @arg $kind If kind is given, return only cards of that kind (e.g.
+     * @param string $kind If kind is given, return only cards of that kind (e.g.
      * organization).
+     * @return array of vCards indexed by contact id.
      */
     public function search($searchString='%', $kind='%')
     {
@@ -343,11 +348,11 @@ class VCardDB
     /**
      * Returns a list of all contact_ids where the org.name parameter matches
      * the query.
-     * @arg $organizationName The name of the organization to search for. May
+     * @param string $organizationName The name of the organization to search for. May
      * be a SQL pattern. String, not empty.
-     * @arg $kind If kind is provided, limit results to a specific Kind (e.g.
+     * @param string $kind If kind is provided, limit results to a specific Kind (e.g.
      * individual.
-     * @return The list of contact ids. Actual vCards are not fetched.
+     * @return array The list of contact ids. Actual vCards are not fetched.
      */
     public function fetchIDsForOrganization($organizationName, $kind="%")
     {
@@ -378,9 +383,9 @@ class VCardDB
 
     /**
      * Returns only the contact_ids from the input list where kind matches.
-     * @arg $contactIDs The list of contact IDs to filter. An array
+     * @param array $contactIDs The list of contact IDs to filter. An array
      * (non-empty) of numerics.
-     * @arg $kind The kind of record desired (e.g. individual)
+     * @param string $kind The kind of record desired (e.g. individual)
      * @return A new list of any IDs that match.
      */
     public function filterIDsByKind(Array $contactIDs, $kind)
@@ -401,10 +406,10 @@ class VCardDB
 
     /**
      * Returns a list of all contact_ids in a given category.
-     * @arg $category The string representing the category to search for.
+     * @param string $category The string representing the category to search for.
      * May be a SQL pattern. Not empty.
-     * @arg $kind If given, the kind (e.g. individual) to filter by.
-     * @return An array of contact IDs. No vCards are fetched.
+     * @param string $kind If given, the kind (e.g. individual) to filter by.
+     * @return array An array of contact IDs. No vCards are fetched.
      */
     public function fetchIDsForCategory($category, $kind="%")
     {
@@ -435,8 +440,8 @@ class VCardDB
 
     /**
      * Retrieve vCard records for the given Contact IDs.
-     * @param unknown $contactIDs
-     * @return An array of vCards indexed by contact ID.
+     * @param array $contactIDs
+     * @return array An array of vCards indexed by contact ID.
      */
     public function fetchByID(Array $contactIDs)
     {
@@ -454,8 +459,8 @@ class VCardDB
 
     /**
      * Fetch a single vcard given a contact_id.
-     * @arg $contactID The ID of the record to fetch. Numeric, not empty.
-     * @return The completed vcard or false if none found.
+     * @param integer $contactID The ID of the record to fetch. Numeric, not empty.
+     * @return vCard|null The completed vcard or false if none found.
      */
     public function fetchOne($contactID)
     {
@@ -481,8 +486,8 @@ class VCardDB
 
     /**
      * Internal helper to fill in details of a vcard.
-     * @arg $row The associative array row returned from the db. Not empty.
-     * @return The finished vcard.
+     * @param array $row The associative array row returned from the db. Not empty.
+     * @return vCard The finished vcard.
      */
     protected function i_fetchVCard(Array $row)
     {
@@ -575,9 +580,9 @@ class VCardDB
     /**
      * Fetch all records for the named structured property (e.g. ADR) and
      * return them in an array.
-     * @param unknown $propertyName The name of the associate records to
+     * @param string $propertyName The name of the associate records to
      * retrieve. String, not null.
-     * @param unknown $contactID The ID of the CONTACT the records are
+     * @param integer $contactID The ID of the CONTACT the records are
      * associated with. Numeric, not null.
      * @return NULL|array An array of the structured properties or null if none
      * available.

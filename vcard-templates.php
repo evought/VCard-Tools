@@ -7,6 +7,8 @@
  */
 namespace vCardTools;
 
+require_once "vcard.php";
+
 /**
  * A template processor for turning vCards into HTML (or potentially,
  * any other output format, but it is well-suited to tree-structured markup).
@@ -117,6 +119,7 @@ namespace vCardTools;
  * $fragments = [fn_href_url => 'http://example.com/view.html?id=447'];
  * $template = new Template($fragments, Template::getDefaultTemplate());
  * $template->output($myvcard);
+ * @api
  */
 class Template
 {

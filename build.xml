@@ -35,7 +35,7 @@
     includes="**/*~ **/*.bak" />
 	
   <fileset id="phpapi.fileset" dir="${project.basedir}"
-	includes="vcard.php, vcard-tools.php, vcard-templates.php"/>
+	includes="vcard.php, vcard-db.php, vcard-templates.php"/>
 
   <!-- list of generated configuration files -->
   <fileset id="configFiles.fileset" dir="${project.basedir}"

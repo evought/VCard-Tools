@@ -1,6 +1,4 @@
 <?php
-namespace vCardTools;
-
 /**
  * vCard class for parsing a vCard and/or creating one
  *
@@ -8,6 +6,19 @@ namespace vCardTools;
  * @author Martins Pilsetnieks, Roberts Bruveris, Eric Vought
  * @see RFC 2426, RFC 2425, RFC 6350
  * @license MIT http://opensource.org/licenses/MIT
+ */
+namespace vCardTools;
+
+/**
+ * Representation of a vCard record exposing properties and parameters of a
+ * contact. Provides ability to import/export raw .vcf vcard text (via
+ * __construct() and __toString(). Implements the \Iterator interface to
+ * allow iteration over all properties with values. Implements \Countable
+ * to allow access to multiple  vCard records created from the same import
+ * (deprecated).
+ * @api
+ * @author evought
+ *
  */
 class vCard implements \Countable, \Iterator
 {
@@ -36,7 +47,8 @@ class vCard implements \Countable, \Iterator
     private $Data = array();
 
     /**
-     * @static Parts of structured elements according to the spec.
+     * Parts of structured properties according to the spec.
+     * @var array
      */
     private static $Spec_StructuredElements
         = array(
@@ -52,8 +64,17 @@ class vCard implements \Countable, \Iterator
 	    'org' => array('Name', 'Unit1', 'Unit2')
 		);
 
+    /**
+     * Properties which may have multiple values *within a single raw vCard
+     * line* separated by commas, according to spec.
+     * @var array
+     */
     private static $Spec_MultipleValueElements = array('nickname', 'categories');
 
+    /**
+     * Type parameter values allowed for given properties according to spec.
+     * @var array
+     */
     private static $Spec_ElementTypes
         = array(
 	    'email' => array('internet', 'x400', 'pref'),
@@ -77,26 +98,30 @@ class vCard implements \Countable, \Iterator
             'url'  => array('home', 'work')
         );
 
+    /**
+     * Properties which may contain a BLOB or associated external data.
+     * @var array
+     */
     private static $Spec_FileElements = array('photo', 'logo', 'sound');
 
     /**
-     * @static Elements with only one value according to spec
+     * Properties with only (zero or) one value according to spec
+     * @var array
      */
     private static $Spec_SingleElements
         = array('fn', 'kind', 'bday', 'anniversary', 'prodid', 'rev');
 
     /**
      * vCard constructor
-     *
-     * @param string Path to file, optional.
-     * @param string Raw data, optional.
-     * @param array Additional options, optional. Currently supported options:
+     * @param string $Path to file, optional.
+     * @param string $RawData Raw vCard data as a string to import.
+     * @param array $Options Additional options, optional. Currently supported
+     * options:
      * bool Collapse: If true, elements that can have multiple values but 
      * have only a single value are returned as that value instead of an array
      * If false, an array is returned even if it has only one value.
-     *
-     * One of these parameters must be provided, otherwise an exception
-     * is thrown.
+     * @throws \Exception If the path to the raw data is not accessible.
+     * @return boolean
      */
     public function __construct( $Path = false, $RawData = false,
                                      array $Options = null )
@@ -130,6 +155,8 @@ class vCard implements \Countable, \Iterator
      * Checks the raw VCard data for major errors (such as BEGIN and
      * END markers) and throws an exception if malformed.
      * Sets mode to single or multiple.
+     * @param string $rawData Not null.
+     * @throws \Exception if the matching BEGIN and END lines are not found.
      */
     protected function checkRawDataAndSetMode($rawData)
     {
@@ -160,6 +187,7 @@ class vCard implements \Countable, \Iterator
     /**
      * If there are multiple VCards in the raw input, process them
      * recursively by constructing new VCard objects.
+     * @param string $rawData Not null.
      */
     protected function processMultipleRawCards($rawData)
     {
@@ -179,6 +207,10 @@ class vCard implements \Countable, \Iterator
 	}
     } // processMultipleRawCards()
 
+    /**
+     * Parsing loop for one raw vCard. Sets appropriate internal properties.
+     * @param string $rawData Not null.
+     */
     protected function processSingleRawCard($rawData)
     {
         // Protect the BASE64 final = sign (detected by the line beginning 
@@ -358,9 +390,9 @@ class vCard implements \Countable, \Iterator
      * Magic method to get the various vCard values as object members, e.g.
      *	a call to $vCard -> N gets the "N" value
      *
-     * @param string Key
+     * @param string $Key
      *
-     * @return mixed Value
+     * @return mixed $Value
      */
     public function __get($Key)
     {
@@ -412,9 +444,9 @@ class vCard implements \Countable, \Iterator
      * for completeness and because the __call syntax makes it very difficult
      * to construct and add a set of values in a batch (say, loading VCards
      * from a database or POST form) and can have unprectable results.
-     * @param string key
-     * @param string value
-     * throws \DomainException if the $value is not appropriately a string,
+     * @param string $key
+     * @param string $value
+     * @throws \DomainException if the $value is not appropriately a string,
      * an array, or an array of arrays.
      */
     public function __set($key, $value)
@@ -452,10 +484,10 @@ class vCard implements \Countable, \Iterator
     /**
      * Saves an embedded file
      *
-     * @param string Key
-     * @param int Index of the file, defaults to 0
-     * @param string Target path where the file should be saved, including
-     * the filename
+     * @param string $Key Not null.
+     * @param int $Index of the file, defaults to 0
+     * @param string $TargetPath where the file should be saved, including
+     * the filename.
      *
      * @return bool Operation status
      */
@@ -498,6 +530,7 @@ class vCard implements \Countable, \Iterator
 
     /**
      * Clear all values of the named element.
+     * @param string $key Not null.
      */
     public function __unset($key)
     {
@@ -507,7 +540,10 @@ class vCard implements \Countable, \Iterator
     } // __unset()
 
     /**
-     * Return true if the named element has at least one value, false otherwise.
+     * Return true if the named element has at least one value,
+     * false otherwise.
+     * @param string $key Not null.
+     * @return bool
      */
     public function __isset($key)
     {
@@ -517,8 +553,8 @@ class vCard implements \Countable, \Iterator
     /**
      * Magic method for adding data to the vCard
      *
-     * @param string Key
-     * @param string Method call arguments. First element is value.
+     * @param string $Key
+     * @param string $Arguments Method call arguments. First element is value.
      *
      * @return vCard Current object for method chaining
      */
@@ -589,7 +625,7 @@ class vCard implements \Countable, \Iterator
      * be empty).
      * Use this just before saving or displaying the record using
      * anything other than the toString() method.
-     * Returns $this for method chaining.
+     * @return vCard $this for method chaining.
      */
     public function setFNAppropriately()
     {
@@ -674,6 +710,12 @@ class vCard implements \Countable, \Iterator
 
     // !Helper methods
 
+    /**
+     * Takes an array of types and turns them into a single string for
+     * inclusion in a raw vCard line.
+     * @param array $Type The array of type values to prepare. Not null.
+     * @return string
+     */
     private static function PrepareTypeStrForOutput($Type)
     {
         return implode(',', array_map('strtoupper', $Type));
@@ -684,7 +726,7 @@ class vCard implements \Countable, \Iterator
      *
      * @access private
      *
-     * @param string Text to prepare.
+     * @param string $Text Text to prepare. Not null.
      *
      * @return string Resulting text.
      */
@@ -698,7 +740,7 @@ class vCard implements \Countable, \Iterator
      * Must be done prior to raw vcard output.
      * @access private
      *
-     * @param string Text to prepare.
+     * @param string $text Text to prepare. Not null.
      *
      * @return string Resulting text.
      */
@@ -733,9 +775,10 @@ class vCard implements \Countable, \Iterator
     } // ParseStructuredValue(
 
     /**
-     * @access private
      * Split multiple element values by commas, except that RFC6350
      * allowed escaping is handled (comma and backslash).
+     * @param string $Text The value text removed from the vCard line.
+     * @return array An array of elements retrieved from this line.
      */
     private static function ParseMultipleTextValue($Text)
     {
@@ -746,6 +789,14 @@ class vCard implements \Countable, \Iterator
     }
 
     /**
+     * Helper for parsing raw vCard text. Parse the parameters for the
+     * property, $Key, from an array of raw parameters. Return the parameters
+     * as keys and values.
+     * @param string $Key The name of the property as parsed from the vCard.
+     * Not null.
+     * @param array $RawParams The array of parameters (separated by delimiter and delimiter
+     * already removed. Not null.
+     * @return array
      * @access private
      */
     private static function ParseParameters($Key, array $RawParams = null)
@@ -830,7 +881,16 @@ class vCard implements \Countable, \Iterator
 
     // !Interface methods
 
-    // Countable interface
+    /**
+     * Returns the number of internal vCard records created from the same
+     * import. vCard records embedded inside of other vCard records is
+     * deprecated in the vCard 4.0 specification. Ability to load multiple
+     * records in one go in this class is therefore deprecated. Access to
+     * embedded records in older vCards will eventually be provided through
+     * a different facility.
+     * @deprecated
+     * @return integer
+     */
     public function count()
     {
         switch ($this -> Mode)
@@ -845,34 +905,53 @@ class vCard implements \Countable, \Iterator
             return 0;
     }
 
-    // Iterator interface
+    /**
+     * Reset the interator.
+     * @see Iterator::rewind()
+     */
     public function rewind()
     {
         reset($this -> Data);
     }
 
+    /**
+     * Return the value at the current iterator position.
+     * @see Iterator::current()
+     */
     public function current()
     {
         return current($this -> Data);
     }
 
+    /**
+     * Advance the iterator.
+     * @see Iterator::next()
+     */
     public function next()
     {
         return next($this -> Data);
     }
 
+    /**
+     * Is the current iterator position valid?
+     * @see Iterator::valid()
+     */
     public function valid()
     {
         return ($this -> current() !== false);
     }
 
+    /**
+     * Return the key at the current iterator position.
+     * @see Iterator::key()
+     */
     public function key()
     {
         return key($this -> Data);
     }
 
     /**
-     * @return true if the specified key is a single value VCard element,
+     * @return bool True if the specified key is a single value VCard element,
      * false otherwise.
      */
     public function keyIsSingleValueElement($key)
@@ -881,7 +960,7 @@ class vCard implements \Countable, \Iterator
     }
 
     /**
-     * @return true if the specified key is a multiple-value VCard element,
+     * @return bool True if the specified key is a multiple-value VCard element,
      * (is able to contain multiple values on the same line separated by commas) 
      * false otherwise.
      */
@@ -891,7 +970,7 @@ class vCard implements \Countable, \Iterator
     }
 
     /**
-     * @return true if the specified key is a structured VCard element,
+     * @return bool True if the specified key is a structured VCard element,
      * false otherwise.
      */
     public function keyIsStructuredElement($key)
@@ -899,6 +978,12 @@ class vCard implements \Countable, \Iterator
         return isset(self::$Spec_StructuredElements[$key]);
     }
 
+    /**
+     * Returns true if a named property is a file property (it potentially
+     * contains a blob or reference to external data), false otherwise.
+     * @param string $key Not null.
+     * @return boolean
+     */
     public function keyIsFileElement($key)
     {
 	return in_array($key, self::$Spec_FileElements);
