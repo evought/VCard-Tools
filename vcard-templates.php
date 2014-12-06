@@ -140,9 +140,8 @@ class Template
     {
     	if (self::$initialized === true) return;
     	
-    	// FIXME: location awareness
     	self::$defaultTemplate
-    	    = self::i_fromINI('templates/defaultTemplate.ini');
+    	    = self::i_fromINI(__DIR__ . '/templates/defaultTemplate.ini');
     	
     	self::$initialized = true;
     }
