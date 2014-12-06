@@ -9,7 +9,7 @@
 use vCardTools\vCard as vCard;
 use vCardTools\VCardDB as VCardDB;
 
-require_once "vcard-tools.php";
+require_once "vcard-db.php";
 require_once "database.php";
 
 class VCardToolsTest extends PHPUnit_Extensions_Database_TestCase
