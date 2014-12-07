@@ -509,7 +509,7 @@ class vCard implements \Countable, \Iterator
     public function SaveFile($Key, $Index = 0, $TargetPath = '')
     {
     	assert(null !== $Key);
-    	assert(is_string($key));
+    	assert(is_string($Key));
     	
 	if (!isset($this -> Data[$Key]))
 	{
