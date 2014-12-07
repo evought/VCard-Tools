@@ -169,11 +169,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	
     	$dDBinks = new vCard();
     	$dDBinks -> n($inputs['n_FirstName'], 'FirstName')
-    	-> n($inputs['n_LastName'], 'LastName')
-    	-> n($inputs['n_AdditionalNames'], 'AdditionalNames')
-    	-> org($inputs['org'], 'Name')
-    	-> fn($inputs['fn'])
-    	-> kind($inputs['kind']);
+            -> n($inputs['n_LastName'], 'LastName')
+            -> n($inputs['n_AdditionalNames'], 'AdditionalNames')
+            -> org($inputs['org'], 'Name')
+            -> fn($inputs['fn'])
+            -> kind($inputs['kind']);
 
     	return $dDBinks; 
     }
@@ -184,19 +184,18 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function getSeinarAPL()
     {
-    	$raithSeinar = new VCard();
     	$inputs = $this->getSeinarAPLInputs();
     
     	$seinarAPL = new VCard();
     	$seinarAPL -> org($inputs['org_Name'], 'Name')
-    	-> org($inputs['org_Unit1'], 'Unit1')
-    	-> org($inputs['org_Unit2'], 'Unit2')
-    	-> fn($inputs['fn'])
-    	-> logo($inputs['logo'])
-    	-> categories($inputs['category1'])
-    	-> categories($inputs['category2'])
-    	-> categories($inputs['category3'])
-    	-> kind($inputs['kind']);
+            -> org($inputs['org_Unit1'], 'Unit1')
+            -> org($inputs['org_Unit2'], 'Unit2')
+            -> fn($inputs['fn'])
+            -> logo($inputs['logo'])
+            -> categories($inputs['category1'])
+            -> categories($inputs['category2'])
+            -> categories($inputs['category3'])
+            -> kind($inputs['kind']);
     	return $seinarAPL;
     }
     	
@@ -209,14 +208,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	$raithSeinar = new VCard();
     	$inputs = $this->getRaithSeinarInputs();
     	
-    	$raithSeinar -> n('Raith', 'FirstName')
-    	-> n('Seinar', 'LastName')
-    	-> org('Seinar Fleet Systems', 'Name')
-    	-> title('CEO')
-    	-> fn('Raith Seinar')
-    	-> categories('military industrial')
-    	-> categories('empire')
-    	-> kind('individual');
+    	$raithSeinar -> n($inputs['n_FirstName'], 'FirstName')
+            -> n($inputs['n_LastName'], 'LastName')
+            -> org($inputs['org'], 'Name')
+            -> title($inputs['title'])
+            -> fn($inputs['fn'])
+            -> categories($inputs['category1'])
+            -> categories($inputs['category2'])
+            -> kind($inputs['kind']);
     	return $raithSeinar;
     }
     
@@ -1340,8 +1339,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    	$url2 = "baz";
    	$tel  = "999-454-3212";
    	
-   	$vcard =  new vCard();
-   	
    	$vcard  ->url($url1)
    	        ->url($url2)
    	        ->tel($tel);
@@ -1362,4 +1359,3 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    	
    }
 }
-?>
