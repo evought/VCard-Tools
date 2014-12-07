@@ -628,6 +628,31 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * @depends testSetAdrFields
+     */
+    public function testSetAdrType(vCard $vcard)
+    {
+	$address = [
+			'StreetAddress' => '123 Sesame Street',
+			'Locality' => 'Hooville',
+			'Region' => 'Bear-ever',
+			'PostalCode' => '31337',
+			'Country' => 'Elbonia'
+		    ];
+        
+        $vcard->adr($address, 'work');
+	$this->assertNotEmpty($vcard->adr);
+	$this->assertInternalType("array", $vcard->adr);
+	$this->assertCount(1, $vcard->adr, print_r($vcard->adr, true));
+	$this->assertEquals($address, $vcard->adr[0]['Value'], print_r($vcard->adr, true));
+        $this->assertCount(1, $vcard->adr[0]['Type']);
+        $this->assertContains('work', $vcard->adr[0]['Type']);
+	unset($vcard->adr);
+	$this->assertEmpty($vcard->adr);
+	return $vcard;
+    }
+    
+    /**
      * Test ADR fields deprecated by RFC 6350. Should still be supported for the
      * moment.
      * @depends testNoAdr
