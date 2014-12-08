@@ -76,7 +76,7 @@
   <target name="test" depends="init"
           description="Execute PHPUnit test suite">
     <phpunit haltonfailure="true" haltonerror="true"
-    	pharlocation="${phpunit.phar}">
+    	pharlocation="${phpunit.phar}" bootstrap="bootstrap.php">
       <formatter type="plain" usefile="false"/>
       <batchtest>
         <fileset dir="tests">
