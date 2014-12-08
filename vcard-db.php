@@ -5,7 +5,7 @@
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
-namespace Evought\vCardTools;
+namespace EVought\vCardTools;
 
 
 require_once "VCard.php";
