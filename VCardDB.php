@@ -36,7 +36,7 @@ class VCardDB
 
     /**
      * Construct a new instance.
-     * @param PDO $connection A \PDO connection to read from/write to. Not null. Caller
+     * @param \PDO $connection A \PDO connection to read from/write to. Not null. Caller
      * retains responsibility for connection, but this class shall ensure that
      * the reference is cleared upon clean-up.
      */
