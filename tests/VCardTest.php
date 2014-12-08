@@ -9,7 +9,7 @@
  */
 
 use EVought\vCardTools\VCard as vCard;
-require_once 'vcard.php';
+require_once 'VCard.php';
 
 class VCardTest extends PHPUnit_Framework_TestCase {
 

@@ -8,7 +8,7 @@
 namespace Evought\vCardTools;
 
 
-require_once "vcard.php";
+require_once "VCard.php";
 
 /**
  * A class for storing and retrieving vCard instances from a database, using

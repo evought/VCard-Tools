@@ -6,7 +6,7 @@ use EVought\vCardTools\VCard as vCard;
 use EVought\vCardTools\Template;
 use EVought\vCardTools\Substitution as Substitution;
 use EVought\vCardTools\TemplateInfo;
-require_once 'vcard.php';
+require_once 'VCard.php';
 require_once 'vcard-templates.php';
 
 class VCardTemplatesTest extends PHPUnit_Framework_TestCase

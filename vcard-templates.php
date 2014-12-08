@@ -7,7 +7,7 @@
  */
 namespace EVought\vCardTools;
 
-require_once "vcard.php";
+require_once "VCard.php";
 
 /**
  * A template processor for turning vCards into HTML (or potentially,
