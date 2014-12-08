@@ -347,7 +347,7 @@ class Template
      * @arg vCard vcard The vcard to output. Not null.
      * @return string The resulting HTML.
      */
-    public function output(vCard $vcard)
+    public function output(VCard $vcard)
     {
         assert(null !== $vcard);
         assert($this->fragments !== null);
@@ -393,7 +393,7 @@ class Template
      *   if any.
      * @return string The portion of the HTML tree output.
      */
-    private function i_processSubstitution( vCard $vcard,
+    private function i_processSubstitution( VCard $vcard,
     		                            Substitution $substitution,
     		                            $iterOver="", $iterItem=null )
     {
@@ -423,11 +423,11 @@ class Template
     
     /**
      * Return true if the re-Quested property is empty, false otherwise.
-     * @param vCard $vcard not null.
+     * @param VCard $vcard not null.
      * @param string $questFor The name of the property to check. Not null.
      * @return boolean
      */
-    private function i_questFails(vCard $vcard, $questFor)
+    private function i_questFails(VCard $vcard, $questFor)
     {
     	assert(null !== $vcard);
     	assert(null !== $questFor);
@@ -442,13 +442,13 @@ class Template
     /**
      * Iterate over a vCard property, substituting the specified fragment
      * for each value of the property.
-     * @param vCard $vcard The vcard to find the property in. Not null.
+     * @param VCard $vcard The vcard to find the property in. Not null.
      * @param Substitution $substitution The substitution contains the property
      * to iterate over and the fragment to substitute. Not null. iterOver
      * must be non-null.
      * @return string
      */
-    private function i_processIteration( vCard $vcard,
+    private function i_processIteration( VCard $vcard,
     		                         Substitution $substitution )
     {
     	assert(null !== $vcard);
@@ -480,7 +480,7 @@ class Template
     
     /**
      * Look-up and return the requested property value or magic value.
-     * @param vCard $vcard The vcard to find the property in.
+     * @param VCard $vcard The vcard to find the property in.
      * @param string $lookUp The name of the property or magic value. Not null.
      * @param string $iterOver The name of a property being iterated over, or
      * null.
@@ -488,7 +488,7 @@ class Template
      * iterated over, or null.
      * @return string
      */
-    private function i_processLookUp( vCard $vcard, Substitution $substitution,
+    private function i_processLookUp( VCard $vcard, Substitution $substitution,
     		                      $iterOver, $iterItem )
     {
 	assert(null !== $vcard);
@@ -543,7 +543,7 @@ class Template
     /**
      * Process and return the requested fragment, making further substitutions
      * as necessary.
-     * @param vCard $vcard The card to look up values in. Not null.
+     * @param VCard $vcard The card to look up values in. Not null.
      * @param string $fragmentKey The key to the fragment to output, not null.
      * @param string $iterOver The name of any property being iterated over,
      * or null.
@@ -551,7 +551,7 @@ class Template
      * over, or null.
      * @return string
      */
-    private function i_processFragment( vCard $vcard, $fragmentKey, $iterOver=null,
+    private function i_processFragment( VCard $vcard, $fragmentKey, $iterOver=null,
     		                        $iterItem=null)
     {
     	assert(null !== $vcard);

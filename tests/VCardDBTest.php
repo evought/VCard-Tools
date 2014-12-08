@@ -6,7 +6,7 @@
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
-use EVought\vCardTools\vCard as vCard;
+use EVought\vCardTools\VCard as vCard;
 use EVought\vCardTools\VCardDB as VCardDB;
 
 require_once "vcard-db.php";

@@ -2,7 +2,7 @@
 /**
  * PHPUnit testcase for vcard-templates
  */
-use EVought\vCardTools\vCard as vCard;
+use EVought\vCardTools\VCard as vCard;
 use EVought\vCardTools\Template;
 use EVought\vCardTools\Substitution as Substitution;
 use EVought\vCardTools\TemplateInfo;

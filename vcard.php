@@ -20,7 +20,7 @@ namespace EVought\vCardTools;
  * @author evought
  *
  */
-class vCard implements \Countable, \Iterator
+class VCard implements \Countable, \Iterator
 {
     const MODE_SINGLE = 'single';
     const MODE_MULTIPLE = 'multiple';
@@ -180,7 +180,7 @@ class vCard implements \Countable, \Iterator
 
 
         $this->Mode = ($vCardBeginCount == 1)
-                          ? vCard::MODE_SINGLE : vCard::MODE_MULTIPLE;
+                          ? VCard::MODE_SINGLE : VCard::MODE_MULTIPLE;
 
         // Removing/changing inappropriate newlines, i.e., all CRs or 
         // multiple newlines are changed to a single newline
@@ -582,7 +582,7 @@ class vCard implements \Countable, \Iterator
      * @param string $Key The name of the property to set values on.
      * @param array $Arguments Method call arguments. First element is value.
      *
-     * @return vCard Current object for method chaining
+     * @return VCard Current object for method chaining
      */
     public function __call($Key, Array $Arguments)
     {
@@ -655,7 +655,7 @@ class vCard implements \Countable, \Iterator
      * be empty).
      * Use this just before saving or displaying the record using
      * anything other than the toString() method.
-     * @return vCard $this for method chaining.
+     * @return VCard $this for method chaining.
      */
     public function setFNAppropriately()
     {

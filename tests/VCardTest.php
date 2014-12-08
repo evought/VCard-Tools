@@ -8,7 +8,7 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-use EVought\vCardTools\vCard as vCard;
+use EVought\vCardTools\VCard as vCard;
 require_once 'vcard.php';
 
 class VCardTest extends PHPUnit_Framework_TestCase {

@@ -58,10 +58,10 @@ class VCardDB
      * Store the whole vcard to the database, calling sub-functions to store
      * related tables (e.g. address) as necessary.
      * FIXME: None of these routines deal with ENCODING.
-     * @param vCard $vcard The record to store.
+     * @param VCard $vcard The record to store.
      * @return integer The new contact id.
      */
-    function store(vCard $vcard)
+    function store(VCard $vcard)
     {
         assert(!empty($this->connection));
 
@@ -93,10 +93,10 @@ class VCardDB
      * Saves the vcard contact data to the database, returns the id of the
      * new connection record.
      * Stores JUST the info from the CONTACT table itself, no sub-tables.
-     * @param vCard $vcard The record to store.
+     * @param VCard $vcard The record to store.
      * @return integer The new contact id.
      */
-    private function i_storeJustContact(vCard $vcard)
+    private function i_storeJustContact(VCard $vcard)
     {
         assert(!empty($this->connection));
 
@@ -505,7 +505,7 @@ class VCardDB
     /**
      * Fetch a single vcard given a contact_id.
      * @param integer $contactID The ID of the record to fetch. Numeric, not empty.
-     * @return vCard|null The completed vcard or false if none found.
+     * @return VCard|null The completed vcard or false if none found.
      */
     public function fetchOne($contactID)
     {
@@ -532,14 +532,14 @@ class VCardDB
     /**
      * Internal helper to fill in details of a vcard.
      * @param array $row The associative array row returned from the db. Not empty.
-     * @return vCard The finished vcard.
+     * @return VCard The finished vcard.
      */
     protected function i_fetchVCard(Array $row)
     {
     	assert(isset($this->connection));
     	assert(!empty($row));
     	
-        $vcard = new vCard();
+        $vcard = new VCard();
         $contactID = $row["CONTACT_ID"];
 
         $simpleCols = [ 'KIND', 'FN', 'NICKNAME', 'BDAY', 'TITLE', 'ROLE',
