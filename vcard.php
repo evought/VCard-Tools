@@ -607,7 +607,8 @@ class vCard implements \Countable, \Iterator
 	    $Types = array_values(array_slice($Arguments, 1));
 
 	    if ( $this->keyIsStructuredElement($Key)
-                 && in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
+                 && ( in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
+                        || 'Type' === $Arguments[1] )
 	       )
 	    {
 		$LastElementIndex = 0;

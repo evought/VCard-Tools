@@ -598,6 +598,32 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertEmpty($vcard->adr);
 	return $vcard;
     }
+    
+    /**
+     * @depends testNoAdr
+     */
+    public function testSetMultipleAdrViaCall(vCard $vcard)
+    {
+	$adr_street = "Some Street";
+	$expected = [
+			"StreetAddress" => $adr_street
+		    ];
+	$vcard->adr($adr_street, "StreetAddress");
+	$vcard->adr($adr_street, "StreetAddress");
+        
+	$this->assertNotEmpty($vcard->adr);
+	$this->assertInternalType("array", $vcard->adr);
+	$this->assertCount(2, $vcard->adr);
+
+	$this->assertEquals($expected, $vcard->adr[0],
+                \print_r($vcard->adr[0], true) );
+        $this->assertEquals($expected, $vcard->adr[0],
+                \print_r($vcard->adr[1], true) );
+
+	unset($vcard->adr);
+	$this->assertEmpty($vcard->adr);
+	return $vcard;
+    }
 
     /**
      * @depends testNoAdr
@@ -630,24 +656,57 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @depends testSetAdrFields
      */
-    public function testSetAdrType(vCard $vcard)
+    public function testSetAdrTypeViaCall(vCard $vcard)
     {
 	$address = [
 			'StreetAddress' => '123 Sesame Street',
 			'Locality' => 'Hooville',
 			'Region' => 'Bear-ever',
 			'PostalCode' => '31337',
-			'Country' => 'Elbonia'
+			'Country' => 'Elbonia',
+                        'Type' => 'work'
 		    ];
         
-        $vcard->adr($address, 'work');
+        $this->assertEmpty($vcard->adr); // precondition
+        
+        foreach ($address as $field => $value)
+        {
+            $vcard->adr($value, $field);
+        }
 	$this->assertNotEmpty($vcard->adr);
 	$this->assertInternalType("array", $vcard->adr);
 	$this->assertCount(1, $vcard->adr, print_r($vcard->adr, true));
-	$this->assertEquals($address, $vcard->adr[0]['Value'], print_r($vcard->adr, true));
-        $this->assertCount(1, $vcard->adr[0]['Type']);
-        $this->assertContains('work', $vcard->adr[0]['Type']);
-	unset($vcard->adr);
+	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
+
+        unset($vcard->adr);
+	$this->assertEmpty($vcard->adr);
+	return $vcard;
+    }
+    
+     /**
+     * @depends testSetAdrFields
+     */
+    public function testSetAdrTypeViaAssign(vCard $vcard)
+    {
+	$address = [
+			'StreetAddress' => '123 Sesame Street',
+			'Locality' => 'Hooville',
+			'Region' => 'Bear-ever',
+			'PostalCode' => '31337',
+			'Country' => 'Elbonia',
+                        'Type' => 'work'
+		    ];
+        
+        $this->assertEmpty($vcard->adr); // precondition
+        
+        $vcard->adr = [$address];
+            
+	$this->assertNotEmpty($vcard->adr);
+	$this->assertInternalType("array", $vcard->adr);
+	$this->assertCount(1, $vcard->adr, print_r($vcard->adr, true));
+	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
+
+        unset($vcard->adr);
 	$this->assertEmpty($vcard->adr);
 	return $vcard;
     }
@@ -1075,6 +1134,68 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$vcard = new vCard(false, $input);
 	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEquals($unescaped, $vcard->fn);
+    }
+    
+    /**
+     * @covers vCard::__construct
+     * @depends testImportVCardFN
+     */
+    public function testImportVCardAdr()
+    {
+        $jDoeInputs = $this->getJohnDoeInputs();
+        
+	$input =	self::$vcard_begin . "\n"
+			. self::$vcard_version . "\n"
+			. 'ADR:;;'
+                            . $jDoeInputs['adr_StreetAddress']
+                            . ';' . $jDoeInputs['adr_Locality']
+                            . ';' . $jDoeInputs['adr_Region']
+                            . ';' . $jDoeInputs['adr_Postal']
+                            . ';' . $jDoeInputs['adr_Country'] . "\n"
+			. self::$vcard_end . "\n";
+
+        $expectedAdr = [
+            'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
+            'Locality'=>$jDoeInputs['adr_Locality'],
+            'Region'=>$jDoeInputs['adr_Region'],
+            'PostalCode'=>$jDoeInputs['adr_Postal'],
+            'Country'=>$jDoeInputs['adr_Country']
+        ];
+
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
+	$this->assertNotEmpty($vcard->adr);
+        $this->assertCount(1, $vcard->adr);
+        $this->assertEquals($expectedAdr, $vcard->adr[0]);
+    }
+    
+        /**
+     * @covers vCard::__construct
+     * @depends testImportVCardFN
+     */
+    public function testImportVCardAdrWType()
+    {
+        $jDoeInputs = $this->getJohnDoeInputs();
+        
+	$input = self::$vcard_begin . "\n"
+		. self::$vcard_version . "\n"
+		. 'ADR;TYPE=HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America' . "\n"
+		. self::$vcard_end . "\n";
+
+        $expectedAdr = [
+            'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
+            'Locality'=>$jDoeInputs['adr_Locality'],
+            'Region'=>$jDoeInputs['adr_Region'],
+            'PostalCode'=>$jDoeInputs['adr_Postal'],
+            'Country'=>$jDoeInputs['adr_Country'],
+            'Type'=>[strtolower($jDoeInputs['adr_type'])]
+        ];
+
+	$vcard = new vCard(false, $input);
+	$this->assertInstanceOf('vCardTools\vCard', $vcard);
+	$this->assertNotEmpty($vcard->adr);
+        $this->assertCount(1, $vcard->adr);
+        $this->assertEquals($expectedAdr, $vcard->adr[0]);
     }
 
     /**
