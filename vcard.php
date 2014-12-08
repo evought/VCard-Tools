@@ -76,7 +76,7 @@ class vCard implements \Countable, \Iterator
      * @var array
      */
     private static $Spec_ElementTypes
-        = array(
+        = [
 	    'email' => array('internet', 'x400', 'pref'),
 
 	    'adr' => array( 'dom', 'intl', 'postal', 'parcel',
@@ -95,8 +95,10 @@ class vCard implements \Countable, \Iterator
 
 	    'note' => array( 'home', 'work'),
 
-            'url'  => array('home', 'work')
-        );
+            'url'  => array('home', 'work'),
+            
+            'org'  => array('home', 'work')
+        ];
 
     /**
      * Properties which may contain a BLOB or associated external data.

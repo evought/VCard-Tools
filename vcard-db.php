@@ -203,7 +203,12 @@ class VCardDB
     	$propertyID = $this->connection->lastInsertId();
     	
     	$this->i_linkProperty($propertyName, $propertyID, $contactID);
-    	return $propertyID;
+        
+        if (!empty($propertyValue['Type']))
+            $this->i_associateTypes( $propertyName, $propertyID,
+                                   $propertyValue['Type'] );
+
+        return $propertyID;
     } // i_storeStructuredProperty()
     
     /**
@@ -246,6 +251,46 @@ class VCardDB
     	
     	return;
     } // i_linkProperty()
+    
+    /**
+     * Create an association between the given types and the property/id
+     * combination in the database.
+     * @staticvar array $typesSQL SQL statments keyed by property for creating
+     * type records in the appropriate property-specific type table.
+     * @param type $propertyName The name of the property to associate the types
+     * with.
+     * @param type $propertyID The id of the property within the appropriate
+     * property specific table to associate types with.
+     * @param array $types An array of string types. May be empty.
+     */
+    private function i_associateTypes($propertyName, $propertyID, Array $types)
+    {
+    	assert($this->connection !== null);
+    	assert($propertyName !== null);
+    	assert(is_string($propertyName));
+    	assert($propertyID !== null);
+    	assert(is_numeric($propertyID));
+    	assert($types !== null);
+        if (empty($types)) {return;}
+        
+        static $typesSQL = [
+            'adr' => 'INSERT INTO CONTACT_MAIL_ADDRESS_REL_TYPES (MAIL_ADDRESS_ID, TYPE_NAME) VALUES (:id, :type)',
+            'org' => 'INSERT INTO CONTACT_ORG_REL_TYPES (ORG_ID, TYPE_NAME) VALUES (:id, :type)'
+        ];
+        
+        assert(array_key_exists($propertyName, $typesSQL));
+
+        $stmt = $this->connection->prepare($typesSQL[$propertyName]);
+        
+        foreach ($types as $type)
+        {
+            $stmt->bindValue(':id', $propertyID);
+            $stmt->bindValue(':type', $type);
+            $stmt->execute();
+        }
+    	
+    	return;
+    } // associateTypes(..)
     
     /**
      * Store a basic property (multiple simple values) which requires a
@@ -578,6 +623,38 @@ class VCardDB
     }
     
     /**
+     * Retrieve all types associated with a given property/id in the db.
+     * @staticvar array $fetchTypesSQL SQL statements keyed by property name
+     * for fetching types.
+     * @param type $propertyName The name of the property to fetch types for.
+     * @param type $propertyID The ID of the property to fetch types for within
+     * the property-specific sub-table.
+     * @return type An array of string types.
+     */
+    private function i_fetchTypesForPropertyID($propertyName, $propertyID)
+    {
+        assert(null !== $propertyName);
+        assert(is_string($propertyName));
+        assert(null !== $propertyID);
+        assert(is_numeric($propertyID));
+        
+        static $fetchTypesSQL = [
+            'adr' => 'SELECT TYPE_NAME FROM CONTACT_MAIL_ADDRESS_REL_TYPES WHERE MAIL_ADDRESS_ID=:id',
+            'org' => 'SELECT TYPE_NAME FROM CONTACT_ORG_REL_TYPES WHERE ORG_ID=:id'
+        ];
+        \assert(\array_key_exists($propertyName, $fetchTypesSQL));
+        
+        $stmt = $this->connection->prepare($fetchTypesSQL[$propertyName]);
+    	$stmt->bindValue(":id", $propertyID);
+    	$stmt->execute();
+    	
+    	$results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+    	$stmt->closeCursor();
+
+    	return $results ? $results : null;
+    }
+    
+    /**
      * Fetch all records for the named structured property (e.g. ADR) and
      * return them in an array.
      * @param string $propertyName The name of the associate records to
@@ -623,16 +700,21 @@ class VCardDB
     	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
     	foreach ($propIDs as $id)
     	{
-    		$stmt->bindValue(":id", $id);
-    		$stmt->execute();
-    		$result = $stmt->fetch(\PDO::FETCH_ASSOC);
-    		$stmt->closeCursor();
+            $stmt->bindValue(":id", $id);
+            $stmt->execute();
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $stmt->closeCursor();
     	
-    		$record = array();
-    		foreach ($result as $key => $value)
-    		    if (!empty($value))
-    			$record[$col_map[$propertyName][$key]] = $value;
-    		$propList[] = $record;
+            $record = array();
+            foreach ($result as $key => $value)
+            {
+    		if (!empty($value))
+                    $record[$col_map[$propertyName][$key]] = $value;
+            }
+            $types = $this->i_fetchTypesForPropertyID($propertyName, $id);
+            if (!empty($types)) {$record['Type'] = $types;}
+            
+            $propList[] = $record;
     	}
     	return $propList;    	 
     } // i_fetchStructuredProperty()
