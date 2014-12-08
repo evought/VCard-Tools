@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - vCardTools phpunit XML file
+  - @author Eric Vought
+  - @license MIT http://opensource.org/licenses/MIT
+  - @see https://phpunit.de/manual/current/en/appendixes.configuration.html
+  -->
+
+
+<phpunit bootstrap="bootstrap.php" colors="true">
+    
+</phpunit>

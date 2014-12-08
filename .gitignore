@@ -1,5 +1,4 @@
-# Ant generated files
-phpunit.xml
+# Phing generated files
 database.php
 
 /dist/
