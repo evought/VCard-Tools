@@ -7,7 +7,7 @@
  * @see RFC 2426, RFC 2425, RFC 6350
  * @license MIT http://opensource.org/licenses/MIT
  */
-namespace vCardTools;
+namespace EVought\vCardTools;
 
 /**
  * Representation of a vCard record exposing properties and parameters of a
@@ -1052,4 +1052,3 @@ class vCard implements \Countable, \Iterator
     }
 } // VCard
 
-?>

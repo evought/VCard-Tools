@@ -8,7 +8,7 @@ MIT License http://opensource.org/licenses/MIT
 
 #What This Project Is#
 
-This effort is a set of tools for manipulating VCards (RFC 6350) in PHP, including in-memory representation, database persistence, and HTML templating. The tools build on two other works, the VCard PHP class by Martins Pilsetnieks, Roberts Bruveris (https://github.com/nuovo/vCard-parser) and a sample VCard SQL schema by George_h on Stackoverflow for RFC6868/VCard 3.0. VCard-Tools marries an improved VCard class with a set of classes for database persistence (based on George_h's schema) and flexible HTML output targeting VCard 4.0 (RFC 6350) compliance, defined in the vCardTools namespace. It also includes a growing suite of PHPUnit tests.
+This effort is a set of tools for manipulating VCards (RFC 6350) in PHP, including in-memory representation, database persistence, and HTML templating. The tools build on two other works, the VCard PHP class by Martins Pilsetnieks, Roberts Bruveris (https://github.com/nuovo/vCard-parser) and a sample VCard SQL schema by George_h on Stackoverflow for RFC6868/VCard 3.0. VCard-Tools marries an improved VCard class with a set of classes for database persistence (based on George_h's schema) and flexible HTML output targeting VCard 4.0 (RFC 6350) compliance, defined in the EVought\vCardTools namespace. It also includes a growing suite of PHPUnit tests.
 
 This file describes the project, setup, and basic usage. Also see the [Wiki](https://github.com/evought/VCard-Tools/wiki) for additional information, including class hierarchy and design discussion.
 
@@ -24,7 +24,7 @@ All components are under the [MIT License](license.txt).
 
 #Components#
 
-The project consists of php classes in the vCardTools namespace, defined in three
+The project consists of php classes in the EVought\vCardTools namespace, defined in three
 files: vcard.php, vcard-db.php, vcard-templates.php. The primary classes of interest are vCard, VCardDB, and Template. The sql schema (MySQL) is defined in sql/, documentation materials in doc/, and PHPUnit test cases under tests/. Pre-defined templates are in templates/. Setting up the database is described below. There is the beginnings of an [Phing](http://www.phing.info/) script for automating project maintenance tasks.
 
 The templating code can be used along with the original VCard class *with or without the database persistence*.

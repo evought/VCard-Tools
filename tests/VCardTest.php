@@ -8,7 +8,7 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-use vCardTools\vCard as vCard;
+use EVought\vCardTools\vCard as vCard;
 require_once 'vcard.php';
 
 class VCardTest extends PHPUnit_Framework_TestCase {
@@ -226,7 +226,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testConstructEmptyVCard()
     {
 	$vcard = new vCard();
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
+	$this->assertInstanceOf('EVought\vCardTools\vCard', $vcard);
 	return $vcard;
     }
 
@@ -1099,7 +1099,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
+	$this->assertInstanceOf('EVought\vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->fn);
     }
 
@@ -1115,7 +1115,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->fn);
     }
 
@@ -1132,7 +1131,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEquals($unescaped, $vcard->fn);
     }
     
@@ -1163,7 +1161,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
         ];
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertNotEmpty($vcard->adr);
         $this->assertCount(1, $vcard->adr);
         $this->assertEquals($expectedAdr, $vcard->adr[0]);
@@ -1192,7 +1189,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
         ];
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertNotEmpty($vcard->adr);
         $this->assertCount(1, $vcard->adr);
         $this->assertEquals($expectedAdr, $vcard->adr[0]);
@@ -1209,7 +1205,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->categories);
     }
 
@@ -1225,8 +1220,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
-
 	$this->assertEmpty( $vcard->categories,
 			    print_r($vcard->categories, true) );
     }
@@ -1244,7 +1237,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
@@ -1268,7 +1260,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
@@ -1291,7 +1282,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 	$this->assertEmpty($vcard->url);
     }
 
@@ -1307,7 +1297,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertEmpty( $vcard->url,
 			    print_r($vcard->url, true) );
@@ -1326,7 +1315,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
@@ -1350,7 +1338,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
@@ -1374,7 +1361,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('vCardTools\vCard', $vcard);
 
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);

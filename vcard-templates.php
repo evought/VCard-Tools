@@ -5,7 +5,7 @@
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license CC-BY 4.0 http://creativecommons.org/licenses/by/4.0/
  */
-namespace vCardTools;
+namespace EVought\vCardTools;
 
 require_once "vcard.php";
 
@@ -203,7 +203,7 @@ class Template
     	
     	if (array_key_exists($name, self::$templateRegistry))
     	{
-            assert(is_a(self::$templateRegistry[$name], 'vCardTools\Template'));
+            assert(is_a(self::$templateRegistry[$name], 'EVought\vCardTools\Template'));
             return self::$templateRegistry[$name];
     	} else {
     	    return null;

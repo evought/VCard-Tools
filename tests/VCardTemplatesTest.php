@@ -2,10 +2,10 @@
 /**
  * PHPUnit testcase for vcard-templates
  */
-use vCardTools\vCard as vCard;
-use vCardTools\Template;
-use vCardTools\Substitution as Substitution;
-use vCardTools\TemplateInfo;
+use EVought\vCardTools\vCard as vCard;
+use EVought\vCardTools\Template;
+use EVought\vCardTools\Substitution as Substitution;
+use EVought\vCardTools\TemplateInfo;
 require_once 'vcard.php';
 require_once 'vcard-templates.php';
 
@@ -110,7 +110,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testGetDefault()
     {
     	$template = Template::getDefaultTemplate();
-    	$this->assertInstanceOf('vCardTools\Template', $template);
+    	$this->assertInstanceOf('EVought\vCardTools\Template', $template);
     	    	
     	$this->assertNotNull($template->getFragments());
     	$this->assertNull($template->getFallback());
@@ -125,7 +125,6 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     {
     	$fragments = [];
     	$template = new Template($fragments);
-    	$this->assertInstanceOf('vCardTools\Template', $template);
     	
     	$this->assertSame($fragments, $template->getFragments());
     	$this->assertNull($template->getFallback());
@@ -135,7 +134,6 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     {	
     	$fragments = [];
     	$template = new Template($fragments, null, new TemplateInfo('George'));
-    	$this->assertInstanceOf('vCardTools\Template', $template);
 
     	$this->assertSame($fragments, $template->getFragments());
     	$this->assertEquals('George', $template->getName());
@@ -318,7 +316,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testSubstitutionFromTextFragment()
     {
     	$substitution = Substitution::fromText('key');
-    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
     	 
     	$this->assertTrue($substitution->hasFragment());
     	$this->assertEquals('key', $substitution->getFragment());
@@ -331,7 +329,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testSubstitutionFromTextQuest()
     {
     	$substitution = Substitution::fromText('key, ?adr');
-    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
     
     	$this->assertTrue($substitution->hasFragment());
     	$this->assertEquals('key', $substitution->getFragment());
@@ -346,7 +344,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testSubstitutionFromTextLookup()
     {
     	$substitution = Substitution::fromText('!n');
-    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
     
     	$this->assertFalse($substitution->hasFragment());
     
@@ -364,7 +362,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testSubstitutionFromTextLookupStructured()
     {
     	$substitution = Substitution::fromText('!n FirstName');
-    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
     
     	$this->assertFalse($substitution->hasFragment());
     
@@ -383,7 +381,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testSubstitutionFromTextLookupMagic()
     {
     	$substitution = Substitution::fromText('!_id');
-    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
     
     	$this->assertFalse($substitution->hasFragment());
     	$this->assertFalse($substitution->hasQuest());
@@ -408,7 +406,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testSubstitutionFromTextIterates()
     {
     	$substitution = Substitution::fromText('key, #n');
-    	$this->assertInstanceOf('vCardTools\Substitution', $substitution);
+    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
     
     	$this->assertTrue($substitution->hasFragment());
     	$this->assertEquals('key', $substitution->getFragment());

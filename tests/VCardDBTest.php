@@ -6,8 +6,8 @@
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
-use vCardTools\vCard as vCard;
-use vCardTools\VCardDB as VCardDB;
+use EVought\vCardTools\vCard as vCard;
+use EVought\vCardTools\VCardDB as VCardDB;
 
 require_once "vcard-db.php";
 require_once "database.php";
@@ -116,7 +116,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     {
         $vcardDB = new VCardDB(self::$pdo);
         $this->assertNotEmpty($vcardDB);
-        $this->assertInstanceOf('\vCardTools\VCardDB', $vcardDB);
+        $this->assertInstanceOf('EVought\vCardTools\VCardDB', $vcardDB);
 
 	$this->assertSame(self::$pdo, $vcardDB->getConnection());
 
