@@ -9,7 +9,6 @@
  */
 
 use EVought\vCardTools\VCard as vCard;
-require_once 'VCard.php';
 
 class VCardTest extends PHPUnit_Framework_TestCase {
 
@@ -1420,7 +1419,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     */
    public function testImportVCardDDBinksFromFile()
    {
-   	$path = 'tests/vcards/DDBinks.vcf';
+   	$path = __DIR__ . '/vcards/DDBinks.vcf';
    	$vcard = $this->getDDBinks();
    	 
    	$vcard2 = new vCard($path);
@@ -1435,7 +1434,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     */
    public function testImportVCardRaithSeinarFromFile()
    {
-   	$path = 'tests/vcards/RaithSeinar.vcf';
+   	$path = __DIR__ . '/vcards/RaithSeinar.vcf';
    	$vcard = $this->getRaithSeinar();
    	 
    	$vcard2 = new vCard($path);
@@ -1451,7 +1450,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     */
    public function testImportVCardSeinarAPLFromFile()
    {
-   	$path = 'tests/vcards/SeinarAPL.vcf';
+   	$path = __DIR__ . '/vcards/SeinarAPL.vcf';
    	$vcard = $this->getSeinarAPL();
    	 
    	$vcard2 = new vCard($path);

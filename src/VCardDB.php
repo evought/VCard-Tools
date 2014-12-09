@@ -7,9 +7,6 @@
  */
 namespace EVought\vCardTools;
 
-
-require_once "VCard.php";
-
 /**
  * A class for storing and retrieving vCard instances from a database, using
  * the RDBMS schema defined for vCardTools.

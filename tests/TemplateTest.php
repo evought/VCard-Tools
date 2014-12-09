@@ -2,12 +2,12 @@
 /**
  * PHPUnit testcase for vcard-templates
  */
-use EVought\vCardTools\VCard as vCard;
+use EVought\vCardTools\VCard;
 use EVought\vCardTools\Template;
-use EVought\vCardTools\Substitution as Substitution;
+use EVought\vCardTools\Substitution;
 use EVought\vCardTools\TemplateInfo;
-require_once 'VCard.php';
-require_once 'Template.php';
+
+define('TEST_DIR', __DIR__);
 
 class VCardTemplatesTest extends PHPUnit_Framework_TestCase
 {
@@ -34,7 +34,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     {
     	if (null === $this->raithSeinar)
     	{
-    	    $path = 'tests/vcards/RaithSeinar.vcf';
+    	    $path = __DIR__ . '/vcards/RaithSeinar.vcf';
 	    $this->raithSeinar = new vCard($path);
 	    // don't want version to cause == to fail.
 	    unset($this->raithSeinar->version); 
@@ -50,7 +50,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     {
     	if (null === $this->seinarAPL)
     	{
-	    $path = 'tests/vcards/SeinarAPL.vcf';
+	    $path = __DIR__ . '/vcards/SeinarAPL.vcf';
 	    $this->seinarAPL = new vCard($path);
 	    // don't want version to cause == to fail.
 	    unset($this->seinarAPL->version);
@@ -164,7 +164,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testFromININoName()
     {
     	$template
-    	    = Template::fromINI('tests/templates/testFromININoName.ini');
+    	    = Template::fromINI(__DIR__ . '/templates/testFromININoName.ini');
     	$this->assertNotNull($template);
     	
     	$fragments = $template->getFragments();
@@ -184,7 +184,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$expected = ['vcard' => 'content'];
     	
     	$template
-    	    = Template::fromINI('tests/templates/testFromINIWithName.ini');
+    	    = Template::fromINI(__DIR__ . '/templates/testFromINIWithName.ini');
     	$this->assertNotNull($template);
     	
     	$this->assertEquals('testFromINIWithName', $template->getName());
@@ -207,8 +207,8 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     {
     	$expected = ['vcard' => 'content'];
     	 
-    	$template = Template::fromINI(
-    	    'tests/templates/testFromINIWithNameExplicitFallback.ini',
+    	$template = Template::fromINI( __DIR__ .
+    	    '/templates/testFromINIWithNameExplicitFallback.ini',
             Template::getDefaultTemplate() );
     	$this->assertNotNull($template);
     	
@@ -238,8 +238,8 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	
     	$expected = ['vcard' => 'content'];
     
-    	$template = Template::fromINI(
-    			'tests/templates/testFromINIWithFallback.ini' );
+    	$template = Template::fromINI( __DIR__ .
+    			'/templates/testFromINIWithFallback.ini' );
     	$this->assertNotNull($template);
     	
     	$this->assertEquals('testFromINIWithFallback', $template->getName());
@@ -269,8 +269,8 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	 
     	$expected = ['vcard' => 'content'];
     
-    	$template = Template::fromINI(
-    			'tests/templates/testFromINILoadFallback.ini' );
+    	$template = Template::fromINI( __DIR__ .
+    			'/templates/testFromINILoadFallback.ini' );
     	$this->assertNotNull($template);
     	
     	$this->assertEquals('testFromINILoadFallback', $template->getName());

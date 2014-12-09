@@ -6,10 +6,8 @@
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
-use EVought\vCardTools\VCard as vCard;
+use EVought\vCardTools\VCard as VCard;
 use EVought\vCardTools\VCardDB as VCardDB;
-
-require_once "VCardDB.php";
 
 class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 {
@@ -39,7 +37,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
     public function getDataSet()
     {
-        return $this->createMySQLXMLDataSet('tests/emptyVCARDDB.xml');
+        return $this->createMySQLXMLDataSet(__DIR__ . '/emptyVCARDDB.xml');
     }
 
     /**
@@ -78,7 +76,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function getRaithSeinar()
     {
-    	$path = 'tests/vcards/RaithSeinar.vcf';
+    	$path = __DIR__ . '/vcards/RaithSeinar.vcf';
     	$vcard = new vCard($path);
     	unset($vcard->version); // don't want version to cause == to fail.
     	return $vcard;
@@ -90,7 +88,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function getSeinarAPL()
     {
-    	$path = 'tests/vcards/SeinarAPL.vcf';
+    	$path = __DIR__ . '/vcards/SeinarAPL.vcf';
    	$vcard = new vCard($path); // don't want version to cause == to fail.
    	unset($vcard->version);
    	return $vcard;    	 
@@ -102,7 +100,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function getDDBinks()
     {
-    	$path = 'tests/vcards/DDBinks.vcf';
+    	$path = __DIR__ . '/vcards/DDBinks.vcf';
    	$vcard = new vCard($path); // don't want version to cause == to fail.
    	unset($vcard->version);
    	return $vcard;

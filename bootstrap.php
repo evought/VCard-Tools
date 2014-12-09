@@ -8,3 +8,4 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 require_once 'database.php';
+require_once 'src/autoload.php';
