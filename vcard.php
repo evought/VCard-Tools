@@ -76,7 +76,7 @@ class vCard implements \Countable, \Iterator
      * @var array
      */
     private static $Spec_ElementTypes
-        = array(
+        = [
 	    'email' => array('internet', 'x400', 'pref'),
 
 	    'adr' => array( 'dom', 'intl', 'postal', 'parcel',
@@ -95,8 +95,10 @@ class vCard implements \Countable, \Iterator
 
 	    'note' => array( 'home', 'work'),
 
-            'url'  => array('home', 'work')
-        );
+            'url'  => array('home', 'work'),
+            
+            'org'  => array('home', 'work')
+        ];
 
     /**
      * Properties which may contain a BLOB or associated external data.
@@ -509,7 +511,7 @@ class vCard implements \Countable, \Iterator
     public function SaveFile($Key, $Index = 0, $TargetPath = '')
     {
     	assert(null !== $Key);
-    	assert(is_string($key));
+    	assert(is_string($Key));
     	
 	if (!isset($this -> Data[$Key]))
 	{
@@ -607,7 +609,8 @@ class vCard implements \Countable, \Iterator
 	    $Types = array_values(array_slice($Arguments, 1));
 
 	    if ( $this->keyIsStructuredElement($Key)
-                 && in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
+                 && ( in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
+                        || 'Type' === $Arguments[1] )
 	       )
 	    {
 		$LastElementIndex = 0;

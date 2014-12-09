@@ -268,23 +268,17 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     {
         $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
                              "Precondition" );
-
-        $expected = [
-                        'n_FirstName' => 'Fred',
-                        'n_LastName' => 'Jones',
-                        'adr_StreetAddress' => '47 Some Street',
-			'adr_Locality' => 'Birmingham',
-                        'adr_Region' => 'AL',
-                        'fn' => 'Fred Jones'
-                     ];
+        $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
+        $adr = [
+            'StreetAddress'=>'47 Some Street',
+            'Locality'=>'Birmingham',
+            'Region'=>'AL'
+            ];
+        $fn = 'Fred Jones';
         $vcard = new VCard();
-	$vcard->fn = $expected['fn'];
-        $vcard->n($expected['n_FirstName'], 'FirstName');
-        $vcard->n($expected['n_LastName'], 'LastName');
-        $vcard->adr($expected['adr_StreetAddress'], 'StreetAddress');
-        $vcard->adr($expected['adr_Locality'], 'Locality');
-        $vcard->adr($expected['adr_Region'], 'Region');
-	$vcard->fn = $expected['fn'];
+	$vcard->fn = $fn;
+        $vcard->n = [$n];
+        $vcard->adr = [$adr];
 
         $contactID = $vcardDB->store($vcard);
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
@@ -297,9 +291,48 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
             "After storing " . $contactID );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
-        $this->compareVCards($vcard, $resultVCard);    	 
+        $this->compareVCards($vcard, $resultVCard);
+
+        return $vcardDB;
     } //testStoreAndRetrieveWAddress()
-    
+
+    /**
+     * @depends testStoreAndRetrieveWAddress
+     */
+    public function testStoreAndRetrieveWAddressType(VCardDB $vcardDB)
+    {
+        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
+                             "Precondition" );
+        $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
+        $adr = [
+            'StreetAddress'=>'47 Some Street',
+            'Locality'=>'Birmingham',
+            'Region'=>'AL',
+            'Type'=>['work']
+            ];
+        $fn = 'Fred Jones';
+        $vcard = new VCard();
+	$vcard->fn = $fn;
+        $vcard->n = [$n];
+        $vcard->adr = [$adr];
+
+        $contactID = $vcardDB->store($vcard);
+        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
+                             "After storing " . $contactID );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS'),
+            "After storing " . $contactID );
+        $this->assertEquals( 1,
+            $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
+            "After storing " . $contactID );
+        $this->assertEquals( 1,
+          $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS_REL_TYPES'),
+            "After storing " . $contactID );
+        $resultVCard = $vcardDB->fetchOne($contactID);
+
+        $this->compareVCards($vcard, $resultVCard);    	 
+    } //testStoreAndRetrieveWAddressType()
+
     /**
      * @depends testStoreAndRetrieveVCard
      */
