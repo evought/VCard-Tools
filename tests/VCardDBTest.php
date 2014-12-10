@@ -574,10 +574,10 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contactID );
         $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_PHONE_NUMBER'),
+            $this->getConnection()->getRowCount('CONTACT_TEL'),
             "After storing " . $contactID );
         $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_PHONE_NUMBER'),
+            $this->getConnection()->getRowCount('CONTACT_REL_TEL'),
             "After storing " . $contactID );
 
         $resultVCard = $vcardDB->fetchOne($contactID);

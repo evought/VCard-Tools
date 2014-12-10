@@ -227,9 +227,9 @@ class VCardDB
     	assert($contactID !== null);
     	assert(is_numeric($contactID));
 
-    	$linkSQL = [
+    	static $linkSQL = [
     	    'note'=>'INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contactID, :id)',
-    	    'tel'=>'INSERT INTO CONTACT_REL_PHONE_NUMBER (CONTACT_ID, PHONE_NUMBER_ID) VALUES (:contactID, :id)',
+    	    'tel'=>'INSERT INTO CONTACT_REL_TEL (CONTACT_ID, TEL_ID) VALUES (:contactID, :id)',
     	    'email'=>'INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contactID, :id)',
     	    'categories'=>'INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contactID, :id)',
     	    'photo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
@@ -310,7 +310,7 @@ class VCardDB
     	
     	$storeSQL = [
     	    'note'=>'INSERT INTO CONTACT_NOTE (NOTE) VALUES (:value)',
-    	    'tel'=>'INSERT INTO CONTACT_PHONE_NUMBER (LOCAL_NUMBER) VALUES (:value)',
+    	    'tel'=>'INSERT INTO CONTACT_TEL (TEL) VALUES (:value)',
     	    'email'=>'INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:value)',
     	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:value)',
     	    'photo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'photo\', :value)',
@@ -597,7 +597,7 @@ class VCardDB
     	'org'=>'SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID',
     	'adr'=>'SELECT ADR_ID FROM CONTACT_REL_ADR WHERE CONTACT_ID=:contactID',
     	'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
-    	'tel'=>'SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID',
+    	'tel'=>'SELECT TEL_ID FROM CONTACT_REL_TEL WHERE CONTACT_ID=:contactID',
     	'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
     	'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID',
 
@@ -736,7 +736,7 @@ class VCardDB
     	    	
     	static $getRecSql = [
             'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:id',
-            'tel'=>"SELECT LOCAL_NUMBER FROM CONTACT_PHONE_NUMBER WHERE PHONE_NUMBER_ID=:id",
+            'tel'=>"SELECT TEL FROM CONTACT_TEL WHERE TEL_ID=:id",
             'email'=>'SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id',
             'categories'=>'SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id',
             'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',

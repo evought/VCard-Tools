@@ -35,9 +35,9 @@
 	</table_data>
 	<table_data name="CONTACT_ORG_REL_TYPES">
 	</table_data>
-	<table_data name="CONTACT_PHONE_NUMBER">
+	<table_data name="CONTACT_TEL">
 	</table_data>
-	<table_data name="CONTACT_PHONE_NUMBER_REL_TYPES">
+	<table_data name="CONTACT_TEL_REL_TYPES">
 	</table_data>
 	<table_data name="CONTACT_XTENDED">
 	</table_data>
@@ -57,7 +57,7 @@
 	</table_data>
 	<table_data name="CONTACT_REL_ORG">
 	</table_data>
-	<table_data name="CONTACT_REL_PHONE_NUMBER">
+	<table_data name="CONTACT_REL_TEL">
 	</table_data>
 	<table_data name="CONTACT_REL_XTENDED">
 	</table_data>
