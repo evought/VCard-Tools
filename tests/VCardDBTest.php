@@ -246,10 +246,10 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contactID );
         $this->assertEquals( 0,
-            $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS'),
+            $this->getConnection()->getRowCount('CONTACT_ADR'),
             "After storing " . $contactID );
         $this->assertEquals( 0,
-            $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
+            $this->getConnection()->getRowCount('CONTACT_REL_ADR'),
             "After storing " . $contactID );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
@@ -281,10 +281,10 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contactID );
         $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS'),
+            $this->getConnection()->getRowCount('CONTACT_ADR'),
             "After storing " . $contactID );
         $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
+            $this->getConnection()->getRowCount('CONTACT_REL_ADR'),
             "After storing " . $contactID );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
@@ -317,13 +317,13 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
                              "After storing " . $contactID );
         $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS'),
+            $this->getConnection()->getRowCount('CONTACT_ADR'),
             "After storing " . $contactID );
         $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_MAIL_ADDRESS'),
+            $this->getConnection()->getRowCount('CONTACT_REL_ADR'),
             "After storing " . $contactID );
         $this->assertEquals( 1,
-          $this->getConnection()->getRowCount('CONTACT_MAIL_ADDRESS_REL_TYPES'),
+          $this->getConnection()->getRowCount('CONTACT_ADR_REL_TYPES'),
             "After storing " . $contactID );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
