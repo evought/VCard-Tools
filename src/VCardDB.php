@@ -311,7 +311,7 @@ class VCardDB
     	$storeSQL = [
     	    'note'=>'INSERT INTO CONTACT_NOTE (NOTE) VALUES (:value)',
     	    'tel'=>'INSERT INTO CONTACT_TEL (TEL) VALUES (:value)',
-    	    'email'=>'INSERT INTO CONTACT_EMAIL (EMAIL_ADDRESS) VALUES (:value)',
+    	    'email'=>'INSERT INTO CONTACT_EMAIL (EMAIL) VALUES (:value)',
     	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:value)',
     	    'photo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'photo\', :value)',
     	    'logo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'logo\', :value)',
@@ -737,7 +737,7 @@ class VCardDB
     	static $getRecSql = [
             'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:id',
             'tel'=>"SELECT TEL FROM CONTACT_TEL WHERE TEL_ID=:id",
-            'email'=>'SELECT EMAIL_ADDRESS FROM CONTACT_EMAIL WHERE EMAIL_ID=:id',
+            'email'=>'SELECT EMAIL FROM CONTACT_EMAIL WHERE EMAIL_ID=:id',
             'categories'=>'SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id',
             'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
             'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
