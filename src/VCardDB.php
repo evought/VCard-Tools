@@ -312,7 +312,7 @@ class VCardDB
     	    'note'=>'INSERT INTO CONTACT_NOTE (NOTE) VALUES (:value)',
     	    'tel'=>'INSERT INTO CONTACT_TEL (TEL) VALUES (:value)',
     	    'email'=>'INSERT INTO CONTACT_EMAIL (EMAIL) VALUES (:value)',
-    	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CATEGORY_NAME) VALUES (:value)',
+    	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CATEGORY) VALUES (:value)',
     	    'photo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'photo\', :value)',
     	    'logo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'logo\', :value)',
     	    'sound'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'sound\', :value)'
@@ -459,7 +459,7 @@ class VCardDB
     	assert(!empty($category));
     	assert(is_string($category));
     	
-        $stmt = $this->connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY_NAME LIKE :category");
+        $stmt = $this->connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY LIKE :category");
         $stmt->bindValue(":category", $category);
         $stmt->execute();
         $categoryIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
@@ -738,7 +738,7 @@ class VCardDB
             'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:id',
             'tel'=>"SELECT TEL FROM CONTACT_TEL WHERE TEL_ID=:id",
             'email'=>'SELECT EMAIL FROM CONTACT_EMAIL WHERE EMAIL_ID=:id',
-            'categories'=>'SELECT CATEGORY_NAME FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id',
+            'categories'=>'SELECT CATEGORY FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id',
             'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
             'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
             'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id'
