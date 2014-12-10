@@ -23,9 +23,9 @@
 	</table_data>
 	<table_data name="CONTACT_KEY_REL_TYPES">
 	</table_data>
-	<table_data name="CONTACT_MAIL_ADDRESS">
+	<table_data name="CONTACT_ADR">
 	</table_data>
-	<table_data name="CONTACT_MAIL_ADDRESS_REL_TYPES">
+	<table_data name="CONTACT_ADR_REL_TYPES">
 	</table_data>
 	<table_data name="CONTACT_NOTE">
 	</table_data>
@@ -51,7 +51,7 @@
 	</table_data>
 	<table_data name="CONTACT_REL_KEYS">
 	</table_data>
-	<table_data name="CONTACT_REL_MAIL_ADDRESS">
+	<table_data name="CONTACT_REL_ADR">
 	</table_data>
 	<table_data name="CONTACT_REL_NOTE">
 	</table_data>

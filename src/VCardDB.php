@@ -178,7 +178,7 @@ class VCardDB
     	assert(is_numeric($contactID));
 
     	static $storeSQL = [
-    	    'adr'=>'INSERT INTO CONTACT_MAIL_ADDRESS (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)',
+    	    'adr'=>'INSERT INTO CONTACT_ADR (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)',
     	    'org'=>'INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)'
     	];
     	
@@ -235,7 +235,7 @@ class VCardDB
     	    'photo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
     	    'logo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
     	    'sound'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
-    	    'adr'=>'INSERT INTO CONTACT_REL_MAIL_ADDRESS (CONTACT_ID, MAIL_ADDRESS_ID) VALUES (:contactID, :id)',
+    	    'adr'=>'INSERT INTO CONTACT_REL_ADR (CONTACT_ID, ADR_ID) VALUES (:contactID, :id)',
     	    'org'=>'INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contactID, :id)'
     	];
     	
@@ -271,7 +271,7 @@ class VCardDB
         if (empty($types)) {return;}
         
         static $typesSQL = [
-            'adr' => 'INSERT INTO CONTACT_MAIL_ADDRESS_REL_TYPES (MAIL_ADDRESS_ID, TYPE_NAME) VALUES (:id, :type)',
+            'adr' => 'INSERT INTO CONTACT_ADR_REL_TYPES (ADR_ID, TYPE_NAME) VALUES (:id, :type)',
             'org' => 'INSERT INTO CONTACT_ORG_REL_TYPES (ORG_ID, TYPE_NAME) VALUES (:id, :type)'
         ];
         
@@ -595,7 +595,7 @@ class VCardDB
     	
     	static $listRecSql = [
     	'org'=>'SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID',
-    	'adr'=>'SELECT MAIL_ADDRESS_ID FROM CONTACT_REL_MAIL_ADDRESS WHERE CONTACT_ID=:contactID',
+    	'adr'=>'SELECT ADR_ID FROM CONTACT_REL_ADR WHERE CONTACT_ID=:contactID',
     	'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
     	'tel'=>'SELECT PHONE_NUMBER_ID FROM CONTACT_REL_PHONE_NUMBER WHERE CONTACT_ID=:contactID',
     	'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
@@ -636,7 +636,7 @@ class VCardDB
         assert(is_numeric($propertyID));
         
         static $fetchTypesSQL = [
-            'adr' => 'SELECT TYPE_NAME FROM CONTACT_MAIL_ADDRESS_REL_TYPES WHERE MAIL_ADDRESS_ID=:id',
+            'adr' => 'SELECT TYPE_NAME FROM CONTACT_ADR_REL_TYPES WHERE ADR_ID=:id',
             'org' => 'SELECT TYPE_NAME FROM CONTACT_ORG_REL_TYPES WHERE ORG_ID=:id'
         ];
         \assert(\array_key_exists($propertyName, $fetchTypesSQL));
@@ -680,7 +680,7 @@ class VCardDB
                         ]
     	        ];
     	static $getRecSql = [
-    	        'adr'=>'SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_MAIL_ADDRESS WHERE MAIL_ADDRESS_ID=:id',
+    	        'adr'=>'SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_ADR WHERE ADR_ID=:id',
     	        'org'=>'SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:id'
     	];
     	
