@@ -586,6 +586,32 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 	$this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWTel()
     
+    
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWKey(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+
+        $expected = [
+                        'fn'  => 'Keymaster',
+			'key' => 'http://www.example.com/keys/jdoe.cer'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        // WORKAROUND: Cannot use __call(..) with 'key'!
+        $vcard->key = [$expected['key']];
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_DATA'=>1, 'CONTACT_REL_DATA'=>1 ],
+                               $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+	$this->compareVCards($vcard, $resultVCard);
+    } //testStoreAndRetrieveWKey()
+    
      /**
      * @depends testStoreAndRetrieveVCard
      */
