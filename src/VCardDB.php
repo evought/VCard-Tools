@@ -657,27 +657,10 @@ class VCardDB
     	
         // FIXME #29: Look at doing the column mapping in the select so we don't
         // have two separate customizations per Property.
-    	static $col_map = [
-                'n'=>   [
-                          'GIVEN_NAME'=>'FirstName',
-                          'ADDIT_NAME'=>'AdditionalNames',
-                          'FAMILY_NAME'=>'LastName',
-                          'PREFIXES'=>'Prefixes',
-                          'SUFFIXES'=>'Suffixes'
-                        ],
-    		'org'=> [ 'NAME'=>'Name','UNIT1'=>'Unit1', 'UNIT2'=>'Unit2'],
-    		'adr'=> [
-                          'STREET' => 'StreetAddress',
-		          'LOCALITY' => 'Locality',
-                          'REGION' => 'Region',
-                          'POSTAL_CODE' => 'PostalCode',
-                          'COUNTRY' => 'Country'
-                        ]
-    	        ];
     	static $getRecSql = [
-    	        'adr'=>'SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_ADR WHERE ADR_ID=:id',
-    	        'org'=>'SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:id',
-                'n'=>'SELECT GIVEN_NAME, ADDIT_NAME, FAMILY_NAME, PREFIXES, SUFFIXES FROM CONTACT_N WHERE N_ID=:id'
+    	        'adr'=>'SELECT STREET AS StreetAddress, LOCALITY AS Locality, REGION AS Region, POSTAL_CODE AS PostalCode, COUNTRY AS Country FROM CONTACT_ADR WHERE ADR_ID=:id',
+    	        'org'=>'SELECT NAME AS Name, UNIT1 AS Unit1, UNIT2 AS Unit2  FROM CONTACT_ORG WHERE ORG_ID=:id',
+                'n'=>'SELECT GIVEN_NAME AS FirstName, ADDIT_NAME AS AdditionalNames, FAMILY_NAME as LastName, PREFIXES AS Prefixes, SUFFIXES AS Suffixes FROM CONTACT_N WHERE N_ID=:id'
     	];
     	
     	assert(array_key_exists($propertyName, $getRecSql));
@@ -698,12 +681,11 @@ class VCardDB
             $result = $stmt->fetch(\PDO::FETCH_ASSOC);
             $stmt->closeCursor();
     	
-            $record = array();
-            foreach ($result as $key => $value)
+            $record = \array_filter($result, '\strlen');
+            /*foreach ($result as $key => $value)
             {
-    		if (!empty($value))
-                    $record[$col_map[$propertyName][$key]] = $value;
-            }
+    		if (!empty($value)) $record[$key] = $value;
+            }*/
             if (VCard::keyIsTypeAble($propertyName))
             {
                 $types = $this->i_fetchTypesForPropertyID($propertyName, $id);
