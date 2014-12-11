@@ -232,19 +232,19 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @depends testConstructEmptyVCard
      */
-    public function testKeyIsStructuredElement($vcard)
+    public function testKeyIsStructuredElement()
     {
-	$this->assertTrue($vcard->keyIsStructuredElement('org'));
-	$this->assertFalse($vcard->keyIsStructuredElement('fn'));
+	$this->assertTrue(VCard::keyIsStructuredElement('org'));
+	$this->assertFalse(VCard::keyIsStructuredElement('fn'));
     }
     
     /**
      * @depends testConstructEmptyVCard
      */
-    public function testKeyIsSingleValueElement(VCard $vcard)
+    public function testKeyIsSingleValueElement()
     {
-        $this->assertTrue($vcard->keyIsSingleValueElement('fn'));
-	$this->assertFalse($vcard->keyIsSingleValueElement('url'));
+        $this->assertTrue(VCard::keyIsSingleValueElement('fn'));
+	$this->assertFalse(VCard::keyIsSingleValueElement('url'));
     }
 
     /**
@@ -270,17 +270,17 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testKeyIsMultipleValueElement($vcard)
     {
-        $this->assertTrue($vcard->keyIsMultipleValueElement('categories'));
-	$this->assertFalse($vcard->keyIsMultipleValueElement('n'));
+        $this->assertTrue(VCard::keyIsMultipleValueElement('categories'));
+	$this->assertFalse(VCard::keyIsMultipleValueElement('n'));
     }
 
     /**
      * @depends testConstructEmptyVCard
      */
-    public function testKeyIsFileElement($vcard)
+    public function testKeyIsFileElement()
     {
-        $this->assertTrue($vcard->keyIsFileElement('photo'));
-	$this->assertFalse($vcard->keyIsFileElement('email'));
+        $this->assertTrue(VCard::keyIsFileElement('photo'));
+	$this->assertFalse(VCard::keyIsFileElement('email'));
     }
 
     /**

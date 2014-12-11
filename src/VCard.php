@@ -1002,7 +1002,7 @@ class VCard implements \Countable, \Iterator
      * @return bool True if the specified key is a single value VCard element,
      * false otherwise.
      */
-    public function keyIsSingleValueElement($key)
+    public static function keyIsSingleValueElement($key)
     {
     	assert(null !== $key);
     	assert(is_string($key));
@@ -1016,7 +1016,7 @@ class VCard implements \Countable, \Iterator
      * (is able to contain multiple values on the same line separated by commas) 
      * false otherwise.
      */
-    public function keyIsMultipleValueElement($key)
+    public static function keyIsMultipleValueElement($key)
     {
     	assert(null !== $key);
     	assert(is_string($key));
@@ -1029,7 +1029,7 @@ class VCard implements \Countable, \Iterator
      * @return bool True if the specified key is a structured VCard element,
      * false otherwise.
      */
-    public function keyIsStructuredElement($key)
+    public static function keyIsStructuredElement($key)
     {
     	assert(null !== $key);
     	assert(is_string($key));
@@ -1043,7 +1043,7 @@ class VCard implements \Countable, \Iterator
      * @param string $key The name of the property to test. Not null.
      * @return boolean
      */
-    public function keyIsFileElement($key)
+    public static function keyIsFileElement($key)
     {
     	assert(null !== $key);
     	assert(is_string($key));
