@@ -97,14 +97,16 @@ class VCard implements \Countable, \Iterator
             
             'org'  => array('home', 'work'),
             
-            'geo'  => array( 'home', 'work')
+            'geo'  => array( 'home', 'work'),
+            
+            'key'  => array( 'home', 'work')
         ];
 
     /**
      * Properties which may contain a BLOB or associated external data.
      * @var array
      */
-    private static $Spec_FileElements = array('photo', 'logo', 'sound');
+    private static $Spec_FileElements = array('photo', 'logo', 'sound', 'key');
 
     /**
      * Properties with only (zero or) one value according to spec

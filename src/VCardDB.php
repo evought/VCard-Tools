@@ -73,7 +73,7 @@ class VCardDB
             }
         }
         
-        foreach ( ['photo', 'logo', 'sound', 'note', 'tel', 'geo',
+        foreach ( ['photo', 'logo', 'sound', 'key', 'note', 'tel', 'geo',
         		'email', 'categories'] as $propertyName )
         {
 	    foreach ($vcard->$propertyName as $value)
@@ -215,7 +215,8 @@ class VCardDB
     	    'adr'=>'INSERT INTO CONTACT_REL_ADR (CONTACT_ID, ADR_ID) VALUES (:contactID, :id)',
     	    'org'=>'INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contactID, :id)',
             'n'=>'INSERT INTO CONTACT_REL_N (CONTACT_ID, N_ID) VALUES (:contactID, :id)',
-            'geo'=>'INSERT INTO CONTACT_REL_GEO (CONTACT_ID, GEO_ID) VALUES (:contactID, :id)'
+            'geo'=>'INSERT INTO CONTACT_REL_GEO (CONTACT_ID, GEO_ID) VALUES (:contactID, :id)',
+            'key'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)'
     	];
     	
     	assert(array_key_exists($propertyName, $linkSQL));
@@ -297,6 +298,7 @@ class VCardDB
     	    'photo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'photo\', :value)',
     	    'logo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'logo\', :value)',
     	    'sound'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'sound\', :value)',
+            'key'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'key\', :value)',
             'geo'=>'INSERT INTO CONTACT_GEO (GEO) VALUES (:value)'
     	];
 
@@ -538,7 +540,7 @@ class VCardDB
         
         // Basic Properties
         foreach ( ['note', 'email', 'tel', 'categories', 'geo', 'logo',
-        		'photo', 'sound'] as $property )
+        		'photo', 'sound', 'key'] as $property )
         {
             $vcard->$property
                 = $this->i_fetchBasicProperty($property, $contactID);
@@ -577,7 +579,8 @@ class VCardDB
 
     	'logo' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'logo\'',
     	'photo' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'photo\'',
-    	'sound' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'sound\''
+    	'sound' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'sound\'',
+        'key' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'key\''
     	];
     	
     	assert(array_key_exists($propertyName, $listRecSql));
@@ -711,6 +714,7 @@ class VCardDB
             'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
             'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
             'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
+            'key'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
             'geo'=>'SELECT GEO FROM CONTACT_GEO WHERE GEO_ID=:id'
     	];
     	

@@ -846,8 +846,29 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * VCard parameter KEY ('key') cannot be accessed via the __call(..)
+     * mechanism because it conflicts with the Iterator interface's key()
+     * method! __set(..) and get(..) work fine.
      * @covers vCard::__call, vCard::__unset
-     * @depends testNoKind
+     * @depends testConstructEmptyVCard
+     */
+    public function testSetKey(vCard $vcard)
+    {
+        $this->assertEmpty($vcard->key);
+	$expected = 'http://www.example.com/keys/jdoe.cer';
+	$vcard->key = [$expected];
+	$this->assertNotEmpty($vcard->key, print_r($vcard, true));
+        $this->assertCount(1, $vcard->key);
+	$this->assertContains($expected, $vcard->key);
+
+	unset($vcard->key);
+	$this->assertEmpty($vcard->key);
+	return $vcard;
+    }
+
+    /**
+     * @covers vCard::__call, vCard::__unset
+     * @depends testSetKind
      */
     public function testSetKind(vCard $vcard)
     {
