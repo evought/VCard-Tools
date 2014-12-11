@@ -19,6 +19,12 @@
 	</table_data>
 	<table_data name="CONTACT_ENCODING_TYPES">
 	</table_data>
+        <table_data name="CONTACT_GEO">
+        </table_data>
+        <table_data name="CONTACT_REL_GEO">
+        </table_data>
+        <table_data name="CONTACT_GEO_REL_TYPES">
+        </table_data>
 	<table_data name="CONTACT_KEYS">
 	</table_data>
 	<table_data name="CONTACT_KEY_REL_TYPES">

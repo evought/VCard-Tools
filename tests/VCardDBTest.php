@@ -586,6 +586,30 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 	$this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWTel()
     
+     /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWGeo(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+
+        $expected = [
+                        'fn'          => 'Someplace in Vienna',
+			'geo' => 'geo:48.198634,16.371648;crs=wgs84;u=40'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        $vcard->geo($expected['geo']);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_GEO'=>1, 'CONTACT_REL_GEO'=>1 ],
+                               $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+	$this->compareVCards($vcard, $resultVCard);
+    } //testStoreAndRetrieveWTel()
+    
     /**
      * @depends testStoreAndRetrieveVCard
      */

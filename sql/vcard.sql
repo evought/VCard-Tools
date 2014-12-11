@@ -8,6 +8,16 @@
 
 -- create database VCARD;
 
+// Contains a RFC5870 GEO URI
+// @see https://tools.ietf.org/html/rfc5870
+// @see https://tools.ietf.org/html/rfc6350#section-6.5.2
+create table CONTACT_GEO
+(
+    GEO_ID MEDIUMINT NOT NULL AUTO_INCREMENT,
+    GEO VARCHAR(255) NOT NULL,
+    PRIMARY KEY(GEO_ID)
+);
+
 create table CONTACT_N
 (
     N_ID MEDIUMINT NOT NULL AUTO_INCREMENT,
@@ -126,8 +136,6 @@ create table CONTACT
     NICKNAME VARCHAR(255),
     BDAY TIMESTAMP NULL,
     TZ CHAR(3),                 -- Time zone offset in hours
-    GEO_LAT DOUBLE,             -- Latitude
-    GEO_LONG DOUBLE,            -- Longitude
     TITLE VARCHAR(50),
     ROLE VARCHAR(50),
     REV VARCHAR(50),
@@ -145,6 +153,15 @@ create table CONTACT_REL_N
     FOREIGN KEY(CONTACT_ID) REFERENCES CONTACT(CONTACT_ID),
     FOREIGN KEY(N_ID) REFERENCES CONTACT_N(N_ID),
     PRIMARY KEY(CONTACT_ID,N_ID)
+);
+
+create table CONTACT_REL_GEO
+(
+    CONTACT_ID MEDIUMINT NOT NULL,
+    GEO_ID MEDIUMINT NOT NULL,
+    FOREIGN KEY(CONTACT_ID) REFERENCES CONTACT(CONTACT_ID),
+    FOREIGN KEY(GEO_ID) REFERENCES CONTACT_GEO(GEO_ID),
+    PRIMARY KEY(CONTACT_ID,GEO_ID)
 );
 
 create table CONTACT_REL_ADR
@@ -243,6 +260,14 @@ create table CONTACT_REL_ORG
 -- so must be implemented as link tables.
 
 --
+create table CONTACT_GEO_REL_TYPES
+(
+    GEO_ID MEDIUMINT NOT NULL,
+    TYPE_NAME VARCHAR(20) NOT NULL,
+    FOREIGN KEY(GEO_ID) REFERENCES CONTACT_GEO(GEO_ID),
+    PRIMARY KEY(GEO_ID, TYPE_NAME)
+);
+
 create table CONTACT_ADR_REL_TYPES
 (
     ADR_ID MEDIUMINT NOT NULL,

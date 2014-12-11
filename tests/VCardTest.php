@@ -65,7 +65,18 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	    array ( 'BEGIN:VCARD',		'BEGIN\:VCARD' )
 	);
     }
-        
+    
+    /**
+     * escape value text in the manner required by the vcard text
+     * @param string $text, not null
+     * @return string
+     */
+    public function escape($text)
+    {
+        assert(null !== $text);
+        return addcslashes($text, "\\\n,:;");
+    }
+    
     /**
      * Return the property values to build a sample vcard.
      * @return array
@@ -581,7 +592,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertEmpty($vcard->url);
 	return $vcard;
     }
-
+    
     /**
      * @covers vCard::__call
      * @covers vCard::__get
@@ -605,7 +616,50 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertEmpty($vcard->url);
 	return $vcard;
     }
+    
+    /**
+     * @covers vCard::__call
+     * @covers vCard::__get
+     * @depends testConstructEmptyVCard
+     */
+    public function testSetSingleGeo(vCard $vcard)
+    {
+        $this->assertEmpty($vcard->geo); // precondition
+	$geo = "geo:48.2010,16.3695,183";
+	$vcard->geo($geo);
+	$this->assertNotEmpty($vcard->geo);
+	$this->assertInternalType("array", $vcard->geo);
+	$this->assertCount(1, $vcard->geo);
+	$this->assertEquals([$geo], $vcard->geo);
 
+	unset($vcard->geo);
+	$this->assertEmpty($vcard->geo);
+	return $vcard;
+    }
+    
+     /**
+     * @covers vCard::__call
+     * @covers vCard::__get
+     * @depends testSetSingleGeo
+     */
+    public function testSetTwoGeos(vCard $vcard)
+    {
+        $this->assertEmpty($vcard->geo); // precondition
+	$geo1 = 'geo:48.2010,16.3695,183';
+        $geo2 = 'geo:48.198634,16.371648;crs=wgs84;u=40';
+	$vcard->geo($geo1);
+        $vcard->geo($geo2);
+	$this->assertNotEmpty($vcard->geo);
+	$this->assertInternalType("array", $vcard->geo);
+	$this->assertCount(2, $vcard->geo);
+	$this->assertContains($geo1, $vcard->geo);
+        $this->assertContains($geo2, $vcard->geo);
+
+	unset($vcard->geo);
+	$this->assertEmpty($vcard->geo);
+	return $vcard;
+    }
+    
     /**
      * @depends testConstructEmptyVCard
      */

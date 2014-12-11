@@ -73,7 +73,7 @@ class VCardDB
             }
         }
         
-        foreach ( ['photo', 'logo', 'sound', 'note', 'tel',
+        foreach ( ['photo', 'logo', 'sound', 'note', 'tel', 'geo',
         		'email', 'categories'] as $propertyName )
         {
 	    foreach ($vcard->$propertyName as $value)
@@ -99,7 +99,7 @@ class VCardDB
 
         $vcard->setFNAppropriately();
 
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, NICKNAME, BDAY, TZ, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :nickname, :bday, :tz, :role, :title, :rev, :uid, :url)");
 
         foreach ( [ 'kind', 'fn', 'bday', 'rev', 'uid' ]
                   as $simpleProperty )
@@ -123,16 +123,6 @@ class VCardDB
             } else {
                 $stmt->bindValue(':'.$hackMultiple, $hackMultipleValue[0]);
             }        
-        }
-
-        $geo = $vcard->geo;
-        if (empty($geo))
-        {
-            $stmt->bindValue(':geolat', null, \PDO::PARAM_NULL);
-            $stmt->bindValue(':geolon', null, \PDO::PARAM_NULL);
-        } else {
-            $stmt->bindValue(':geolat', $geo[0]["Lattitude"]);
-            $stmt->bindValue(':geolon', $geo[0]["Longitude"]);
         }
     
         $stmt->execute();
@@ -224,7 +214,8 @@ class VCardDB
     	    'sound'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
     	    'adr'=>'INSERT INTO CONTACT_REL_ADR (CONTACT_ID, ADR_ID) VALUES (:contactID, :id)',
     	    'org'=>'INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contactID, :id)',
-            'n'=>'INSERT INTO CONTACT_REL_N (CONTACT_ID, N_ID) VALUES (:contactID, :id)'
+            'n'=>'INSERT INTO CONTACT_REL_N (CONTACT_ID, N_ID) VALUES (:contactID, :id)',
+            'geo'=>'INSERT INTO CONTACT_REL_GEO (CONTACT_ID, GEO_ID) VALUES (:contactID, :id)'
     	];
     	
     	assert(array_key_exists($propertyName, $linkSQL));
@@ -305,7 +296,8 @@ class VCardDB
     	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CATEGORY) VALUES (:value)',
     	    'photo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'photo\', :value)',
     	    'logo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'logo\', :value)',
-    	    'sound'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'sound\', :value)'
+    	    'sound'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'sound\', :value)',
+            'geo'=>'INSERT INTO CONTACT_GEO (GEO) VALUES (:value)'
     	];
 
     	assert(array_key_exists($propertyName, $storeSQL));
@@ -536,9 +528,6 @@ class VCardDB
             if (!empty($row[$col])) $vcard->$col($row[$col]);
         }
         
-        if (!empty($row["GEO_LAT"])) $vcard->geo($row["GEO_LAT"], "Lattitude");
-        if (!empty($row["GEO_LON"])) $vcard->geo($row["GEO_LON"], "Longitude");
-        
 	$vcard->prodid(self::VCARD_PRODUCT_ID);
         
         foreach (['org', 'adr', 'n'] as $structuredProperty)
@@ -548,7 +537,7 @@ class VCardDB
         }
         
         // Basic Properties
-        foreach ( ['note', 'email', 'tel', 'categories', 'logo',
+        foreach ( ['note', 'email', 'tel', 'categories', 'geo', 'logo',
         		'photo', 'sound'] as $property )
         {
             $vcard->$property
@@ -583,6 +572,7 @@ class VCardDB
     	'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
     	'tel'=>'SELECT TEL_ID FROM CONTACT_REL_TEL WHERE CONTACT_ID=:contactID',
     	'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
+        'geo'=>'SELECT GEO_ID FROM CONTACT_REL_GEO WHERE CONTACT_ID=:contactID',
     	'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID',
 
     	'logo' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'logo\'',
@@ -655,8 +645,6 @@ class VCardDB
     	assert(!empty($contactID));
     	assert(is_numeric($contactID));
     	
-        // FIXME #29: Look at doing the column mapping in the select so we don't
-        // have two separate customizations per Property.
     	static $getRecSql = [
     	        'adr'=>'SELECT STREET AS StreetAddress, LOCALITY AS Locality, REGION AS Region, POSTAL_CODE AS PostalCode, COUNTRY AS Country FROM CONTACT_ADR WHERE ADR_ID=:id',
     	        'org'=>'SELECT NAME AS Name, UNIT1 AS Unit1, UNIT2 AS Unit2  FROM CONTACT_ORG WHERE ORG_ID=:id',
@@ -722,7 +710,8 @@ class VCardDB
             'categories'=>'SELECT CATEGORY FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id',
             'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
             'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
-            'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id'
+            'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
+            'geo'=>'SELECT GEO FROM CONTACT_GEO WHERE GEO_ID=:id'
     	];
     	
     	assert(array_key_exists($propertyName, $getRecSql));

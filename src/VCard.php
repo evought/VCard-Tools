@@ -59,8 +59,6 @@ class VCard implements \Countable, \Iterator
 	    'adr' => array( 'POBox', 'ExtendedAddress', 'StreetAddress', 
                             'Locality', 'Region', 'PostalCode', 'Country' ),
 
-	    'geo' => array('Latitude', 'Longitude'),
-
 	    'org' => array('Name', 'Unit1', 'Unit2')
 		);
 
@@ -97,7 +95,9 @@ class VCard implements \Countable, \Iterator
 
             'url'  => array('home', 'work'),
             
-            'org'  => array('home', 'work')
+            'org'  => array('home', 'work'),
+            
+            'geo'  => array( 'home', 'work')
         ];
 
     /**
