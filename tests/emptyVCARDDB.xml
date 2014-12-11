@@ -27,6 +27,10 @@
 	</table_data>
 	<table_data name="CONTACT_ADR_REL_TYPES">
 	</table_data>
+        <table_data name="CONTACT_N">
+	</table_data>
+        <table_data name="CONTACT_REL_N">
+	</table_data>
 	<table_data name="CONTACT_NOTE">
 	</table_data>
 	<table_data name="CONTACT_NOTE_REL_TYPES">

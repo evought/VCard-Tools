@@ -488,10 +488,10 @@ class VCard implements \Countable, \Iterator
                                            . " requires an array of values." );
             if ($this->keyIsStructuredElement($key))
             {
-                $result = array_unique(array_filter($value, 'is_array'));
-                if ((!count($result) == 1) && (array_pop($result) != true))
-                throw new \DomainException( "Elements constraint violation: "
-                                           . $key
+                $result = \array_filter($value, '\is_array');
+                if (\count($result) != \count($value))
+                    throw new \DomainException( "Elements constraint violation: "
+                                                . $key
                                            . " requires an array of arrays." );
             }
         }
@@ -1049,6 +1049,22 @@ class VCard implements \Countable, \Iterator
     	assert(is_string($key));
     	
 	return in_array($key, self::$Spec_FileElements);
+    }
+    
+    public static function keyIsTypeAble($key)
+    {
+        assert(null !== $key);
+        assert(is_string($key));
+        
+        return array_key_exists($key, VCard::$Spec_ElementTypes);
+    }
+    
+    public static function keyAllowedTypes($key)
+    {
+        assert(null !== $key);
+        assert(is_string($key));
+        assert(array_key_exists($key, VCard::$Spec_ElementTypes));
+        return VCard::$Spec_ElementTypes[$key];
     }
 } // VCard
 

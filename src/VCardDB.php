@@ -64,7 +64,7 @@ class VCardDB
 
         $contactID = $this->i_storeJustContact($vcard);
 
-        foreach ( ['adr', 'org'] as $propertyName)
+        foreach ( ['n', 'adr', 'org'] as $propertyName)
         {
             foreach ($vcard->$propertyName as $value)
             {
@@ -99,36 +99,31 @@ class VCardDB
 
         $vcard->setFNAppropriately();
 
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, N_PREFIX, N_GIVEN_NAME, N_ADDIT_NAME, N_FAMILY_NAME, N_SUFFIX, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :n_Prefixes, :n_FirstName, :n_AdditionalNames, :n_LastName, :n_Suffixes, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, NICKNAME, BDAY, TZ, GEO_LAT, GEO_LONG, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :nickname, :bday, :tz, :geolat, :geolon, :role, :title, :rev, :uid, :url)");
 
-        $stmt->bindValue( ':kind', empty($vcard->kind)
-                                ? null : $vcard->kind, \PDO::PARAM_STR );
-        $stmt->bindValue(':fn', $vcard->fn);
-
-        // NOTE: The VCard spec allows a contact to have multiple names.
-        // In practice, no implementations seem to allow this, so we ignore
-        // it (for now). That means we have to deal with the oddity that n
-        // is actually an array below.
-        $n = empty($vcard->n) ? array() : $vcard->n[0];
-
-        foreach([ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
-              'Suffixes' ] as $n_key)
+        foreach ( [ 'kind', 'fn', 'bday', 'rev', 'uid' ]
+                  as $simpleProperty )
         {
-            $n_value = empty($n[$n_key]) ? null : $n[$n_key];
-            $stmt->bindValue(':n_'.$n_key, $n_value, \PDO::PARAM_STR);
+            assert( $vcard->keyIsSingleValueElement($simpleProperty),
+                    $simpleProperty . ' must be a single value element' );
+            $stmt->bindValue( ':'.$simpleProperty, empty($vcard->$simpleProperty)
+                                ? null : $vcard->$simpleProperty, \PDO::PARAM_STR );
         }
 
-        $stmt->bindValue( ':nickname',
-        		  empty($vcard->nickname) 
-        		          ? null : $vcard->nickname[0],
-        		  \PDO::PARAM_STR );
-        
-        if (empty($vcard->bday))
-           $stmt->bindValue( ':bday', null, \PDO::PARAM_NULL);
-        else 
-           $stmt->bindValue( ':bday', $vcard->bday);
-        
-        $stmt->bindValue(':tz', empty($vcard->tz) ? null : $vcard->tz[0]);
+        // HACK: VCard and the spec think URL, NICKNAME, etc. are multiple.
+        // Database doesn't. Arbitrarily take the first value.
+        foreach (['url', 'nickname', 'role', 'title', 'tz'] as $hackMultiple)
+        {
+            assert(!($vcard->keyIsSingleValueElement($hackMultiple)),
+                    $simpleProperty . ' must NOT be a single value element');
+            $hackMultipleValue = $vcard->$hackMultiple;
+            if (empty($hackMultipleValue))
+            {
+                $stmt->bindValue(':'.$hackMultiple, null, \PDO::PARAM_NULL);
+            } else {
+                $stmt->bindValue(':'.$hackMultiple, $hackMultipleValue[0]);
+            }        
+        }
 
         $geo = $vcard->geo;
         if (empty($geo))
@@ -139,18 +134,6 @@ class VCardDB
             $stmt->bindValue(':geolat', $geo[0]["Lattitude"]);
             $stmt->bindValue(':geolon', $geo[0]["Longitude"]);
         }
-
-        $stmt->bindValue( ':role', empty($vcard->role)
-                          ? null : $vcard->role[0], \PDO::PARAM_STR );
-        $stmt->bindValue( ':title', empty($vcard->title)
-        		  ? null : $vcard->title[0], \PDO::PARAM_STR );
-
-        $stmt->bindValue( ':rev', empty($vcard->rev)
-        		  ? null : $vcard->rev, \PDO::PARAM_STR );
-        $stmt->bindValue( ':uid', empty($vcard->uid)
-        		  ? null : $vcard->uid, \PDO::PARAM_STR );
-        $stmt->bindValue( ':url', empty($vcard->url)
-        		  ? null : $vcard->url[0], \PDO::PARAM_STR );
     
         $stmt->execute();
         $contact_id = $this->connection->lastInsertId();
@@ -179,13 +162,16 @@ class VCardDB
 
     	static $storeSQL = [
     	    'adr'=>'INSERT INTO CONTACT_ADR (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)',
-    	    'org'=>'INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)'
+    	    'org'=>'INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)',
+            'n'=>'INSERT INTO CONTACT_N (GIVEN_NAME, ADDIT_NAME, FAMILY_NAME, PREFIXES, SUFFIXES) VALUES (:FirstName, :AdditionalNames, :LastName, :Prefixes, :Suffixes)'
     	];
     	
     	static $fields = [
     	    'adr'=>[ 'StreetAddress', 'Locality', 'Region',
     	             'PostalCode', 'Country'],
-    	    'org'=>['Name', 'Unit1', 'Unit2']
+    	    'org'=>['Name', 'Unit1', 'Unit2'],
+            'n'=>[ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
+              'Suffixes' ]
     	];
     	
     	$stmt = $this->connection->prepare($storeSQL[$propertyName]);
@@ -201,7 +187,8 @@ class VCardDB
     	
     	$this->i_linkProperty($propertyName, $propertyID, $contactID);
         
-        if (!empty($propertyValue['Type']))
+        if ( VCard::keyIsTypeAble($propertyName)
+                && (!empty($propertyValue['Type'])) )
             $this->i_associateTypes( $propertyName, $propertyID,
                                    $propertyValue['Type'] );
 
@@ -236,7 +223,8 @@ class VCardDB
     	    'logo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
     	    'sound'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
     	    'adr'=>'INSERT INTO CONTACT_REL_ADR (CONTACT_ID, ADR_ID) VALUES (:contactID, :id)',
-    	    'org'=>'INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contactID, :id)'
+    	    'org'=>'INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contactID, :id)',
+            'n'=>'INSERT INTO CONTACT_REL_N (CONTACT_ID, N_ID) VALUES (:contactID, :id)'
     	];
     	
     	assert(array_key_exists($propertyName, $linkSQL));
@@ -267,6 +255,8 @@ class VCardDB
     	assert(is_string($propertyName));
     	assert($propertyID !== null);
     	assert(is_numeric($propertyID));
+        assert( VCard::keyIsTypeAble($propertyName),
+                $propertyName . ' must be a type-able property.');
     	assert($types !== null);
         if (empty($types)) {return;}
         
@@ -545,24 +535,17 @@ class VCardDB
         {
             if (!empty($row[$col])) $vcard->$col($row[$col]);
         }
-                
-        if (!empty($row["N_PREFIX"])) $vcard->n($row["N_PREFIX"], "Prefixes");
-        if (!empty($row["N_GIVEN_NAME"]))
-		$vcard->n($row["N_GIVEN_NAME"], "FirstName");
-        if (!empty($row["N_ADDIT_NAME"]))
-		$vcard->n($row["N_ADDIT_NAME"], "AdditionalNames");
-        if (!empty($row["N_FAMILY_NAME"]))
-		$vcard->n($row["N_FAMILY_NAME"], "LastName");
-        if (!empty($row["N_SUFFIX"])) $vcard->n($row["N_SUFFIX"], "Suffixes");
         
         if (!empty($row["GEO_LAT"])) $vcard->geo($row["GEO_LAT"], "Lattitude");
         if (!empty($row["GEO_LON"])) $vcard->geo($row["GEO_LON"], "Longitude");
         
 	$vcard->prodid(self::VCARD_PRODUCT_ID);
         
-        // Structured Properties
-        $vcard->org = $this->i_fetchStructuredProperty('org', $contactID);
-        $vcard->adr = $this->i_fetchStructuredProperty('adr', $contactID);
+        foreach (['org', 'adr', 'n'] as $structuredProperty)
+        {
+            $vcard->$structuredProperty
+                = $this->i_fetchStructuredProperty($structuredProperty, $contactID);
+        }
         
         // Basic Properties
         foreach ( ['note', 'email', 'tel', 'categories', 'logo',
@@ -594,6 +577,7 @@ class VCardDB
     	assert(is_numeric($contactID));
     	
     	static $listRecSql = [
+        'n' => 'SELECT N_ID FROM CONTACT_REL_N WHERE CONTACT_ID=:contactID',
     	'org'=>'SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID',
     	'adr'=>'SELECT ADR_ID FROM CONTACT_REL_ADR WHERE CONTACT_ID=:contactID',
     	'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
@@ -634,6 +618,8 @@ class VCardDB
         assert(is_string($propertyName));
         assert(null !== $propertyID);
         assert(is_numeric($propertyID));
+        assert( VCard::keyIsTypeAble($propertyName),
+                $propertyName . ' must be a type-able property.' );
         
         static $fetchTypesSQL = [
             'adr' => 'SELECT TYPE_NAME FROM CONTACT_ADR_REL_TYPES WHERE ADR_ID=:id',
@@ -669,7 +655,16 @@ class VCardDB
     	assert(!empty($contactID));
     	assert(is_numeric($contactID));
     	
+        // FIXME #29: Look at doing the column mapping in the select so we don't
+        // have two separate customizations per Property.
     	static $col_map = [
+                'n'=>   [
+                          'GIVEN_NAME'=>'FirstName',
+                          'ADDIT_NAME'=>'AdditionalNames',
+                          'FAMILY_NAME'=>'LastName',
+                          'PREFIXES'=>'Prefixes',
+                          'SUFFIXES'=>'Suffixes'
+                        ],
     		'org'=> [ 'NAME'=>'Name','UNIT1'=>'Unit1', 'UNIT2'=>'Unit2'],
     		'adr'=> [
                           'STREET' => 'StreetAddress',
@@ -681,7 +676,8 @@ class VCardDB
     	        ];
     	static $getRecSql = [
     	        'adr'=>'SELECT STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY FROM CONTACT_ADR WHERE ADR_ID=:id',
-    	        'org'=>'SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:id'
+    	        'org'=>'SELECT NAME, UNIT1, UNIT2 FROM CONTACT_ORG WHERE ORG_ID=:id',
+                'n'=>'SELECT GIVEN_NAME, ADDIT_NAME, FAMILY_NAME, PREFIXES, SUFFIXES FROM CONTACT_N WHERE N_ID=:id'
     	];
     	
     	assert(array_key_exists($propertyName, $getRecSql));
@@ -708,8 +704,11 @@ class VCardDB
     		if (!empty($value))
                     $record[$col_map[$propertyName][$key]] = $value;
             }
-            $types = $this->i_fetchTypesForPropertyID($propertyName, $id);
-            if (!empty($types)) {$record['Type'] = $types;}
+            if (VCard::keyIsTypeAble($propertyName))
+            {
+                $types = $this->i_fetchTypesForPropertyID($propertyName, $id);
+                if (!empty($types)) {$record['Type'] = $types;}
+            }
             
             $propList[] = $record;
     	}
@@ -768,5 +767,3 @@ class VCardDB
     } // i_fetchBasicProperty()    
 
 } // VCardDB
-
-?>

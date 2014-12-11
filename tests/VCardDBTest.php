@@ -71,6 +71,30 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * Check the row counts in the database after a query via assertions.
+     * @param array $tables An associative array mapping table names to
+     * expected counts.
+     * @param VCard $vcard If provided, a VCard to print for diagnostic
+     * purposes if row counts do not match.
+     */
+    protected function checkRowCounts(Array $tables, VCard $vcard = null)
+    {
+        assert(!empty($tables));
+        $xtraInfo = '';
+        if (null === $vcard)
+        {
+            $xtraInfo = ' after storing ' . print_r($vcard, true);
+        }
+        
+        foreach ($tables as $table => $count)
+        {
+            $this->assertEquals( $count, $this->getConnection()->getRowCount($table),
+                'Row count should be ' . $count . ' in '. $table
+                    . $xtraInfo );
+        }
+    }
+    
+    /**
      * Some cards for testing.
      * @return an individual VCard.
      */
@@ -125,13 +149,12 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testFetchWhenEmpty(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
+
 	$vcards = $vcardDB->fetchAll();
 
 	$this->assertEmpty($vcards);
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Postcondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
     }
 
     /**
@@ -139,13 +162,11 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testSearchWhenEmpty(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 	$vcards = $vcardDB->search("bloomers");
 
 	$this->assertEmpty($vcards);
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Postcondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
     }
 
     /**
@@ -153,16 +174,14 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveTrivialVCard(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 
         $fn = 'foo';
         $vcard = new VCard();
 	$vcard->fn = $fn;
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
+        $this->checkRowCounts(['CONTACT'=>1], $vcard);
 
         $resultVCard = $vcardDB->fetchOne($contactID);
 
@@ -175,16 +194,14 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testFetchWithOneVCard(VCardDB $vcardDB)
     {
-    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-    			"Precondition" );
+    	$this->checkRowCounts(['CONTACT'=>0]);
     	
     	$fn = 'foo';
     	$vcard = new VCard();
     	$vcard->fn = $fn;
     	
     	$contactID = $vcardDB->store($vcard);
-    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-    			"After storing " . $contactID );
+    	$this->checkRowCounts(['CONTACT'=>1], $vcard);
     	
     	$resultVCards = $vcardDB->fetchAll();
     	$this->assertNotEmpty($resultVCards, print_r($vcardDB->fetchOne($contactID), true));
@@ -200,22 +217,18 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testSearchWithOneVCardFails(VCardDB $vcardDB)
     {
-    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-    			"Precondition" );
+    	$this->checkRowCounts(['CONTACT'=>0]);
     	 
     	$fn = 'foo';
     	$vcard = new VCard();
     	$vcard->fn = $fn;
     	 
     	$contact_id = $vcardDB->store($vcard);
-    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-    			"After storing " . $contact_id );
+    	$this->checkRowCounts(['CONTACT'=>1], $vcard);
     	 
 	$vcards = $vcardDB->search("bloomers");
 
 	$this->assertEmpty($vcards);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "Postcondition" );
     }
 
 
@@ -226,8 +239,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveVCard(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
                         'n_FirstName' => 'Fred',
@@ -240,31 +252,73 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->n($expected['n_FirstName'], 'FirstName');
         $vcard->n($expected['n_LastName'], 'LastName');
 	$vcard->url($expected['url']);
-	$vcard->fn = $expected['fn'];
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 0,
-            $this->getConnection()->getRowCount('CONTACT_ADR'),
-            "After storing " . $contactID );
-        $this->assertEquals( 0,
-            $this->getConnection()->getRowCount('CONTACT_REL_ADR'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>0,
+                                 'CONTACT_REL_ADR'=>0 ],
+                               $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
         $this->compareVCards($vcard, $resultVCard);    	 
 	
         return $vcardDB;
     } //testStoreAndRetrieveVCard()
+    
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWName(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+        
+        $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
+        $fn = 'Fred Jones';
+        $vcard = new VCard();
+	$vcard->fn = $fn;
+        $vcard->n = [$n];
 
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,
+                                 'CONTACT_REL_N'=>1 ],
+                               $vcard );
+        $resultVCard = $vcardDB->fetchOne($contactID);
+
+        $this->compareVCards($vcard, $resultVCard);
+
+        return $vcardDB;
+    } //testStoreAndRetrieveWName()
+    
+     /**
+     * @depends testStoreAndRetrieveWName
+     */
+    public function testStoreAndRetrieveWNames(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+        
+        $n1 = ['FirstName'=>'Samuel', 'LastName'=>'Clemens'];
+        $n2 = ['FirstName'=>'Mark', 'LastName'=>'Twain'];
+        $fn = 'Mark Twain';
+        $vcard = new VCard();
+	$vcard->fn = $fn;
+        $vcard->n = [$n1, $n2];
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>2,
+                                 'CONTACT_REL_N'=>2 ], $vcard );
+        $resultVCard = $vcardDB->fetchOne($contactID);
+
+        $this->compareVCards($vcard, $resultVCard);
+
+        return $vcardDB;
+    } //testStoreAndRetrieveWNames()
+    
     /**
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWAddress(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
+        
         $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
         $adr = [
             'StreetAddress'=>'47 Some Street',
@@ -278,14 +332,9 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->adr = [$adr];
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_ADR'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_ADR'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>1,
+                                 'CONTACT_REL_ADR'=>1 ],
+                               $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
         $this->compareVCards($vcard, $resultVCard);
@@ -298,8 +347,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWAddressType(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
+        
         $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
         $adr = [
             'StreetAddress'=>'47 Some Street',
@@ -314,17 +363,10 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->adr = [$adr];
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_ADR'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_ADR'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-          $this->getConnection()->getRowCount('CONTACT_ADR_REL_TYPES'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>1,
+                                 'CONTACT_REL_ADR'=>1,
+                                 'CONTACT_ADR_REL_TYPES'=>1 ],
+                               $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
         $this->compareVCards($vcard, $resultVCard);    	 
@@ -335,8 +377,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWUID(VCardDB $vcardDB)
     {
-    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-    			"Precondition" );
+    	$this->checkRowCounts(['CONTACT'=>0]);
     
     	$expected = 'someUIDValue';
 
@@ -345,8 +386,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$vcard->fn = 'nothingInteresting';
     
     	$contactID = $vcardDB->store($vcard);
-    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-    			"After storing " . $contactID );
+    	$this->checkRowCounts(['CONTACT'=>1], $vcard);
     	$resultVCard = $vcardDB->fetchOne($contactID);
     
     	$this->compareVCards($vcard, $resultVCard);
@@ -357,8 +397,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testFetchByID(VCardDB $vcardDB)
     {
-    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-    			"Precondition" );
+    	$this->checkRowCounts(['CONTACT'=>0]);
     	 
     	$vcard1 = $this->getRaithSeinar();
     	$id1 = $vcardDB->store($vcard1);
@@ -366,7 +405,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$vcard2 = $this->getSeinarAPL();
     	$id2 = $vcardDB->store($vcard2);
     
-    	$this->assertEquals(2, $this->getConnection()->getRowCount('CONTACT'));
+    	$this->checkRowCounts(['CONTACT'=>2]);
     	 
     	$resultVCards = $vcardDB->fetchByID([$id1, $id2]);
     
@@ -389,16 +428,14 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testSearchWithOneVCardMatches(VCardDB $vcardDB)
     {
-    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-    			"Precondition" );
+    	$this->checkRowCounts(['CONTACT'=>0]);
     
     	$fn = 'foo';
     	$vcard = new VCard();
     	$vcard->fn = $fn;
     
     	$contactID = $vcardDB->store($vcard);
-    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-    			"After storing " . $contactID );
+    	$this->checkRowCounts(['CONTACT'=>1], $vcard);
     
     	$resultVCards = $vcardDB->search("foo");
     	 
@@ -415,8 +452,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWEmail(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
                         'n_FirstName' => 'Fred',
@@ -432,14 +468,9 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 	$vcard->fn = $expected['fn'];
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_EMAIL'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_EMAIL'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,
+                                 'CONTACT_EMAIL'=>1, 'CONTACT_REL_EMAIL'=>1 ],
+                               $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
@@ -450,8 +481,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWOrg(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
                         'n_FirstName' => 'Raith',
@@ -468,14 +498,9 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->org($expected['org'], 'Name');
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_ORG'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_ORG'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ORG'=>1,
+                                 'CONTACT_REL_ORG'=>1 ],
+                               $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
         
@@ -487,8 +512,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWLogo(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
                         'org_name'    => 'Seinar Fleet Systems',
@@ -505,20 +529,10 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->logo($expected['logo']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_ORG'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_ORG'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_DATA'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_DATA'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_ORG'=>1, 'CONTACT_REL_ORG'=>1,
+                                 'CONTACT_DATA'=>1, 'CONTACT_REL_DATA'=>1 ],
+                               $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
@@ -529,8 +543,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWNote(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
                         'fn'          => 'Carpenter',
@@ -541,14 +554,9 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->note($expected['note']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_NOTE'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_NOTE'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_NOTE'=>1, 'CONTACT_REL_NOTE'=>1 ],
+                               $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
@@ -559,8 +567,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWTel(VCardDB $vcardDB)
     {
-        $this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-                             "Precondition" );
+        $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
                         'fn'          => 'Information',
@@ -571,14 +578,9 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->tel($expected['tel']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-                             "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_TEL'),
-            "After storing " . $contactID );
-        $this->assertEquals( 1,
-            $this->getConnection()->getRowCount('CONTACT_REL_TEL'),
-            "After storing " . $contactID );
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_TEL'=>1, 'CONTACT_REL_TEL'=>1 ],
+                               $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
 	$this->compareVCards($vcard, $resultVCard);
@@ -589,8 +591,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWCategory(VCardDB $vcardDB)
     {
-    	$this->assertEquals( 0, $this->getConnection()->getRowCount('CONTACT'),
-    			"Precondition" );
+    	$this->checkRowCounts(['CONTACT'=>0]);
     
     	$expected = [
                      'fn'          => 'Sigmund Freud',
@@ -601,6 +602,10 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$vcard->categories($expected['category']);
     
     	$contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_CATEGORIES'=>1,
+                                 'CONTACT_REL_CATEGORIES'=>1 ],
+                               $vcard );
     	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
     			"After storing " . $contactID );
     	$this->assertEquals( 1,
@@ -628,7 +633,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$dDBinks = $this->getDDBinks();
     	$dDBContactID = $vcardDB->store($dDBinks);
     	
-    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+        $this->checkRowCounts(['CONTACT'=>3]);
     	
     	$IDs = $vcardDB->fetchIDsForOrganization('Seinar Fleet Systems');
     	
@@ -662,7 +667,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$dDBinks = $this->getDDBinks();
     	$dDBContactID = $vcardDB->store($dDBinks);
     	 
-    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+    	$this->checkRowCounts(['CONTACT'=>3]);
     	 
     	$IDs = $vcardDB->fetchIDsForOrganization( 'Seinar Fleet Systems',
                                                   'individual' );
@@ -693,7 +698,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$dDBinks = $this->getDDBinks();
     	$dDBContactID = $vcardDB->store($dDBinks);
     	 
-    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+    	$this->checkRowCounts(['CONTACT'=>3]);
     	 
     	$IDs = $vcardDB->fetchIDsForCategory('military industrial');
     	 
@@ -727,7 +732,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$dDBinks = $this->getDDBinks();
     	$dDBContactID = $vcardDB->store($dDBinks);
     
-    	$this->assertEquals( 3, $this->getConnection()->getRowCount('CONTACT'));
+    	$this->checkRowCounts(['CONTACT'=>3]);
     
     	$IDs = $vcardDB->fetchIDsForCategory( 'military industrial',
                                               'organization' );

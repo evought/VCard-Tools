@@ -237,14 +237,32 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertTrue($vcard->keyIsStructuredElement('org'));
 	$this->assertFalse($vcard->keyIsStructuredElement('fn'));
     }
+    
+    /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testKeyIsSingleValueElement(VCard $vcard)
+    {
+        $this->assertTrue($vcard->keyIsSingleValueElement('fn'));
+	$this->assertFalse($vcard->keyIsSingleValueElement('url'));
+    }
 
     /**
      * @depends testConstructEmptyVCard
      */
-    public function testKeyIsSingleValueElement($vcard)
+    public function testKeyIsTypeAble()
     {
-        $this->assertTrue($vcard->keyIsSingleValueElement('fn'));
-	$this->assertFalse($vcard->keyIsSingleValueElement('url'));
+        $this->assertTrue(VCard::keyIsTypeAble('adr'));
+	$this->assertTrue(VCard::keyIsTypeAble('org'));
+	$this->assertFalse(VCard::keyIsTypeAble('n'));
+    }
+
+    /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testKeyAllowedTypes($vcard)
+    {
+        $this->assertContains('work', $vcard::keyAllowedTypes('tel'));
     }
 
     /**
@@ -394,7 +412,28 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertEmpty($vcard->adr);
 	return $vcard;
     }
-
+    
+    /**
+     * @covers vCard::__set, vCard::__get.
+     * @depends testAssignStructuredElement
+     */
+    public function testAssignStructuredElementMultiple(vCard $vcard)
+    {
+        $adr1 = ['StreetAddress' => 'foo'];
+        $adr2 = ['StreetAddress' => 'bar'];
+        
+        $this->assertEmpty($vcard->adr);
+        $vcard->adr = [$adr1, $adr2];
+	$this->assertNotEmpty($vcard->adr);
+        $this->assertCount(2, $vcard->adr);
+	$this->assertContains($adr1, $vcard->adr);
+	$this->assertContains($adr2, $vcard->adr);
+        
+	unset($vcard->adr);
+	$this->assertEmpty($vcard->adr);
+	return $vcard;
+    }
+    
     /**
      * @covers vCard::__set, vCard::__get.
      * @depends testNoFN
