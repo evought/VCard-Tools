@@ -618,5 +618,29 @@ class VCardDB
         $stmt->closeCursor();
     	return empty($propList) ? null : $propList;
     } // i_fetchBasicProperty()    
+    
+    /**
+     * Deletes a CONTACT from the database by ID. Should delete all dependent
+     * records (e.g. properties) for that CONTACT as well.
+     * @param integer $contactID The ID of the record to delete. Numeric,
+     * not null.
+     * @return bool If a record was deleted, false otherwise.
+     * @throws \PDOException On database failure.
+     */
+    public function deleteContact($contactID)
+    {
+        \assert(isset($this->connection));
+        \assert(null !== $contactID);
+        \assert(\is_numeric($contactID));
+        
+        $stmt = $this->connection->prepare(
+            'DELETE FROM CONTACT WHERE CONTACT_ID=:contactID' );
+        $stmt->bindValue(':contactID', $contactID);
+        $stmt->execute();
+        $rows = $stmt->rowCount();
+        $stmt->closeCursor();
+        
+        return (1 === $rows);
+    }
 
 } // VCardDB

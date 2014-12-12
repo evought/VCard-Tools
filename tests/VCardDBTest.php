@@ -9,6 +9,8 @@
 use EVought\vCardTools\VCard as VCard;
 use EVought\vCardTools\VCardDB as VCardDB;
 
+// TODO #15: Test delete function
+
 class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 {
     // only instantiate pdo once for test clean-up/fixture load
@@ -644,8 +646,42 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWCategory()
     
+        /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveThreeVCards(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts( [ 'CONTACT'=>0, 'CONTACT_N'=>0,
+                                 'CONTACT_ORG'=>0, 'CONTACT_CATEGORIES'=>0,
+                                 'CONTACT_DATA'=>0
+                               ]); // pre-condition
+                
+    	$raithSeinar = $this->getRaithSeinar();
+    	$rSContactID = $vcardDB->store($raithSeinar);
+    
+    	$seinarAPL = $this->getSeinarAPL();
+    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    
+    	$dDBinks = $this->getDDBinks();
+    	$dDBContactID = $vcardDB->store($dDBinks);
+    
+    	$this->checkRowCounts( [ 'CONTACT'=>3, 'CONTACT_N'=>2,
+                                 'CONTACT_ORG'=>3, 'CONTACT_CATEGORIES'=>5,
+                                 'CONTACT_DATA'=>1
+                               ]);
+        
+        $vcards = $vcardDB->fetchAll();
+        $this->assertCount(3, $vcards);
+        
+        $this->compareVCards($raithSeinar, $vcards[$rSContactID]);
+        $this->compareVCards($seinarAPL, $vcards[$sAPLContactID]);
+        $this->compareVCards($dDBinks, $vcards[$dDBContactID]);
+        
+    	return $vcardDB;
+    }
+    
     /**
-     * @depends testStoreAndRetrieveWOrg
+     * @depends testStoreAndRetrieveThreeVCards
      */
     public function testFetchIDsForOrganization(VCardDB $vcardDB)
     {    	    	    	
@@ -710,7 +746,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
-     * @depends testStoreAndRetrieveWOrg
+     * @depends testStoreAndRetrieveThreeVCards
      */
     public function testFetchIDsForCategory(VCardDB $vcardDB)
     {
@@ -776,5 +812,46 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	return $vcardDB;
     }
     
+    /**
+     * @depends testStoreAndRetrieveThreeVCards
+     * @param VCardDB $vcardDB
+     */
+    public function testDeleteVCard(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts( [ 'CONTACT'=>0, 'CONTACT_N'=>0,
+                                 'CONTACT_ORG'=>0, 'CONTACT_CATEGORIES'=>0,
+                                 'CONTACT_DATA'=>0
+                               ]); // pre-condition
+                
+    	$raithSeinar = $this->getRaithSeinar();
+    	$rSContactID = $vcardDB->store($raithSeinar);
+    
+    	$seinarAPL = $this->getSeinarAPL();
+    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    
+    	$dDBinks = $this->getDDBinks();
+    	$dDBContactID = $vcardDB->store($dDBinks);
+    
+    	$this->checkRowCounts( [ 'CONTACT'=>3, 'CONTACT_N'=>2,
+                                 'CONTACT_ORG'=>3, 'CONTACT_CATEGORIES'=>5,
+                                 'CONTACT_DATA'=>1
+                               ]);
+
+        $vcardDB->deleteContact($dDBContactID);
+        
+        $this->checkRowCounts( [ 'CONTACT'=>2, 'CONTACT_N'=>1,
+                                 'CONTACT_ORG'=>2, 'CONTACT_CATEGORIES'=>5,
+                                 'CONTACT_DATA'=>1
+                               ]);
+        
+        $vcards = $vcardDB->fetchAll();
+        $this->assertCount(2, $vcards);
+        
+        $this->compareVCards($raithSeinar, $vcards[$rSContactID]);
+        $this->compareVCards($seinarAPL, $vcards[$sAPLContactID]);
+        
+        return $vcardDB;
+    }
+    
 } // VCardDBTest
-?>
+
