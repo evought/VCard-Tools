@@ -254,8 +254,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 	$vcard->url($expected['url']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>0,
-                                 'CONTACT_REL_ADR'=>0 ],
+        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>0],
                                $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
@@ -278,8 +277,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->n = [$n];
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,
-                                 'CONTACT_REL_N'=>1 ],
+        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_N'=>1],
                                $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
@@ -303,8 +301,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->n = [$n1, $n2];
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>2,
-                                 'CONTACT_REL_N'=>2 ], $vcard );
+        $this->checkRowCounts(['CONTACT'=>1, 'CONTACT_N'=>2], $vcard);
         $resultVCard = $vcardDB->fetchOne($contactID);
 
         $this->compareVCards($vcard, $resultVCard);
@@ -332,8 +329,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->adr = [$adr];
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>1,
-                                 'CONTACT_REL_ADR'=>1 ],
+        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>1],
                                $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
 
@@ -364,7 +360,6 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
         $contactID = $vcardDB->store($vcard);
         $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>1,
-                                 'CONTACT_REL_ADR'=>1,
                                  'CONTACT_ADR_REL_TYPES'=>1 ],
                                $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
@@ -469,7 +464,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
         $contactID = $vcardDB->store($vcard);
         $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,
-                                 'CONTACT_EMAIL'=>1, 'CONTACT_REL_EMAIL'=>1 ],
+                                 'CONTACT_EMAIL'=>1 ],
                                $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
@@ -498,8 +493,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->org($expected['org'], 'Name');
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ORG'=>1,
-                                 'CONTACT_REL_ORG'=>1 ],
+        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ORG'=>1],
                                $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
@@ -529,9 +523,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->logo($expected['logo']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1,
-                                 'CONTACT_ORG'=>1, 'CONTACT_REL_ORG'=>1,
-                                 'CONTACT_DATA'=>1, 'CONTACT_REL_DATA'=>1 ],
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_ORG'=>1,
+                                 'CONTACT_DATA'=>1 ],
                                $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
@@ -554,8 +547,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->note($expected['note']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1,
-                                 'CONTACT_NOTE'=>1, 'CONTACT_REL_NOTE'=>1 ],
+        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_NOTE'=>1],
                                $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
@@ -578,9 +570,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->tel($expected['tel']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1,
-                                 'CONTACT_TEL'=>1, 'CONTACT_REL_TEL'=>1 ],
-                               $vcard );
+        $this->checkRowCounts(['CONTACT'=>1, 'CONTACT_TEL'=>1], $vcard );
 
         $resultVCard = $vcardDB->fetchOne($contactID);
 	$this->compareVCards($vcard, $resultVCard);
@@ -604,9 +594,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->key = [$expected['key']];
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1,
-                                 'CONTACT_DATA'=>1, 'CONTACT_REL_DATA'=>1 ],
-                               $vcard );
+        $this->checkRowCounts(['CONTACT'=>1, 'CONTACT_DATA'=>1], $vcard);
 
         $resultVCard = $vcardDB->fetchOne($contactID);
 	$this->compareVCards($vcard, $resultVCard);
@@ -628,9 +616,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $vcard->geo($expected['geo']);
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1,
-                                 'CONTACT_GEO'=>1, 'CONTACT_REL_GEO'=>1 ],
-                               $vcard );
+        $this->checkRowCounts(['CONTACT'=>1, 'CONTACT_GEO'=>1], $vcard);
 
         $resultVCard = $vcardDB->fetchOne($contactID);
 	$this->compareVCards($vcard, $resultVCard);
@@ -652,18 +638,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$vcard->categories($expected['category']);
     
     	$contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( [ 'CONTACT'=>1,
-                                 'CONTACT_CATEGORIES'=>1,
-                                 'CONTACT_REL_CATEGORIES'=>1 ],
-                               $vcard );
-    	$this->assertEquals( 1, $this->getConnection()->getRowCount('CONTACT'),
-    			"After storing " . $contactID );
-    	$this->assertEquals( 1,
-    			$this->getConnection()->getRowCount('CONTACT_CATEGORIES'),
-    			"After storing " . $contactID );
-    	$this->assertEquals( 1,
-    			$this->getConnection()->getRowCount('CONTACT_REL_CATEGORIES'),
-    			"After storing " . $contactID );
+        $this->checkRowCounts(['CONTACT'=>1, 'CONTACT_CATEGORIES'=>1], $vcard);
 
     	$resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);

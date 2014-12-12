@@ -21,8 +21,6 @@
 	</table_data>
         <table_data name="CONTACT_GEO">
         </table_data>
-        <table_data name="CONTACT_REL_GEO">
-        </table_data>
         <table_data name="CONTACT_GEO_REL_TYPES">
         </table_data>
 	<table_data name="CONTACT_ADR">
@@ -30,8 +28,6 @@
 	<table_data name="CONTACT_ADR_REL_TYPES">
 	</table_data>
         <table_data name="CONTACT_N">
-	</table_data>
-        <table_data name="CONTACT_REL_N">
 	</table_data>
 	<table_data name="CONTACT_NOTE">
 	</table_data>
@@ -46,24 +42,6 @@
 	<table_data name="CONTACT_TEL_REL_TYPES">
 	</table_data>
 	<table_data name="CONTACT_XTENDED">
-	</table_data>
-	<table_data name="CONTACT_REL_AGENT">
-	</table_data>
-	<table_data name="CONTACT_REL_CATEGORIES">
-	</table_data>
-	<table_data name="CONTACT_REL_DATA">
-	</table_data>
-	<table_data name="CONTACT_REL_EMAIL">
-	</table_data>
-	<table_data name="CONTACT_REL_ADR">
-	</table_data>
-	<table_data name="CONTACT_REL_NOTE">
-	</table_data>
-	<table_data name="CONTACT_REL_ORG">
-	</table_data>
-	<table_data name="CONTACT_REL_TEL">
-	</table_data>
-	<table_data name="CONTACT_REL_XTENDED">
 	</table_data>
 </database>
 </mysqldump>

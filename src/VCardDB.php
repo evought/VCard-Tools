@@ -151,9 +151,9 @@ class VCardDB
     	assert(is_numeric($contactID));
 
     	static $storeSQL = [
-    	    'adr'=>'INSERT INTO CONTACT_ADR (STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:StreetAddress, :Locality, :Region, :PostalCode, :Country)',
-    	    'org'=>'INSERT INTO CONTACT_ORG (NAME, UNIT1, UNIT2) VALUES (:Name, :Unit1, :Unit2)',
-            'n'=>'INSERT INTO CONTACT_N (GIVEN_NAME, ADDIT_NAME, FAMILY_NAME, PREFIXES, SUFFIXES) VALUES (:FirstName, :AdditionalNames, :LastName, :Prefixes, :Suffixes)'
+    	    'adr'=>'INSERT INTO CONTACT_ADR (CONTACT_ID, STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:ContactID, :StreetAddress, :Locality, :Region, :PostalCode, :Country)',
+    	    'org'=>'INSERT INTO CONTACT_ORG (CONTACT_ID, NAME, UNIT1, UNIT2) VALUES (:ContactID, :Name, :Unit1, :Unit2)',
+            'n'=>'INSERT INTO CONTACT_N (CONTACT_ID, GIVEN_NAME, ADDIT_NAME, FAMILY_NAME, PREFIXES, SUFFIXES) VALUES (:ContactID, :FirstName, :AdditionalNames, :LastName, :Prefixes, :Suffixes)'
     	];
     	
     	static $fields = [
@@ -165,6 +165,8 @@ class VCardDB
     	];
     	
     	$stmt = $this->connection->prepare($storeSQL[$propertyName]);
+        
+        $stmt->bindValue(':ContactID', $contactID);
     	foreach($fields[$propertyName] as $key)
     	{
     		$value = empty($propertyValue[$key])
@@ -175,8 +177,6 @@ class VCardDB
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
     	
-    	$this->i_linkProperty($propertyName, $propertyID, $contactID);
-        
         if ( VCard::keyIsTypeAble($propertyName)
                 && (!empty($propertyValue['Type'])) )
             $this->i_associateTypes( $propertyName, $propertyID,
@@ -184,51 +184,7 @@ class VCardDB
 
         return $propertyID;
     } // i_storeStructuredProperty()
-    
-    /**
-     * For properties requiring a subsidiary table/link table, add a link
-     * between a new property record and a CONTACT.
-     * @param string $propertyName The name of the property to link. String,
-     * not null.
-     * @param integer $propertyID The ID of the new record. Numeric, not null.
-     * @param integer $contactID The ID of the CONTACT to link to. Numeric,
-     * not null.
-     */
-    private function i_linkProperty($propertyName, $propertyID, $contactID)
-    {
-    	assert($this->connection !== null);
-    	assert($propertyName !== null);
-    	assert(is_string($propertyName));
-    	assert($propertyID !== null);
-    	assert(is_numeric($propertyID));
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
-
-    	static $linkSQL = [
-    	    'note'=>'INSERT INTO CONTACT_REL_NOTE (CONTACT_ID, NOTE_ID) VALUES (:contactID, :id)',
-    	    'tel'=>'INSERT INTO CONTACT_REL_TEL (CONTACT_ID, TEL_ID) VALUES (:contactID, :id)',
-    	    'email'=>'INSERT INTO CONTACT_REL_EMAIL (CONTACT_ID, EMAIL_ID) VALUES (:contactID, :id)',
-    	    'categories'=>'INSERT INTO CONTACT_REL_CATEGORIES (CONTACT_ID, CATEGORY_ID) VALUES (:contactID, :id)',
-    	    'photo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
-    	    'logo'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
-    	    'sound'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)',
-    	    'adr'=>'INSERT INTO CONTACT_REL_ADR (CONTACT_ID, ADR_ID) VALUES (:contactID, :id)',
-    	    'org'=>'INSERT INTO CONTACT_REL_ORG (CONTACT_ID, ORG_ID) VALUES (:contactID, :id)',
-            'n'=>'INSERT INTO CONTACT_REL_N (CONTACT_ID, N_ID) VALUES (:contactID, :id)',
-            'geo'=>'INSERT INTO CONTACT_REL_GEO (CONTACT_ID, GEO_ID) VALUES (:contactID, :id)',
-            'key'=>'INSERT INTO CONTACT_REL_DATA (CONTACT_ID, CONTACT_DATA_ID) VALUES (:contactID, :id)'
-    	];
-    	
-    	assert(array_key_exists($propertyName, $linkSQL));
-    	
-    	$stmt = $this->connection->prepare($linkSQL[$propertyName]);
-    	$stmt->bindValue(':contactID', $contactID);
-    	$stmt->bindValue(':id', $propertyID);
-    	$stmt->execute();
-    	
-    	return;
-    } // i_linkProperty()
-    
+        
     /**
      * Create an association between the given types and the property/id
      * combination in the database.
@@ -273,7 +229,7 @@ class VCardDB
     
     /**
      * Store a basic property (multiple simple values) which requires a
-     * subsidiary table/link table and return the ID of the new record.
+     * subsidiary table and return the ID of the new record.
      * @param string $propertyName The name of the property to store. String,
      * not null.
      * @param mixed $value The value of the property to store. Not empty.
@@ -291,27 +247,26 @@ class VCardDB
     	assert(is_numeric($contactID));
     	
     	$storeSQL = [
-    	    'note'=>'INSERT INTO CONTACT_NOTE (NOTE) VALUES (:value)',
-    	    'tel'=>'INSERT INTO CONTACT_TEL (TEL) VALUES (:value)',
-    	    'email'=>'INSERT INTO CONTACT_EMAIL (EMAIL) VALUES (:value)',
-    	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CATEGORY) VALUES (:value)',
-    	    'photo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'photo\', :value)',
-    	    'logo'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'logo\', :value)',
-    	    'sound'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'sound\', :value)',
-            'key'=>'INSERT INTO CONTACT_DATA (DATA_NAME, URL) VALUES (\'key\', :value)',
-            'geo'=>'INSERT INTO CONTACT_GEO (GEO) VALUES (:value)'
+    	    'note'=>'INSERT INTO CONTACT_NOTE (CONTACT_ID, NOTE) VALUES (:ContactID, :value)',
+    	    'tel'=>'INSERT INTO CONTACT_TEL (CONTACT_ID, TEL) VALUES (:ContactID, :value)',
+    	    'email'=>'INSERT INTO CONTACT_EMAIL (CONTACT_ID, EMAIL) VALUES (:ContactID, :value)',
+    	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CONTACT_ID, CATEGORY) VALUES (:ContactID, :value)',
+    	    'photo'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'photo\', :value)',
+    	    'logo'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'logo\', :value)',
+    	    'sound'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'sound\', :value)',
+            'key'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'key\', :value)',
+            'geo'=>'INSERT INTO CONTACT_GEO (CONTACT_ID, GEO) VALUES (:ContactID, :value)'
     	];
 
     	assert(array_key_exists($propertyName, $storeSQL));
     	
     	$stmt = $this->connection->prepare($storeSQL[$propertyName]);
     	
+        $stmt->bindValue(':ContactID', $contactID);
     	$stmt->bindValue(":value", $value);
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
 
-    	$this->i_linkProperty($propertyName, $propertyID, $contactID);
-    	
     	return $propertyID;
     } // i_storeBasicProperty()
     
@@ -386,23 +341,13 @@ class VCardDB
     	assert(!empty($organizationName));
     	assert(is_string($organizationName));
     	
-        $stmt = $this->connection->prepare("SELECT ORG_ID FROM CONTACT_ORG WHERE NAME LIKE :organizationName");
-        $stmt->bindValue(":organizationName", $organizationName);
-        $stmt->execute();
-        $orgIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        if (empty($orgIDs)) return array();
-
-        // HACK: \PDO does not support bind an array to an IN parameter, so
-        // we just add the list as a string to the query. We aren't re-executing
-        // the query and there is no worry of SQL injection here, so it doesn't
-        // matter but it's clunky.
-        $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_ORG WHERE ORG_ID IN ("
-	    . implode(",", $orgIDs) . ")");
+        $stmt = $this->connection->prepare('SELECT DISTINCT CONTACT_ID FROM CONTACT_ORG WHERE NAME LIKE :organizationName');
+        $stmt->bindValue(':organizationName', $organizationName);
         $stmt->execute();
         $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
+
+        if (empty($contactIDs)) return array();
 
         return $this->filterIDsByKind($contactIDs, $kind);
     } // fetchIDsForOrganization()
@@ -443,24 +388,13 @@ class VCardDB
     	assert(!empty($category));
     	assert(is_string($category));
     	
-        $stmt = $this->connection->prepare("SELECT CATEGORY_ID FROM CONTACT_CATEGORIES WHERE CATEGORY LIKE :category");
+        $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_CATEGORIES WHERE CATEGORY LIKE :category");
         $stmt->bindValue(":category", $category);
-        $stmt->execute();
-        $categoryIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        if (empty($categoryIDs)) return array();
-
-        // HACK: \PDO does not support bind an array to an IN parameter, so
-        // we just add the list as a string to the query. We aren't re-executing
-        // the query and there is no worry of SQL injection here, so it doesn't
-        // matter but it's clunky.
-        $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_REL_CATEGORIES WHERE CATEGORY_ID IN ("
-	    . implode(",", $categoryIDs) . ")");
         $stmt->execute();
         $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
+        if (empty($contactIDs)) return [];
         return $this->filterIDsByKind($contactIDs, $kind);
     } // fetchIDsForCategory()
 
@@ -559,42 +493,6 @@ class VCardDB
      * associated with. Numeric, not null.
      * @return Null|array
      */
-    private function i_fetchPropertyIDsForContact($propertyName, $contactID)
-    {
-    	assert(isset($this->connection));
-    	assert($propertyName !== null);
-    	assert(is_string($propertyName));
-    	assert(!empty($contactID));
-    	assert(is_numeric($contactID));
-    	
-    	static $listRecSql = [
-        'n' => 'SELECT N_ID FROM CONTACT_REL_N WHERE CONTACT_ID=:contactID',
-    	'org'=>'SELECT ORG_ID FROM CONTACT_REL_ORG WHERE CONTACT_ID=:contactID',
-    	'adr'=>'SELECT ADR_ID FROM CONTACT_REL_ADR WHERE CONTACT_ID=:contactID',
-    	'note'=>'SELECT NOTE_ID FROM CONTACT_REL_NOTE WHERE CONTACT_ID=:contactID',
-    	'tel'=>'SELECT TEL_ID FROM CONTACT_REL_TEL WHERE CONTACT_ID=:contactID',
-    	'email'=>'SELECT EMAIL_ID FROM CONTACT_REL_EMAIL WHERE CONTACT_ID=:contactID',
-        'geo'=>'SELECT GEO_ID FROM CONTACT_REL_GEO WHERE CONTACT_ID=:contactID',
-    	'categories'=>'SELECT CATEGORY_ID FROM CONTACT_REL_CATEGORIES WHERE CONTACT_ID=:contactID',
-
-    	'logo' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'logo\'',
-    	'photo' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'photo\'',
-    	'sound' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'sound\'',
-        'key' => 'SELECT CONTACT_REL_DATA.CONTACT_DATA_ID FROM CONTACT_REL_DATA INNER JOIN CONTACT_DATA ON CONTACT_REL_DATA.CONTACT_DATA_ID=CONTACT_DATA.CONTACT_DATA_ID WHERE CONTACT_REL_DATA.CONTACT_ID=:contactID AND CONTACT_DATA.DATA_NAME=\'key\''
-    	];
-    	
-    	assert(array_key_exists($propertyName, $listRecSql));
-
-    	// Fetch a list of $propertyName records associated with the contact
-    	$stmt = $this->connection->prepare($listRecSql[$propertyName]);
-    	$stmt->bindValue(":contactID", $contactID);
-    	$stmt->execute();
-    	
-    	$results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-    	$stmt->closeCursor();
-
-    	return $results ? $results : null;
-    }
     
     /**
      * Retrieve all types associated with a given property/id in the db.
@@ -649,43 +547,35 @@ class VCardDB
     	assert(is_numeric($contactID));
     	
     	static $getRecSql = [
-    	        'adr'=>'SELECT STREET AS StreetAddress, LOCALITY AS Locality, REGION AS Region, POSTAL_CODE AS PostalCode, COUNTRY AS Country FROM CONTACT_ADR WHERE ADR_ID=:id',
-    	        'org'=>'SELECT NAME AS Name, UNIT1 AS Unit1, UNIT2 AS Unit2  FROM CONTACT_ORG WHERE ORG_ID=:id',
-                'n'=>'SELECT GIVEN_NAME AS FirstName, ADDIT_NAME AS AdditionalNames, FAMILY_NAME as LastName, PREFIXES AS Prefixes, SUFFIXES AS Suffixes FROM CONTACT_N WHERE N_ID=:id'
+    	        'adr'=>'SELECT ADR_ID AS PropID, STREET AS StreetAddress, LOCALITY AS Locality, REGION AS Region, POSTAL_CODE AS PostalCode, COUNTRY AS Country FROM CONTACT_ADR WHERE CONTACT_ID=:id',
+    	        'org'=>'SELECT ORG_ID AS PropID, NAME AS Name, UNIT1 AS Unit1, UNIT2 AS Unit2  FROM CONTACT_ORG WHERE CONTACT_ID=:id',
+                'n'=>'SELECT N_ID AS PropID, GIVEN_NAME AS FirstName, ADDIT_NAME AS AdditionalNames, FAMILY_NAME as LastName, PREFIXES AS Prefixes, SUFFIXES AS Suffixes FROM CONTACT_N WHERE CONTACT_ID=:id'
     	];
     	
     	assert(array_key_exists($propertyName, $getRecSql));
-    	
-    	$propIDs
-    	    = $this->i_fetchPropertyIDsForContact($propertyName, $contactID);
-
-    	if ($propIDs ===null) return null;
-    	 
+    	    	 
     	// Fetch each $propertyName record in turn    	
     	$propList = array();
 
     	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
-    	foreach ($propIDs as $id)
+        $stmt->bindValue(":id", $contactID);
+        $stmt->execute();
+        
+        while ($result = $stmt->fetch(\PDO::FETCH_ASSOC))
     	{
-            $stmt->bindValue(":id", $id);
-            $stmt->execute();
-            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-            $stmt->closeCursor();
-    	
+            $propertyID = $result['PropID'];
+            unset($result['PropID']);
             $record = \array_filter($result, '\strlen');
-            /*foreach ($result as $key => $value)
-            {
-    		if (!empty($value)) $record[$key] = $value;
-            }*/
             if (VCard::keyIsTypeAble($propertyName))
             {
-                $types = $this->i_fetchTypesForPropertyID($propertyName, $id);
+                $types = $this->i_fetchTypesForPropertyID($propertyName, $propertyID);
                 if (!empty($types)) {$record['Type'] = $types;}
             }
             
             $propList[] = $record;
     	}
-    	return $propList;    	 
+        $stmt->closeCursor();
+    	return empty($propList) ? null : $propList;    	 
     } // i_fetchStructuredProperty()
     
     /**
@@ -707,38 +597,26 @@ class VCardDB
     	assert(is_numeric($contactID));
     	    	
     	static $getRecSql = [
-            'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE NOTE_ID=:id',
-            'tel'=>"SELECT TEL FROM CONTACT_TEL WHERE TEL_ID=:id",
-            'email'=>'SELECT EMAIL FROM CONTACT_EMAIL WHERE EMAIL_ID=:id',
-            'categories'=>'SELECT CATEGORY FROM CONTACT_CATEGORIES WHERE CATEGORY_ID=:id',
-            'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
-            'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
-            'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
-            'key'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_DATA_ID=:id',
-            'geo'=>'SELECT GEO FROM CONTACT_GEO WHERE GEO_ID=:id'
+            'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE CONTACT_ID=:id',
+            'tel'=>"SELECT TEL FROM CONTACT_TEL WHERE CONTACT_ID=:id",
+            'email'=>'SELECT EMAIL FROM CONTACT_EMAIL WHERE CONTACT_ID=:id',
+            'categories'=>'SELECT CATEGORY FROM CONTACT_CATEGORIES WHERE CONTACT_ID=:id',
+            'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'logo\'',
+            'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'photo\'',
+            'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'sound\'',
+            'key'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'key\'',
+            'geo'=>'SELECT GEO FROM CONTACT_GEO WHERE CONTACT_ID=:id'
     	];
     	
     	assert(array_key_exists($propertyName, $getRecSql));
     	    
-    	$propIDs
-    	    = $this->i_fetchPropertyIDsForContact($propertyName, $contactID);
-
-    	if ($propIDs === null) return null;
-
-    	$propList = array();
-    	// Fetch each note record in turn
+    	// Fetch each property record in turn
     	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
-    	foreach ($propIDs as $id)
-    	{
-    		$stmt->bindValue(":id", $id);
-    		$stmt->execute();
-    		$result = $stmt->fetch(\PDO::FETCH_NUM, 0);
-    		$stmt->closeCursor();
-    
-                $propList[] = $result[0];
-    	}
-    
-    	return $propList;
+        $stmt->bindValue(':id', $contactID);
+        $stmt->execute();
+        $propList = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+    	return empty($propList) ? null : $propList;
     } // i_fetchBasicProperty()    
 
 } // VCardDB
