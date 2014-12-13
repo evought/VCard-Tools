@@ -99,9 +99,9 @@ class VCardDB
 
         $vcard->setFNAppropriately();
 
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, NICKNAME, BDAY, TZ, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :nickname, :bday, :tz, :role, :title, :rev, :uid, :url)");
+        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, NICKNAME, BDAY, ANNIVERSARY, TZ, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :nickname, :bday, :anniversary, :tz, :role, :title, :rev, :uid, :url)");
 
-        foreach ( [ 'kind', 'fn', 'bday', 'rev', 'uid' ]
+        foreach ( [ 'kind', 'fn', 'bday', 'anniversary', 'rev', 'uid' ]
                   as $simpleProperty )
         {
             assert( $vcard->keyIsSingleValueElement($simpleProperty),
@@ -457,8 +457,8 @@ class VCardDB
         $vcard = new VCard();
         $contactID = $row["CONTACT_ID"];
 
-        $simpleCols = [ 'KIND', 'FN', 'NICKNAME', 'BDAY', 'TITLE', 'ROLE',
-                        'REV', 'UID', 'URL', 'VERSION' ];
+        $simpleCols = [ 'KIND', 'FN', 'NICKNAME', 'BDAY', 'ANNIVERSARY',
+                        'TITLE', 'ROLE', 'REV', 'UID', 'URL', 'VERSION' ];
         foreach ($simpleCols as $col)
         {
             if (!empty($row[$col])) $vcard->$col($row[$col]);

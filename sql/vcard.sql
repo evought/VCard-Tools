@@ -19,6 +19,7 @@ create table CONTACT
     FN VARCHAR(255) NOT NULL,
     NICKNAME VARCHAR(255),
     BDAY TIMESTAMP NULL,
+    ANNIVERSARY TIMESTAMP NULL,
     TZ CHAR(3),                 -- Time zone offset in hours
     TITLE VARCHAR(50),
     ROLE VARCHAR(50),

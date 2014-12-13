@@ -9,8 +9,6 @@
 use EVought\vCardTools\VCard as VCard;
 use EVought\vCardTools\VCardDB as VCardDB;
 
-// TODO #15: Test delete function
-
 class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 {
     // only instantiate pdo once for test clean-up/fixture load
@@ -264,6 +262,35 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 	
         return $vcardDB;
     } //testStoreAndRetrieveVCard()
+    
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveVCardWAnniversary(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+
+        $expected = [
+                        'n_FirstName' => 'Fred',
+                        'n_LastName' => 'Jones',
+                        'anniversary' => '2012-09-01 00:00:00',
+                        'fn' => 'Fred Jones'
+                     ];
+        $vcard = new VCard();
+	$vcard->fn = $expected['fn'];
+        $vcard->n($expected['n_FirstName'], 'FirstName');
+        $vcard->n($expected['n_LastName'], 'LastName');
+	$vcard->anniversary($expected['anniversary']);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>0],
+                               $vcard );
+        $resultVCard = $vcardDB->fetchOne($contactID);
+
+        $this->compareVCards($vcard, $resultVCard);    	 
+	
+        return $vcardDB;
+    }
     
     /**
      * @depends testStoreAndRetrieveVCard
