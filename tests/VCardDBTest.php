@@ -419,6 +419,26 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     /**
      * @depends testStoreAndRetrieveVCard
      */
+    public function testStoreAndRetrieveWRelated(VCardDB $vcardDB)
+    {
+    	$this->checkRowCounts(['CONTACT'=>0]);
+    
+    	$expected = 'someUIDValue';
+
+    	$vcard = new vCard();
+    	$vcard->related = [$expected];
+    	$vcard->fn = 'nothingInteresting';
+    
+    	$contactID = $vcardDB->store($vcard);
+    	$this->checkRowCounts(['CONTACT'=>1], $vcard);
+    	$resultVCard = $vcardDB->fetchOne($contactID);
+    
+    	$this->compareVCards($vcard, $resultVCard);
+    }
+    
+    /**
+     * @depends testStoreAndRetrieveVCard
+     */
     public function testFetchByID(VCardDB $vcardDB)
     {
     	$this->checkRowCounts(['CONTACT'=>0]);
