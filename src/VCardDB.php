@@ -159,7 +159,7 @@ class VCardDB
         }
         
         foreach ( ['photo', 'logo', 'sound', 'key', 'note', 'tel', 'geo',
-        		'email', 'categories'] as $propertyName )
+        		'email', 'categories', 'related'] as $propertyName )
         {
 	    foreach ($vcard->$propertyName as $value)
     	    {
@@ -542,7 +542,7 @@ class VCardDB
         
         // Basic Properties
         foreach ( ['note', 'email', 'tel', 'categories', 'geo', 'logo',
-        		'photo', 'sound', 'key'] as $property )
+        		'photo', 'sound', 'key', 'related'] as $property )
         {
             $vcard->$property
                 = $this->i_fetchBasicProperty($property, $contactID);

@@ -37,6 +37,10 @@
 	</table_data>
 	<table_data name="CONTACT_ORG_REL_TYPES">
 	</table_data>
+        <table_data name="CONTACT_RELATED">
+	</table_data>
+        <table_data name="CONTACT_RELATED_REL_TYPES">
+	</table_data>
 	<table_data name="CONTACT_TEL">
 	</table_data>
 	<table_data name="CONTACT_TEL_REL_TYPES">

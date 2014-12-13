@@ -44,6 +44,20 @@ create table CONTACT_GEO
     PRIMARY KEY(GEO_ID)
 );
 
+-- Typically contains a URI which may be a UUID to another VCard.
+-- May, however, contain random text describing a relationship
+-- (e.g. 'Please contact my assistant Jane Doe for any inquiries.').
+-- @see https://tools.ietf.org/html/rfc6350#section-6.6.6
+create table CONTACT_RELATED
+(
+    RELATED_ID MEDIUMINT NOT NULL AUTO_INCREMENT,
+    CONTACT_ID MEDIUMINT NOT NULL,
+    RELATED VARCHAR(255) NOT NULL,
+    FOREIGN KEY(CONTACT_ID) REFERENCES CONTACT(CONTACT_ID)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY(RELATED_ID)
+);
+
 create table CONTACT_N
 (
     N_ID MEDIUMINT NOT NULL AUTO_INCREMENT,
@@ -185,6 +199,15 @@ create table CONTACT_GEO_REL_TYPES
     FOREIGN KEY(GEO_ID) REFERENCES CONTACT_GEO(GEO_ID)
         ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY(GEO_ID, TYPE_NAME)
+);
+
+create table CONTACT_RELATED_REL_TYPES
+(
+    RELATED_ID MEDIUMINT NOT NULL,
+    TYPE_NAME VARCHAR(20) NOT NULL,
+    FOREIGN KEY(RELATED_ID) REFERENCES CONTACT_RELATED(RELATED_ID)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY(RELATED_ID, TYPE_NAME)
 );
 
 create table CONTACT_ADR_REL_TYPES
