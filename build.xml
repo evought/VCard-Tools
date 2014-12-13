@@ -6,6 +6,8 @@
   -->
 <project name="VCard-Tools" default="dist" basedir="."
 	description="Phing build file for VCard-Tools project">
+  <!-- get dependencies from Composer -->
+  <php expression="include('vendor/autoload.php')"/>
 
   <!-- set global properties for this build -->
   <property name="src.dir" value="src"/>
@@ -14,7 +16,9 @@
   <property name="dist.dir"  value="dist"/>
   <property name="doc.dir"  value="docs"/>
   <property name="apidoc.dir" value="docs/api"/>
-
+  <property name="vendor.dir" value="vendor"/>
+  <property name="vendor.bin.dir" value="${vendor.dir}/bin"/>
+  
   <!-- per-user properties for overriding settings, such as db connection -->
   <property file="${env.USER}.properties"/>
 
@@ -77,7 +81,7 @@
   <target name="test" depends="init"
           description="Execute PHPUnit test suite">
     <phpunit haltonfailure="true" haltonerror="true"
-    	pharlocation="${phpunit.phar}" bootstrap="bootstrap.php">
+    	bootstrap="bootstrap.php">
       <formatter type="plain" usefile="false"/>
       <batchtest>
         <fileset dir="tests">

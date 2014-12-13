@@ -1,0 +1,15 @@
+{
+    "name": "evought/vcard-tools",
+    "description": "PHP tools for manipulating VCards, including database persistence and html templating. ",
+    "license": "MIT",
+    "require-dev": {
+        "phpunit/phpunit": "4.3.*",
+        "phpunit/php-invoker": "~1.1",
+        "phpunit/dbunit": ">=1.2",
+        "phpdocumentor/phpdocumentor": "2.*"
+    },
+    "autoload": {
+        "psr-4": {"EVought\\vCardTools\\": "src/"}
+    }
+}
+
