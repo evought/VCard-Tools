@@ -8,8 +8,8 @@
 	description="Phing build file for VCard-Tools project">
 
   <!-- set global properties for this build -->
-  <property name="src.dir" value="src/"/>
-  <property name="sql.dir" value="sql"/>
+  <property name="src.dir" value="src"/>
+  <property name="sql.dir" value="${src.dir}/sql"/>
   <property name="test.dir" value="tests"/>
   <property name="dist.dir"  value="dist"/>
   <property name="doc.dir"  value="docs"/>
