@@ -75,33 +75,38 @@ class VCard implements \Countable, \Iterator
      */
     private static $Spec_ElementTypes
         = [
-	    'email' => array('internet', 'x400', 'pref'),
+	    'email' => ['internet', 'x400', 'pref'],
 
-	    'adr' => array( 'dom', 'intl', 'postal', 'parcel',
-                            'home', 'work', 'pref' ),
+	    'adr' => [ 'dom', 'intl', 'postal', 'parcel',
+                            'home', 'work', 'pref' ],
 
-	    'label' => array(
-                              'dom', 'intl', 'postal', 'parcel',
-			      'home', 'work', 'pref' ),
+	    'label' => [ 'dom', 'intl', 'postal', 'parcel',
+			 'home', 'work', 'pref' ],
 
-	    'tel' => array( 'home', 'msg', 'work', 'pref', 'voice', 'fax', 
-                            'cell', 'video', 'pager', 'bbs', 'modem', 'car', 
-                            'isdn', 'pcs' ),
+	    'tel' => [ 'home', 'msg', 'work', 'pref', 'voice', 'fax', 
+                       'cell', 'video', 'pager', 'bbs', 'modem', 'car', 
+                       'isdn', 'pcs' ],
 
-	    'impp' => array( 'personal', 'business', 'home', 'work', 'mobile', 
-                             'pref' ),
+	    'impp' => [ 'personal', 'business', 'home', 'work', 'mobile', 
+                             'pref' ],
 
-	    'note' => array( 'home', 'work'),
+	    'note' => ['home', 'work'],
 
-            'url'  => array('home', 'work'),
+            'url'  => ['home', 'work'],
             
-            'org'  => array('home', 'work'),
+            'org'  => ['home', 'work'],
             
-            'geo'  => array( 'home', 'work'),
+            'geo'  => ['home', 'work'],
             
-            'key'  => array( 'home', 'work')
-        ];
-
+            'key'  => ['home', 'work'],
+            
+            'related' => [ 'contact', 'acquaintance', 'friend', 'met',
+                           'co-worker', 'colleague', 'co-resident',
+                           'neighbor', 'child', 'parent', 'sibling',
+                           'spouse', 'kin', 'muse', 'crush', 'date',
+                           'sweetheart', 'me', 'agent', 'emergency' ]
+            ];
+    
     /**
      * Properties which may contain a BLOB or associated external data.
      * @var array
