@@ -27,6 +27,25 @@ class VCardDB
     private $connection;
 
     /**
+     * The array of default SQL query information used to fetch/store CONTACTS.
+     * Loaded from the default .ini file.
+     * Structure follows that of the .ini file: top-level keys define sections
+     * with keys containing the actual queries.
+     * Use getQueryInfo(..) to access.
+     * @var array
+     */
+    private static $sharedQueries = null;
+    
+    /**
+     * The array of customized SQL query information used to fetch/store
+     * CONTACTS, if present. May be loaded from a custom .ini file during
+     * construction. Structure follows that of the .ini file: top-level keys define sections
+     * with keys containing the actual queries. Use getQueryInfo(..) to access.
+     * @var array
+     */
+    private $queries = null;
+
+    /**
      * Retrieve the current \PDO connection.
      */
     public function getConnection() {return $this->connection;}
@@ -36,11 +55,41 @@ class VCardDB
      * @param \PDO $connection A \PDO connection to read from/write to. Not null. Caller
      * retains responsibility for connection, but this class shall ensure that
      * the reference is cleared upon clean-up.
+     * @param string $iniFilePath The pathname to an .ini file from which to
+     * load SQL queries for fetch/store of CONTACTS. If not set, the default
+     * .ini provided with the package shall be used. This can be used
+     * (carefully) to adapt queries to a specific database. Keys not found in
+     * the custom .ini will still be loaded from the shared queries.
+     * @throws \ErrorException if the default .ini cannot be accessed.
+     * @throws \DomainException if the custom .ini file cannot be accessed.
      */
-    public function __construct(\PDO $connection)
+    public function __construct(\PDO $connection, $iniFilePath = null)
     {
         assert(!empty($connection));
         $this->connection = $connection;
+        
+        if (null === VCardDB::$sharedQueries)
+        {
+            $defaultINI = __DIR__ . '/sql/VCardDBQueries.ini';
+            if (\is_readable($defaultINI))
+            {
+                VCardDB::$sharedQueries = \parse_ini_file($defaultINI, true);
+            } else {
+                throw new \ErrorException( 'Default .ini, ' . $defaultINI
+                                            . ' cannot be loaded.' );
+            }
+        }
+        
+        if (!(empty($iniFilePath)))
+        {
+            if (\is_readable($iniFilePath))
+            {
+                $this->queries = \parse_ini_file($iniFilePath, true);
+            } else {
+                throw new \DomainException( 'Custom .ini, ' . $iniFilePath
+                                            . ' cannot be loaded.' );
+            }
+        }
     }
 
     /**
@@ -50,7 +99,43 @@ class VCardDB
     {
         unset($this->connection);
     }
-
+    
+    /**
+     * Returns information about a configured query by section and key.
+     * The returned value will be taken from the custom .ini supplied at
+     * construction (if any) first and then from default settings.
+     * @param string $section The section name to look in. Not null.
+     * @param string $key The key to look up. Not null.
+     * @return string|mixed
+     * @throws \ErrorException If a configured value does not exist.
+     */
+    private function getQueryInfo($section, $key)
+    {
+        assert(null !== VCardDB::$sharedQueries);
+        assert(null !== $section);
+        assert(is_string($section));
+        assert(null !== $key);
+        assert(is_string($key));
+        
+        if (!empty($this->queries))
+        {
+            if ( array_key_exists($section, $this->queries)
+                    && array_key_exists($key, $this->queries[$section]) )
+            {
+                return $this->queries[$section][$key];
+            }
+        }
+        
+        if ( array_key_exists($section, VCardDB::$sharedQueries)
+                && array_key_exists($key, VCardDB::$sharedQueries[$section]) )
+        {
+            return VCardDB::$sharedQueries[$section][$key];
+        } else {
+            throw new \ErrorException( $section.':'.$key .
+                                  ' not found in configured VCardDB queries.' );
+        }
+    }
+    
     /**
      * Store the whole vcard to the database, calling sub-functions to store
      * related tables (e.g. address) as necessary.
@@ -99,7 +184,8 @@ class VCardDB
 
         $vcard->setFNAppropriately();
 
-        $stmt = $this->connection->prepare("INSERT INTO CONTACT (KIND, FN, NICKNAME, BDAY, ANNIVERSARY, TZ, ROLE, TITLE, REV, UID, URL) VALUES (:kind, :fn, :nickname, :bday, :anniversary, :tz, :role, :title, :rev, :uid, :url)");
+        $stmt = $this->connection->prepare(
+                    $this->getQueryInfo('store', 'contact') );
 
         foreach ( [ 'kind', 'fn', 'bday', 'anniversary', 'rev', 'uid' ]
                   as $simpleProperty )
@@ -149,13 +235,8 @@ class VCardDB
     	assert(!empty($propertyValue));
     	assert($contactID !== null);
     	assert(is_numeric($contactID));
-
-    	static $storeSQL = [
-    	    'adr'=>'INSERT INTO CONTACT_ADR (CONTACT_ID, STREET, LOCALITY, REGION, POSTAL_CODE, COUNTRY) VALUES (:ContactID, :StreetAddress, :Locality, :Region, :PostalCode, :Country)',
-    	    'org'=>'INSERT INTO CONTACT_ORG (CONTACT_ID, NAME, UNIT1, UNIT2) VALUES (:ContactID, :Name, :Unit1, :Unit2)',
-            'n'=>'INSERT INTO CONTACT_N (CONTACT_ID, GIVEN_NAME, ADDIT_NAME, FAMILY_NAME, PREFIXES, SUFFIXES) VALUES (:ContactID, :FirstName, :AdditionalNames, :LastName, :Prefixes, :Suffixes)'
-    	];
     	
+        // FIXME: #41 Get information from VCard instead of duplicating here.
     	static $fields = [
     	    'adr'=>[ 'StreetAddress', 'Locality', 'Region',
     	             'PostalCode', 'Country'],
@@ -164,7 +245,8 @@ class VCardDB
               'Suffixes' ]
     	];
     	
-    	$stmt = $this->connection->prepare($storeSQL[$propertyName]);
+    	$stmt = $this->connection->prepare(
+                    $this->getQueryInfo('store', $propertyName) );
         
         $stmt->bindValue(':ContactID', $contactID);
     	foreach($fields[$propertyName] as $key)
@@ -208,14 +290,8 @@ class VCardDB
     	assert($types !== null);
         if (empty($types)) {return;}
         
-        static $typesSQL = [
-            'adr' => 'INSERT INTO CONTACT_ADR_REL_TYPES (ADR_ID, TYPE_NAME) VALUES (:id, :type)',
-            'org' => 'INSERT INTO CONTACT_ORG_REL_TYPES (ORG_ID, TYPE_NAME) VALUES (:id, :type)'
-        ];
-        
-        assert(array_key_exists($propertyName, $typesSQL));
-
-        $stmt = $this->connection->prepare($typesSQL[$propertyName]);
+        $stmt = $this->connection->prepare(
+                    $this->getQueryInfo('associateTypes', $propertyName) );
         
         foreach ($types as $type)
         {
@@ -246,21 +322,8 @@ class VCardDB
     	assert($contactID !== null);
     	assert(is_numeric($contactID));
     	
-    	$storeSQL = [
-    	    'note'=>'INSERT INTO CONTACT_NOTE (CONTACT_ID, NOTE) VALUES (:ContactID, :value)',
-    	    'tel'=>'INSERT INTO CONTACT_TEL (CONTACT_ID, TEL) VALUES (:ContactID, :value)',
-    	    'email'=>'INSERT INTO CONTACT_EMAIL (CONTACT_ID, EMAIL) VALUES (:ContactID, :value)',
-    	    'categories'=>'INSERT INTO CONTACT_CATEGORIES(CONTACT_ID, CATEGORY) VALUES (:ContactID, :value)',
-    	    'photo'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'photo\', :value)',
-    	    'logo'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'logo\', :value)',
-    	    'sound'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'sound\', :value)',
-            'key'=>'INSERT INTO CONTACT_DATA (CONTACT_ID, DATA_NAME, URL) VALUES (:ContactID, \'key\', :value)',
-            'geo'=>'INSERT INTO CONTACT_GEO (CONTACT_ID, GEO) VALUES (:ContactID, :value)'
-    	];
-
-    	assert(array_key_exists($propertyName, $storeSQL));
-    	
-    	$stmt = $this->connection->prepare($storeSQL[$propertyName]);
+    	$stmt = $this->connection->prepare(
+                    $this->getQueryInfo('store', $propertyName) );
     	
         $stmt->bindValue(':ContactID', $contactID);
     	$stmt->bindValue(":value", $value);
@@ -280,7 +343,7 @@ class VCardDB
     {
     	assert(isset($this->connection));
     	
-    	$stmt = $this->connection->prepare('SELECT * FROM CONTACT WHERE IFNULL(KIND, \'\') LIKE :kind');
+    	$stmt = $this->connection->prepare($this->getQueryInfo('search', 'all'));
     	$stmt->bindValue(":kind", $kind);
 
         $stmt->execute();
@@ -311,7 +374,8 @@ class VCardDB
     {
     	assert(isset($this->connection));
     	
-        $stmt = $this->connection->prepare('SELECT CONTACT_ID FROM CONTACT WHERE FN LIKE :searchString AND IFNULL(KIND,\'\') LIKE :kind');
+        $stmt = $this->connection->prepare(
+                        $this->getQueryInfo('search', 'search') );
         $stmt->bindValue(":kind", $kind);
         $stmt->bindValue(":searchString", $searchString);
         $stmt->execute();
@@ -341,7 +405,8 @@ class VCardDB
     	assert(!empty($organizationName));
     	assert(is_string($organizationName));
     	
-        $stmt = $this->connection->prepare('SELECT DISTINCT CONTACT_ID FROM CONTACT_ORG WHERE NAME LIKE :organizationName');
+        $stmt = $this->connection->prepare(
+                    $this->getQueryInfo('search', 'organization') );
         $stmt->bindValue(':organizationName', $organizationName);
         $stmt->execute();
         $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
@@ -365,6 +430,7 @@ class VCardDB
     	assert(!empty($contactIDs));
     	assert(is_string($kind));
     	
+        // FIXME #40: Refactor so that this query is not necessary
         $stmt = $this->connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE CONTACT_ID IN ("
 	. implode(",", $contactIDs) . ") AND KIND LIKE :kind");
         $stmt->bindValue(":kind", $kind);
@@ -388,7 +454,8 @@ class VCardDB
     	assert(!empty($category));
     	assert(is_string($category));
     	
-        $stmt = $this->connection->prepare("SELECT DISTINCT CONTACT_ID FROM CONTACT_CATEGORIES WHERE CATEGORY LIKE :category");
+        $stmt = $this->connection->prepare(
+                        $this->getQueryInfo('search', 'categories') );
         $stmt->bindValue(":category", $category);
         $stmt->execute();
         $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
@@ -428,7 +495,8 @@ class VCardDB
     	assert(!empty($contactID));
     	assert(is_numeric($contactID));
     	
-        $stmt = $this->connection->prepare("SELECT * FROM CONTACT WHERE CONTACT_ID = :contactID");
+        $stmt = $this->connection->prepare(
+                        $this->getQueryInfo('fetch', 'contact') );
         $stmt->bindValue(":contactID", $contactID);
         $stmt->execute();
         assert($stmt->rowCount() <= 1);
@@ -482,17 +550,6 @@ class VCardDB
 
         return $vcard;
     } // i_fetchVCard()
-
-    /**
-     * Fetch the IDs of all properties in a link-table for the named
-     * property (e.g. email). The IDs will only make sense in the context of
-     * the appropriate subsidiary table for that property.
-     * @param string $propertyName The name of the property to find associated
-     * records for. String, not null.
-     * @param numeric $contactID The ID of the CONTACT the records will be
-     * associated with. Numeric, not null.
-     * @return Null|array
-     */
     
     /**
      * Retrieve all types associated with a given property/id in the db.
@@ -512,13 +569,8 @@ class VCardDB
         assert( VCard::keyIsTypeAble($propertyName),
                 $propertyName . ' must be a type-able property.' );
         
-        static $fetchTypesSQL = [
-            'adr' => 'SELECT TYPE_NAME FROM CONTACT_ADR_REL_TYPES WHERE ADR_ID=:id',
-            'org' => 'SELECT TYPE_NAME FROM CONTACT_ORG_REL_TYPES WHERE ORG_ID=:id'
-        ];
-        \assert(\array_key_exists($propertyName, $fetchTypesSQL));
-        
-        $stmt = $this->connection->prepare($fetchTypesSQL[$propertyName]);
+        $stmt = $this->connection->prepare(
+                    $this->getQueryInfo('fetchTypes', $propertyName) );
     	$stmt->bindValue(":id", $propertyID);
     	$stmt->execute();
     	
@@ -545,19 +597,12 @@ class VCardDB
     	assert(is_string($propertyName));
     	assert(!empty($contactID));
     	assert(is_numeric($contactID));
-    	
-    	static $getRecSql = [
-    	        'adr'=>'SELECT ADR_ID AS PropID, STREET AS StreetAddress, LOCALITY AS Locality, REGION AS Region, POSTAL_CODE AS PostalCode, COUNTRY AS Country FROM CONTACT_ADR WHERE CONTACT_ID=:id',
-    	        'org'=>'SELECT ORG_ID AS PropID, NAME AS Name, UNIT1 AS Unit1, UNIT2 AS Unit2  FROM CONTACT_ORG WHERE CONTACT_ID=:id',
-                'n'=>'SELECT N_ID AS PropID, GIVEN_NAME AS FirstName, ADDIT_NAME AS AdditionalNames, FAMILY_NAME as LastName, PREFIXES AS Prefixes, SUFFIXES AS Suffixes FROM CONTACT_N WHERE CONTACT_ID=:id'
-    	];
-    	
-    	assert(array_key_exists($propertyName, $getRecSql));
-    	    	 
+    	    	    	 
     	// Fetch each $propertyName record in turn    	
     	$propList = array();
 
-    	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
+    	$stmt = $this->connection->prepare(
+                    $this->getQueryInfo('fetch', $propertyName) );
         $stmt->bindValue(":id", $contactID);
         $stmt->execute();
         
@@ -595,23 +640,10 @@ class VCardDB
     	assert(is_string($propertyName));
     	assert($contactID !== null);
     	assert(is_numeric($contactID));
-    	    	
-    	static $getRecSql = [
-            'note'=>'SELECT NOTE FROM CONTACT_NOTE WHERE CONTACT_ID=:id',
-            'tel'=>"SELECT TEL FROM CONTACT_TEL WHERE CONTACT_ID=:id",
-            'email'=>'SELECT EMAIL FROM CONTACT_EMAIL WHERE CONTACT_ID=:id',
-            'categories'=>'SELECT CATEGORY FROM CONTACT_CATEGORIES WHERE CONTACT_ID=:id',
-            'logo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'logo\'',
-            'photo'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'photo\'',
-            'sound'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'sound\'',
-            'key'=>'SELECT URL FROM CONTACT_DATA WHERE CONTACT_ID=:id AND DATA_NAME=\'key\'',
-            'geo'=>'SELECT GEO FROM CONTACT_GEO WHERE CONTACT_ID=:id'
-    	];
     	
-    	assert(array_key_exists($propertyName, $getRecSql));
-    	    
     	// Fetch each property record in turn
-    	$stmt = $this->connection->prepare($getRecSql[$propertyName]);
+    	$stmt = $this->connection->prepare(
+                    $this->getQueryInfo('fetch', $propertyName) );
         $stmt->bindValue(':id', $contactID);
         $stmt->execute();
         $propList = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
@@ -634,7 +666,7 @@ class VCardDB
         \assert(\is_numeric($contactID));
         
         $stmt = $this->connection->prepare(
-            'DELETE FROM CONTACT WHERE CONTACT_ID=:contactID' );
+                    $this->getQueryInfo('delete', 'contact') );
         $stmt->bindValue(':contactID', $contactID);
         $stmt->execute();
         $rows = $stmt->rowCount();
