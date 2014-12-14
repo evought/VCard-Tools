@@ -9,6 +9,8 @@
  */
 
 use EVought\vCardTools\VCard as vCard;
+use Rhumsaa\Uuid\Uuid;
+use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
 class VCardTest extends PHPUnit_Framework_TestCase {
 
@@ -880,6 +882,30 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	unset($vcard->kind);
 	$this->assertEmpty($vcard->kind);
 	return $vcard;
+    }
+    
+    /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testUID()
+    {
+        $vcard1 = new VCard();
+        $this->assertEmpty($vcard1->uid);
+        $vcard1->setUID('Globally Unique');
+        $this->assertEquals('Globally Unique', $vcard1->uid);
+        
+        $vcard2 = new VCard();
+        $vcard2->setUID();
+        $this->assertTrue(Uuid::isValid($vcard2->uid));
+        
+        $vcard3 = new VCard();
+        $vcard3->checkSetUID();
+        $this->assertTrue(Uuid::isValid($vcard3->uid));
+        
+        $vcard1->checkSetUID();
+        $this->assertEquals('Globally Unique', $vcard1->uid);
+        
+        $this->assertNotEquals($vcard2->uid, $vcard3->uid);
     }
 
     /**

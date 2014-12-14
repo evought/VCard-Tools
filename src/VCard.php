@@ -9,6 +9,9 @@
  */
 namespace EVought\vCardTools;
 
+use Rhumsaa\Uuid\Uuid;
+use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+
 /**
  * Representation of a vCard record exposing properties and parameters of a
  * contact. Provides ability to import/export raw .vcf vcard text (via
@@ -16,6 +19,8 @@ namespace EVought\vCardTools;
  * allow iteration over all properties with values. Implements \Countable
  * to allow access to multiple  vCard records created from the same import
  * (deprecated).
+ * The 'uid' parameter uniquely identifies this VCard (or, technically, the
+ * object the VCard refers to).
  * @api
  * @author evought
  *
@@ -505,6 +510,43 @@ class VCard implements \Countable, \Iterator
         $this->Data[$key] = $value;
     } // __set()
 
+    /**
+     * Sets the Unique ID for this VCard. If no UID is provided, a new
+     * RFC 4122-compliant UUID will be generated.
+     * @param string $uid The UID to set. Defaults to a newly-generated
+     * version 1 UUID as a urn. UIDs must uniquely identify
+     * the object the card represents.
+     * @see https://tools.ietf.org/html/rfc6350#section-6.7.6
+     * @return string The new uid value.
+     */
+    public function setUID($uid = null)
+    {
+        if (empty($uid))
+        {
+            $uid = Uuid::uuid1()->getUrn();
+        }
+        $this->uid = $uid;
+        return $uid;
+    }
+    
+    /**
+     * Sets the Unique ID for this VCard *only if it does not have one already*.
+     * If no UID is set and none is provided with this call, generates a new one
+     * by calling setUID(..). This is intended to be used just prior to external
+     * storage to ensure that an identifier has been set *somewhere* without
+     * clobbering if it has.
+     * @param string $uid
+     * @return string The new uid value.
+     * @see VCard::setUID()
+     */
+    public function checkSetUID($uid = null)
+    {
+        if (array_key_exists('uid', $this->Data))
+                return $this->Data['uid'];
+        else
+                return $this->setUID($uid);
+    }
+    
     /**
      * Saves an embedded file
      *
