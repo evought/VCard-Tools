@@ -8,6 +8,9 @@
         "phpunit/dbunit": ">=1.2",
         "phpdocumentor/phpdocumentor": "2.*"
     },
+    "require": {
+        "rhumsaa/uuid": "~2.8"
+    },
     "autoload": {
         "psr-4": {"EVought\\vCardTools\\": "src/"}
     }
