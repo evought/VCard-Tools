@@ -6,3 +6,4 @@ database.php
 /nbproject/private/
 
 vendor/
+composer.lock
