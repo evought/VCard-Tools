@@ -1100,6 +1100,13 @@ class VCard implements \Countable, \Iterator
 	return in_array($key, self::$Spec_FileElements);
     }
     
+    /**
+     * Returns true if-and-only-if $key names a type-able VCard property.
+     * If this returns true, then keyAllowedTypes($key) shall return the
+     * types defined for the name property.
+     * @param string $key The name of the property to test.
+     * @return bool
+     */
     public static function keyIsTypeAble($key)
     {
         assert(null !== $key);
@@ -1108,6 +1115,13 @@ class VCard implements \Countable, \Iterator
         return array_key_exists($key, VCard::$Spec_ElementTypes);
     }
     
+    /**
+     * Returs the types allowed for a given type-able property, identified by
+     * $key.
+     * @param string $key The name of the property, not null.
+     * keyIsTypeAble($key) must be true.
+     * @return array An array of allowed type names.
+     */
     public static function keyAllowedTypes($key)
     {
         assert(null !== $key);
