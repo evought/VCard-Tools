@@ -147,14 +147,14 @@ class VCardDB
     {
         assert(!empty($this->connection));
 
-        $contactID = $this->i_storeJustContact($vcard);
+        $uid = $this->i_storeJustContact($vcard);
 
         foreach ( ['n', 'adr', 'org'] as $propertyName)
         {
             foreach ($vcard->$propertyName as $value)
             {
             	$this->i_storeStructuredProperty( $propertyName, $value,
-            			                  $contactID );
+            			                  $uid );
             }
         }
         
@@ -163,31 +163,34 @@ class VCardDB
         {
 	    foreach ($vcard->$propertyName as $value)
     	    {
-    	    	$this->i_storeBasicProperty($propertyName, $value, $contactID);
+    	    	$this->i_storeBasicProperty($propertyName, $value, $uid);
     	    }
         }
 
-        return $contactID;
+        return $uid;
     } // store()
 
 
     /**
      * Saves the vcard contact data to the database, returns the id of the
-     * new connection record.
+     * new connection record (resuses existing uid if provided).
      * Stores JUST the info from the CONTACT table itself, no sub-tables.
      * @param VCard $vcard The record to store.
-     * @return integer The new contact id.
+     * @return string The new uid.
      */
     private function i_storeJustContact(VCard $vcard)
     {
         assert(!empty($this->connection));
 
         $vcard->setFNAppropriately();
+        $uid = $vcard->checkSetUID();
 
         $stmt = $this->connection->prepare(
                     $this->getQueryInfo('store', 'contact') );
+        
+        $stmt->bindValue(':uid', $uid);
 
-        foreach ( [ 'kind', 'fn', 'bday', 'anniversary', 'rev', 'uid' ]
+        foreach ( [ 'kind', 'fn', 'bday', 'anniversary', 'rev' ]
                   as $simpleProperty )
         {
             assert( $vcard->keyIsSingleValueElement($simpleProperty),
@@ -212,9 +215,8 @@ class VCardDB
         }
     
         $stmt->execute();
-        $contact_id = $this->connection->lastInsertId();
 
-        return $contact_id;
+        return $uid;
     } // i_storeJustContact()
 
     /**
@@ -222,19 +224,20 @@ class VCardDB
      * subsidiary table/link table and return the ID of the new record.
      * @param string $propertyName
      * @param array $propertyValue
-     * @param integer $contactID
+     * @param string uid The uid of the Contact record the property will be
+     * stored under.
      * @return integer The new property record id.
      */
     private function i_storeStructuredProperty( $propertyName,
     		                                Array $propertyValue,
-    		                                $contactID )
+    		                                $uid )
     {
     	assert($this->connection !== null);
     	assert($propertyName !== null);
     	assert(is_string($propertyName));
     	assert(!empty($propertyValue));
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
+    	assert(!empty($uid));
+    	assert(is_string($uid));
     	
         // FIXME: #41 Get information from VCard instead of duplicating here.
     	static $fields = [
@@ -248,12 +251,12 @@ class VCardDB
     	$stmt = $this->connection->prepare(
                     $this->getQueryInfo('store', $propertyName) );
         
-        $stmt->bindValue(':ContactID', $contactID);
+        $stmt->bindValue(':uid', $uid);
     	foreach($fields[$propertyName] as $key)
     	{
-    		$value = empty($propertyValue[$key])
-    		           ? null : $propertyValue[$key];
-    		$stmt->bindValue(':'.$key, $value, \PDO::PARAM_STR);
+            $value = empty($propertyValue[$key])
+                    ? null : $propertyValue[$key];
+            $stmt->bindValue(':'.$key, $value, \PDO::PARAM_STR);
     	}
     	
     	$stmt->execute();
@@ -309,23 +312,23 @@ class VCardDB
      * @param string $propertyName The name of the property to store. String,
      * not null.
      * @param mixed $value The value of the property to store. Not empty.
-     * @param integer $contactID The ID of the CONTACT to associate the new
+     * @param string $uid The uid of the CONTACT to associate the new
      * record with.
      * @return integer The ID of the newly created record.
      */
-    private function i_storeBasicProperty($propertyName, $value, $contactID)
+    private function i_storeBasicProperty($propertyName, $value, $uid)
     {
     	assert($this->connection !== null);
     	assert($propertyName !== null);
     	assert(is_string($propertyName));
     	assert(!empty($value));
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
+    	assert(!empty($uid));
+    	assert(is_string($uid));
     	
     	$stmt = $this->connection->prepare(
                     $this->getQueryInfo('store', $propertyName) );
     	
-        $stmt->bindValue(':ContactID', $contactID);
+        $stmt->bindValue(':uid', $uid);
     	$stmt->bindValue(":value", $value);
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
@@ -337,7 +340,7 @@ class VCardDB
      * Fetch all vcards from the database.
      * @param string $kind If kind is given, only fetch those of that kind (e.g.
      * organization).
-     * @return array An array of vCards keyed by contact id.
+     * @return array An array of vCards keyed by uid.
      */
     public function fetchAll($kind='%')
     {
@@ -353,7 +356,7 @@ class VCardDB
 
         while ($row = $stmt->fetch())
         {
-	    $vcards[$row["CONTACT_ID"]] = $this->i_fetchVCard($row);
+	    $vcards[$row["UID"]] = $this->i_fetchVCard($row);
         } // while
 
         $stmt->closeCursor();
@@ -368,7 +371,7 @@ class VCardDB
      * omitted, match all cards.
      * @param string $kind If kind is given, return only cards of that kind (e.g.
      * organization).
-     * @return array of vCards indexed by contact id.
+     * @return array of vCards indexed by uid.
      */
     public function search($searchString='%', $kind='%')
     {
@@ -380,14 +383,14 @@ class VCardDB
         $stmt->bindValue(":searchString", $searchString);
         $stmt->execute();
 
-        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
  
-        $contactIDs += $this->fetchIDsForCategory( $searchString,
+        $uids += $this->fetchIDsForCategory( $searchString,
         		$kind="%" );
-        if (empty($contactIDs)) return array();
+        if (empty($uids)) return array();
 
-        return $this->fetchByID($contactIDs);
+        return $this->fetchByID($uids);
     } // search()
 
     /**
@@ -397,7 +400,7 @@ class VCardDB
      * be a SQL pattern. String, not empty.
      * @param string $kind If kind is provided, limit results to a specific Kind (e.g.
      * individual.
-     * @return array The list of contact ids. Actual vCards are not fetched.
+     * @return array The list of contact uids. Actual vCards are not fetched.
      */
     public function fetchIDsForOrganization($organizationName, $kind="%")
     {
@@ -408,45 +411,20 @@ class VCardDB
         $stmt = $this->connection->prepare(
                     $this->getQueryInfo('search', 'organization') );
         $stmt->bindValue(':organizationName', $organizationName);
+        $stmt->bindValue(':kind', $kind);
         $stmt->execute();
-        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        if (empty($contactIDs)) return array();
-
-        return $this->filterIDsByKind($contactIDs, $kind);
+        return $uids;
     } // fetchIDsForOrganization()
 
     /**
-     * Returns only the contact_ids from the input list where kind matches.
-     * @param array $contactIDs The list of contact IDs to filter. An array
-     * (non-empty) of numerics.
-     * @param string $kind The kind of record desired (e.g. individual)
-     * @return A new list of any IDs that match.
-     */
-    public function filterIDsByKind(Array $contactIDs, $kind)
-    {
-    	assert(isset($this->connection));
-    	assert(!empty($contactIDs));
-    	assert(is_string($kind));
-    	
-        // FIXME #40: Refactor so that this query is not necessary
-        $stmt = $this->connection->prepare("SELECT CONTACT_ID FROM CONTACT WHERE CONTACT_ID IN ("
-	. implode(",", $contactIDs) . ") AND KIND LIKE :kind");
-        $stmt->bindValue(":kind", $kind);
-        $stmt->execute();
-        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        return $contactIDs;    
-    } // filterIDsByKind()
-
-    /**
-     * Returns a list of all contact_ids in a given category.
+     * Returns a list of all contact uids in a given category.
      * @param string $category The string representing the category to search for.
      * May be a SQL pattern. Not empty.
      * @param string $kind If given, the kind (e.g. individual) to filter by.
-     * @return array An array of contact IDs. No vCards are fetched.
+     * @return array An array of contact uids. No vCards are fetched.
      */
     public function fetchIDsForCategory($category, $kind="%")
     {
@@ -457,47 +435,47 @@ class VCardDB
         $stmt = $this->connection->prepare(
                         $this->getQueryInfo('search', 'categories') );
         $stmt->bindValue(":category", $category);
+        $stmt->bindValue(':kind', $kind);
         $stmt->execute();
-        $contactIDs = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
 
-        if (empty($contactIDs)) return [];
-        return $this->filterIDsByKind($contactIDs, $kind);
+        return $uids;
     } // fetchIDsForCategory()
 
     /**
      * Retrieve vCard records for the given Contact IDs.
-     * @param array $contactIDs
-     * @return array An array of vCards indexed by contact ID.
+     * @param array $uids A list of contact uids to fetch.
+     * @return array An array of vCards indexed by uid.
      */
-    public function fetchByID(Array $contactIDs)
+    public function fetchByID(Array $uids)
     {
     	assert(isset($this->connection));
-    	assert(!empty($contactIDs));
+    	assert(!empty($uids));
     	
         $vcards = array();
-        foreach($contactIDs as $contactID)
+        foreach($uids as $uid)
         {
-	    $vcards[$contactID] = $this->fetchOne($contactID);
+	    $vcards[$uid] = $this->fetchOne($uid);
         }
 
         return $vcards;
     } // fetchByID()
 
     /**
-     * Fetch a single vcard given a contact_id.
-     * @param integer $contactID The ID of the record to fetch. Numeric, not empty.
+     * Fetch a single vcard given a contact uid.
+     * @param string $uid The ID of the record to fetch. String, not empty.
      * @return VCard|null The completed vcard or false if none found.
      */
-    public function fetchOne($contactID)
+    public function fetchOne($uid)
     {
     	assert(isset($this->connection));
-    	assert(!empty($contactID));
-    	assert(is_numeric($contactID));
+    	assert(!empty($uid));
+    	assert(is_string($uid));
     	
         $stmt = $this->connection->prepare(
                         $this->getQueryInfo('fetch', 'contact') );
-        $stmt->bindValue(":contactID", $contactID);
+        $stmt->bindValue(":uid", $uid);
         $stmt->execute();
         assert($stmt->rowCount() <= 1);
                 
@@ -523,10 +501,10 @@ class VCardDB
     	assert(!empty($row));
     	
         $vcard = new VCard();
-        $contactID = $row["CONTACT_ID"];
+        $vcard->setUID($row["UID"]);
 
         $simpleCols = [ 'KIND', 'FN', 'NICKNAME', 'BDAY', 'ANNIVERSARY',
-                        'TITLE', 'ROLE', 'REV', 'UID', 'URL', 'VERSION' ];
+                        'TITLE', 'ROLE', 'REV', 'URL', 'VERSION' ];
         foreach ($simpleCols as $col)
         {
             if (!empty($row[$col])) $vcard->$col($row[$col]);
@@ -537,7 +515,8 @@ class VCardDB
         foreach (['org', 'adr', 'n'] as $structuredProperty)
         {
             $vcard->$structuredProperty
-                = $this->i_fetchStructuredProperty($structuredProperty, $contactID);
+                = $this->i_fetchStructuredProperty( $structuredProperty,
+                                                    $vcard->uid );
         }
         
         // Basic Properties
@@ -545,7 +524,7 @@ class VCardDB
         		'photo', 'sound', 'key', 'related'] as $property )
         {
             $vcard->$property
-                = $this->i_fetchBasicProperty($property, $contactID);
+                = $this->i_fetchBasicProperty($property, $vcard->uid);
         }
 
         return $vcard;
@@ -585,25 +564,25 @@ class VCardDB
      * return them in an array.
      * @param string $propertyName The name of the associate records to
      * retrieve. String, not null.
-     * @param integer $contactID The ID of the CONTACT the records are
-     * associated with. Numeric, not null.
+     * @param integer $uid The uid of the CONTACT the records are
+     * associated with. String, not null.
      * @return NULL|array An array of the structured properties or null if none
      * available.
      */
-    private function i_fetchStructuredProperty($propertyName, $contactID)
+    private function i_fetchStructuredProperty($propertyName, $uid)
     {
     	assert(isset($this->connection));
     	assert($propertyName !== null);
     	assert(is_string($propertyName));
-    	assert(!empty($contactID));
-    	assert(is_numeric($contactID));
+    	assert(!empty($uid));
+    	assert(is_string($uid));
     	    	    	 
     	// Fetch each $propertyName record in turn    	
     	$propList = array();
 
     	$stmt = $this->connection->prepare(
                     $this->getQueryInfo('fetch', $propertyName) );
-        $stmt->bindValue(":id", $contactID);
+        $stmt->bindValue(":id", $uid);
         $stmt->execute();
         
         while ($result = $stmt->fetch(\PDO::FETCH_ASSOC))
@@ -628,23 +607,23 @@ class VCardDB
      * the given contact ID.
      * @param string $propertyName The name of the property to return
      * records for (e.g. email). String, not null.
-     * @param numeric $contactID The contact ID records are associated with.
+     * @param string $uid The contact uid records are associated with.
      * Numeric, not null.
      * @return NULL|array Returns an array of associated records, or null if
      * none found.
      */
-    private function i_fetchBasicProperty($propertyName, $contactID)
+    private function i_fetchBasicProperty($propertyName, $uid)
     {
     	assert(isset($this->connection));
     	assert($propertyName !== null);
     	assert(is_string($propertyName));
-    	assert($contactID !== null);
-    	assert(is_numeric($contactID));
+    	assert(!empty($uid));
+    	assert(is_string($uid));
     	
     	// Fetch each property record in turn
     	$stmt = $this->connection->prepare(
                     $this->getQueryInfo('fetch', $propertyName) );
-        $stmt->bindValue(':id', $contactID);
+        $stmt->bindValue(':id', $uid);
         $stmt->execute();
         $propList = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
@@ -652,22 +631,22 @@ class VCardDB
     } // i_fetchBasicProperty()    
     
     /**
-     * Deletes a CONTACT from the database by ID. Should delete all dependent
+     * Deletes a CONTACT from the database by uid. Should delete all dependent
      * records (e.g. properties) for that CONTACT as well.
-     * @param integer $contactID The ID of the record to delete. Numeric,
+     * @param integer $uid The uid of the record to delete. Numeric,
      * not null.
      * @return bool If a record was deleted, false otherwise.
      * @throws \PDOException On database failure.
      */
-    public function deleteContact($contactID)
+    public function deleteContact($uid)
     {
         \assert(isset($this->connection));
-        \assert(null !== $contactID);
-        \assert(\is_numeric($contactID));
+        \assert(!empty($uid));
+        \assert(\is_string($uid));
         
         $stmt = $this->connection->prepare(
                     $this->getQueryInfo('delete', 'contact') );
-        $stmt->bindValue(':contactID', $contactID);
+        $stmt->bindValue(':uid', $uid);
         $stmt->execute();
         $rows = $stmt->rowCount();
         $stmt->closeCursor();

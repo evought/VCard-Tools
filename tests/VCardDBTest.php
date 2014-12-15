@@ -733,13 +733,13 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     public function testFetchIDsForOrganization(VCardDB $vcardDB)
     {    	    	    	
     	$raithSeinar = $this->getRaithSeinar();
-    	$rSContactID = $vcardDB->store($raithSeinar);
+    	$rSUID = $vcardDB->store($raithSeinar);
     	
     	$seinarAPL = $this->getSeinarAPL();
-    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    	$sAPLUID = $vcardDB->store($seinarAPL);
     	
     	$dDBinks = $this->getDDBinks();
-    	$dDBContactID = $vcardDB->store($dDBinks);
+    	$dDBUID = $vcardDB->store($dDBinks);
     	
         $this->checkRowCounts(['CONTACT'=>3]);
     	
@@ -750,12 +750,12 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	
     	$this->assertCount( 2, $IDs,
     			       print_r($IDs, true)
-    			       . ' rs: ' . $rSContactID
-                               . ' apl: ' . $sAPLContactID
-                               . ' ddb: ' . $dDBContactID);
+    			       . ' rs: ' . $rSUID
+                               . ' apl: ' . $sAPLUID
+                               . ' ddb: ' . $dDBUID);
     	
-    	$this->assertContains($rSContactID, $IDs);
-    	$this->assertContains($sAPLContactID, $IDs);
+    	$this->assertContains($rSUID, $IDs);
+    	$this->assertContains($sAPLUID, $IDs);
     	// Binks is left out (as he should be).
     	
     	return $vcardDB;
@@ -767,16 +767,20 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     public function testFetchIDsForOrganizationByKind(VCardDB $vcardDB)
     {
     	$raithSeinar = $this->getRaithSeinar();
-    	$rSContactID = $vcardDB->store($raithSeinar);
+    	$rSUID = $vcardDB->store($raithSeinar);
     	 
     	$seinarAPL = $this->getSeinarAPL();
-    	$sAPLContactID = $vcardDB->store($seinarAPL);
+    	$sAPLUID = $vcardDB->store($seinarAPL);
     	 
     	$dDBinks = $this->getDDBinks();
-    	$dDBContactID = $vcardDB->store($dDBinks);
+    	$dDBUID = $vcardDB->store($dDBinks);
     	 
     	$this->checkRowCounts(['CONTACT'=>3]);
-    	 
+        
+        $this->assertEquals('individual', $vcardDB->fetchOne($rSUID)->kind);
+        $this->assertEquals('organization', $vcardDB->fetchOne($sAPLUID)->kind);
+        $this->assertEquals('individual', $vcardDB->fetchOne($dDBUID)->kind);
+
     	$IDs = $vcardDB->fetchIDsForOrganization( 'Seinar Fleet Systems',
                                                   'individual' );
     	 
@@ -785,11 +789,11 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	 
     	$this->assertCount( 1, $IDs,
     			print_r($IDs, true)
-    			. ' rs: ' . $rSContactID
-    			. ' apl: ' . $sAPLContactID
-    			. ' ddb: ' . $dDBContactID);
+    			. ' rs: ' . $rSUID
+    			. ' apl: ' . $sAPLUID
+    			. ' ddb: ' . $dDBUID);
     	 
-    	$this->assertContains($rSContactID, $IDs);
+    	$this->assertContains($rSUID, $IDs);
     }
     
     /**
