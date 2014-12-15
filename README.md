@@ -8,15 +8,24 @@ MIT License http://opensource.org/licenses/MIT
 
 #What This Project Is#
 
-This effort is a set of tools for manipulating VCards (RFC 6350) in PHP, including in-memory representation, database persistence, and HTML templating. The tools build on two other works, the VCard PHP class by Martins Pilsetnieks, Roberts Bruveris (https://github.com/nuovo/vCard-parser) and a sample VCard SQL schema by George_h on Stackoverflow for RFC6868/VCard 3.0. VCard-Tools marries an improved VCard class with a set of classes for database persistence (based on George_h's schema) and flexible HTML output targeting VCard 4.0 (RFC 6350) compliance, defined in the EVought\vCardTools namespace. It also includes a growing suite of PHPUnit tests.
+This effort is a set of tools for manipulating VCards (RFC 6350) in PHP,
+including in-memory representation, database persistence, and HTML templating.
+The tools build on two other works, the VCard PHP class by Martins Pilsetnieks,
+Roberts Bruveris (https://github.com/nuovo/vCard-parser) and a sample VCard SQL
+schema by George_h on Stackoverflow for RFC6868/VCard 3.0.
+VCard-Tools marries an improved VCard class with a set of classes for database
+persistence (based on George_h's schema) and flexible HTML output targeting
+VCard 4.0 (RFC 6350) compliance, defined in the EVought\vCardTools namespace.
+It also includes a growing suite of PHPUnit tests.
 
-This file describes the project, setup, and basic usage. Also see the [Wiki](https://github.com/evought/VCard-Tools/wiki) for additional information, including class hierarchy and design discussion.
+This file describes the project, setup, and basic usage.
+Also see the [Wiki](https://github.com/evought/VCard-Tools/wiki) for additional
+information, including class hierarchy and design discussion.
 
-At its outset, the VCard class is one of the more advanced PHP classes for the purpose. I extended it for use in the prototype site where I first used VCard-Tools, added support for some VCard 4.0 behavior, fixed border parsing cases, added the unit tests, rounded out the interface, and performed cleanup. It is therefore heading toward being a fairly robust tool, albeit with a few oddities brought about by the sheer complexity of the VCard 4.0 schema (which I have some ideas about improving). The schema, also adapted toward VCard 4.0 and improved, is likewise reasonably stable. I intend to extend it to handle the remainder of the VCard 4.0 properties and possibly adapt it to handle more than 1 N property.
-
-The VCardDB class for database persistence, by comparison, are less mature. They should be viewed as a demonstration project at this time, *not production code*. The templating mechanism (Template class) has a great deal of power and flexibility. The format of template definitions are reasonably stable. Additional
-utilities for managing (loading, storing, delayed-loading) Templates will likely
-be provided in the future.
+The package is currently a pre-release and should not be considered production
+code.
+The GitHub repository lays out milestones and schedule toward a 1.0 release and
+the anticipated features.
 
 #License#
 
@@ -33,8 +42,17 @@ Setting up the database is described below.
 There is a [Phing](http://www.phing.info/) script for automating project
 maintenance tasks. I also set things up to be usable from NetBeans IDE.
 
+Dependencies are tracked through [Composer](https://getcomposer.org/).
+The Composer tool, with its configuration in composer.json obtains, tracks, and
+installs the components needed to build and use VCardTools.
+Composer also provides the autoloading script required to use the vCardTools
+classes in an application.
+
+Internal dependencies are also partitioned out.
+VCard may be used without the Template or VCardDB classes.
 The templating code can be used along with the original VCard class *with or
-without the database persistence*.
+without the database persistence*, and the database persistance does not require
+the use of the Template class.
 
 The HTML templating is designed with CSS styling in mind.
 Classes and roles are clearly indicated in the markup as styling hooks and it
@@ -47,20 +65,23 @@ I expect to add a template for proper hcard output, but it should not be
 difficult (at all) for someone to use the mechanism to produce a conformant
 hcard using the existing code.
 
+The Database code is intended to be adaptable to somewhat different database
+setups, and this will continue as a future design direction.
+SQL queries used to fetch/store/search VCards are defined in an external .ini
+file to both ease maintenance and enable customization.
+
 ##Autoloading##
 
 The source files and classes are laid out to be PSR-4 compliant and should
-therefore work with compliant autoloaders. src/autoload.php also provides a
-custom autoloader function which is used by bootstrap.php for the unit tests
-(see *Unit Tests*, below).
+therefore work with compliant autoloaders.
+Composer generates such an autoloader automatically, which may be included
+from vendor/autoload.php.
 
 ##Requirements##
 
 The project was developed against
 * PHP 5.5 (5.5.18)
 * MySQL 5.5 (5.5.38)
-
-This should be all that is needed to use VCard-Tools.
 
 To develop and run tests, you will additionally need:
 
@@ -85,22 +106,33 @@ and will be placed in docs/api. cleanDocs will remove the generated documents.
 
 #Database Setup#
 
-To use the software, a database (e.g. VCARD) will be needed to contain the tables and a user with appropriate permissions to access it. Given appropriate settings
-and a user with appropriate permissions in the database, phing will do the actual
-loading of the schema for you.
+To use the software, a database (e.g. VCARD) will be needed to contain the
+tables and a user with appropriate permissions to access it.
+Given appropriate settings and a user with appropriate permissions in the
+database, phing will do the actual loading of the schema for you from the schema
+definition in src/sql/vcard.sql.
 
 First off, you need a MySQL user account with permissions to create a database and
-grant privileges on that database to a test user. I refer to this as the *developer account*. You could use the MySQL *root* user to do this, but on
-general principle, it is better to have a developer account with less that super-user powers and yet more than your unit test account. In some environments, such as a shared database, you may not have the option of using the root account. Depending on your setup, this can be done with a tool such as *PHPMyAdmin* or from the command-line. In most environments:
+grant privileges on that database to a test user.
+I refer to this as the *developer account*.
+You could use the MySQL *root* user to do this, but on general principle, it is
+better to have a developer account with less that super-user powers and yet
+more than your unit test account.
+In some environments, such as a shared database, you may not have the option of
+using the root account.
+Depending on your setup, this can be done with a tool such as *PHPMyAdmin* or
+from the command-line. In most environments:
 
     $ mysql --user=root -p
 
-Will pull up a SQL shell as the MySQL root user, prompting for the password. You may then create the desired account and grant it privileges:
+Will pull up a SQL shell as the MySQL root user, prompting for the password.
+You may then create the desired account and grant it privileges:
 
     mysql> create user 'developer'@'localhost' identified by 'password';
     mysql> grant all on VCARD.* to 'developer'@'localhost' with grant option;
 
-Substituting whatever is appropriate for 'developer' and 'password'. At the same time, create a *test account* for actually running the tests:
+Substituting whatever is appropriate for 'developer' and 'password'.
+At the same time, create a *test account* for actually running the tests:
 
     mysql> create user 'test-vcard'@'localhost' identified by 'password';
 
@@ -129,6 +161,20 @@ the initial state for the testcases. If the schema has changed, you will want to
     $mysqldump --xml -t -u [username] -p [database] > tests/emptyVCARDDB.xml
 
 See the PHPUnit Manual, [Database Testing Chapter](https://phpunit.de/manual/current/en/database.html#database.available-implementations) for more information.
+
+## Customizing Queries##
+
+Individual SQL queries are configured in src/sql/VCardDBQueries.ini, but you
+should not need to make changes in that file.
+Create your own .ini file containing only the queries you need to customize,
+and pass that .ini file to the VCardDB constructor.
+VCardDB will use the default queries in VCardDBQueries.ini for anything it
+cannot find in your custom file.
+Work from the default.ini file to ensure that expected return columns and
+named parameters match.
+Within that constraint, it should be possible to join/split tables or invoke
+stored procedures if desired to integrate VCardDB into a larger application
+schema.
 
 # Unit Tests #
 
