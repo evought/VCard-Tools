@@ -199,7 +199,8 @@ class VCardDB
                                 ? null : $vcard->$simpleProperty, \PDO::PARAM_STR );
         }
 
-        // HACK: VCard and the spec think URL, NICKNAME, etc. are multiple.
+        // HACK #51, #52, #53, #54, #55: VCard and the spec think URL,
+        // NICKNAME, etc. are multiple.
         // Database doesn't. Arbitrarily take the first value.
         foreach (['url', 'nickname', 'role', 'title', 'tz'] as $hackMultiple)
         {
