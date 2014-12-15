@@ -244,7 +244,7 @@ class VCardDB
     	    'adr'=>[ 'StreetAddress', 'Locality', 'Region',
     	             'PostalCode', 'Country'],
     	    'org'=>['Name', 'Unit1', 'Unit2'],
-            'n'=>[ 'Prefixes', 'FirstName', 'AdditionalNames', 'LastName',
+            'n'=>[ 'Prefixes', 'GivenName', 'AdditionalNames', 'FamilyName',
               'Suffixes' ]
     	];
     	

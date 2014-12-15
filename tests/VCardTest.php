@@ -107,9 +107,9 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function getDDBinksInputs()
     {
     	$inputs = [
-    	            'n_FirstName' => 'Darth',
+    	            'n_GivenName' => 'Darth',
     	            'n_AdditionalNames' => 'Darth',
-    	            'n_LastName'  => 'Binks',
+    	            'n_FamilyName'  => 'Binks',
     	            'org'       => 'Sith',
     	            'fn'          => 'Darth Darth Binks',
     	            'kind'        => 'individual'
@@ -124,8 +124,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function getRaithSeinarInputs()
     {
     	$inputs = [
-    	'n_FirstName' => 'Raith',
-    	'n_LastName'  => 'Seinar',
+    	'n_GivenName' => 'Raith',
+    	'n_FamilyName'  => 'Seinar',
     	'org'       => 'Seinar Fleet Systems',
     	'title'	     => 'CEO',
     	'fn'          => 'Raith Seinar',
@@ -145,8 +145,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function getJohnDoeInputs()
     {
     	$inputs = [
-		'n_FirstName'       => 'John',
-		'n_LastName'        => 'Doe',
+		'n_GivenName'       => 'John',
+		'n_FamilyName'        => 'Doe',
 		'n_AdditionalNames' => 'Q., Public',
 		'fn'                => 'John Doe',
 		'fn_charset'        => 'UTF-8',
@@ -180,8 +180,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	$inputs = $this->getDDBinksInputs();
     	
     	$dDBinks = new vCard();
-    	$dDBinks -> n($inputs['n_FirstName'], 'FirstName')
-            -> n($inputs['n_LastName'], 'LastName')
+    	$dDBinks -> n($inputs['n_GivenName'], 'GivenName')
+            -> n($inputs['n_FamilyName'], 'FamilyName')
             -> n($inputs['n_AdditionalNames'], 'AdditionalNames')
             -> org($inputs['org'], 'Name')
             -> fn($inputs['fn'])
@@ -220,8 +220,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	$raithSeinar = new VCard();
     	$inputs = $this->getRaithSeinarInputs();
     	
-    	$raithSeinar -> n($inputs['n_FirstName'], 'FirstName')
-            -> n($inputs['n_LastName'], 'LastName')
+    	$raithSeinar -> n($inputs['n_GivenName'], 'GivenName')
+            -> n($inputs['n_FamilyName'], 'FamilyName')
             -> org($inputs['org'], 'Name')
             -> title($inputs['title'])
             -> fn($inputs['fn'])
@@ -1110,16 +1110,16 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testToStringWithOneN()
     {
     	$name = [
-    	          'FirstName'       => 'Luna',
+    	          'GivenName'       => 'Luna',
     	          'AdditionalNames' => 'Charlotte',
-    	          'LastName'        => 'Begtrup',
+    	          'FamilyName'        => 'Begtrup',
     	          'Prefixes'        => 'Ms.',
     	          'Suffixes'        => 'PhD'
     		];
     	$fn = 'Ms. Luna C. Begtrup PhD';
     	
     	$expected = [
-    	              'N:' . $name['LastName'] . ';' . $name['FirstName']
+    	              'N:' . $name['FamilyName'] . ';' . $name['GivenName']
     	                   . ';' . $name['AdditionalNames'] . ';'
     	                   . $name['Prefixes'] . ';' . $name['Suffixes'],
     	              'FN:' . $fn
@@ -1152,7 +1152,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
     	$inputs = $this->getRaithSeinarInputs();
     	$expected = [
-    	'N:'.$inputs['n_LastName'].';'.$inputs['n_FirstName'].';;;',
+    	'N:'.$inputs['n_FamilyName'].';'.$inputs['n_GivenName'].';;;',
         'ORG:'.$inputs['org'].';;',
         'TITLE:'.$inputs['title'],
         'FN:'.$inputs['fn'],
@@ -1180,7 +1180,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
     	$inputs = $this->getDDBinksInputs();
     	$expected = [
-    	    'N:' . $inputs['n_LastName'] . ';' . $inputs['n_FirstName']
+    	    'N:' . $inputs['n_FamilyName'] . ';' . $inputs['n_GivenName']
     	         . ';' . $inputs['n_AdditionalNames'] . ';;',
             'ORG:'.$inputs['org'].';;',
             'FN:'.$inputs['fn'],

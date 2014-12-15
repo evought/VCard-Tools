@@ -242,15 +242,15 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
-                        'n_FirstName' => 'Fred',
-                        'n_LastName' => 'Jones',
+                        'n_GivenName' => 'Fred',
+                        'n_FamilyName' => 'Jones',
                         'url' => 'http://golf.com',
                         'fn' => 'Fred Jones'
                      ];
         $vcard = new VCard();
 	$vcard->fn = $expected['fn'];
-        $vcard->n($expected['n_FirstName'], 'FirstName');
-        $vcard->n($expected['n_LastName'], 'LastName');
+        $vcard->n($expected['n_GivenName'], 'GivenName');
+        $vcard->n($expected['n_FamilyName'], 'FamilyName');
 	$vcard->url($expected['url']);
 
         $contactID = $vcardDB->store($vcard);
@@ -271,15 +271,15 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
-                        'n_FirstName' => 'Fred',
-                        'n_LastName' => 'Jones',
+                        'n_GivenName' => 'Fred',
+                        'n_FamilyName' => 'Jones',
                         'anniversary' => '2012-09-01 00:00:00',
                         'fn' => 'Fred Jones'
                      ];
         $vcard = new VCard();
 	$vcard->fn = $expected['fn'];
-        $vcard->n($expected['n_FirstName'], 'FirstName');
-        $vcard->n($expected['n_LastName'], 'LastName');
+        $vcard->n($expected['n_GivenName'], 'GivenName');
+        $vcard->n($expected['n_FamilyName'], 'FamilyName');
 	$vcard->anniversary($expected['anniversary']);
 
         $contactID = $vcardDB->store($vcard);
@@ -299,7 +299,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     {
         $this->checkRowCounts(['CONTACT'=>0]);
         
-        $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
+        $n = ['GivenName'=>'Fred', 'FamilyName'=>'Jones'];
         $fn = 'Fred Jones';
         $vcard = new VCard();
 	$vcard->fn = $fn;
@@ -322,8 +322,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     {
         $this->checkRowCounts(['CONTACT'=>0]);
         
-        $n1 = ['FirstName'=>'Samuel', 'LastName'=>'Clemens'];
-        $n2 = ['FirstName'=>'Mark', 'LastName'=>'Twain'];
+        $n1 = ['GivenName'=>'Samuel', 'FamilyName'=>'Clemens'];
+        $n2 = ['GivenName'=>'Mark', 'FamilyName'=>'Twain'];
         $fn = 'Mark Twain';
         $vcard = new VCard();
 	$vcard->fn = $fn;
@@ -345,7 +345,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     {
         $this->checkRowCounts(['CONTACT'=>0]);
         
-        $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
+        $n = ['GivenName'=>'Fred', 'FamilyName'=>'Jones'];
         $adr = [
             'StreetAddress'=>'47 Some Street',
             'Locality'=>'Birmingham',
@@ -374,7 +374,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     {
         $this->checkRowCounts(['CONTACT'=>0]);
         
-        $n = ['FirstName'=>'Fred', 'LastName'=>'Jones'];
+        $n = ['GivenName'=>'Fred', 'FamilyName'=>'Jones'];
         $adr = [
             'StreetAddress'=>'47 Some Street',
             'Locality'=>'Birmingham',
@@ -499,15 +499,15 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
-                        'n_FirstName' => 'Fred',
-                        'n_LastName' => 'Jones',
+                        'n_GivenName' => 'Fred',
+                        'n_FamilyName' => 'Jones',
                         'email' => 'noone@nowhere.org',
                         'fn' => 'Fred Jones'
                      ];
         $vcard = new VCard();
 	$vcard->fn = $expected['fn'];
-        $vcard->n($expected['n_FirstName'], 'FirstName');
-        $vcard->n($expected['n_LastName'], 'LastName');
+        $vcard->n($expected['n_GivenName'], 'GivenName');
+        $vcard->n($expected['n_FamilyName'], 'FamilyName');
         $vcard->email($expected['email']);
 	$vcard->fn = $expected['fn'];
 
@@ -528,16 +528,16 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->checkRowCounts(['CONTACT'=>0]);
 
         $expected = [
-                        'n_FirstName' => 'Raith',
-                        'n_LastName' => 'Seinar',
+                        'n_GivenName' => 'Raith',
+                        'n_FamilyName' => 'Seinar',
                         'org' => 'Seinar Fleet Systems',
                         'title' => 'CEO',
                         'fn' => 'Raith Seinar'
                      ];
         $vcard = new VCard();
 	$vcard->fn = $expected['fn'];
-        $vcard->n($expected['n_FirstName'], 'FirstName');
-        $vcard->n($expected['n_LastName'], 'LastName');
+        $vcard->n($expected['n_GivenName'], 'GivenName');
+        $vcard->n($expected['n_FamilyName'], 'FamilyName');
         $vcard->title($expected['title']);
         $vcard->org($expected['org'], 'Name');
 

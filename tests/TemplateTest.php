@@ -361,7 +361,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     
     public function testSubstitutionFromTextLookupStructured()
     {
-    	$substitution = Substitution::fromText('!n FirstName');
+    	$substitution = Substitution::fromText('!n GivenName');
     	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
     
     	$this->assertFalse($substitution->hasFragment());
@@ -373,7 +373,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertEquals('n', $substitution->getLookUp()['property']);
     	 
     	$this->assertTrue($substitution->lookUpIsStructured());
-    	$this->assertEquals('FirstName', $substitution->getLookUp()['field']);
+    	$this->assertEquals('GivenName', $substitution->getLookUp()['field']);
     
     	$this->assertFalse($substitution->iterates());
     }
@@ -570,17 +570,17 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      * @depends testLiteralTemplate
      * @depends testSubstitutionFromTextLookup
      */
-    public function testNLastNameLookup()
+    public function testNFamilyNameLookup()
     {
-    	$template = new Template(['vcard' => '{{!n LastName}}']);
+    	$template = new Template(['vcard' => '{{!n FamilyName}}']);
     	 
     	$vcard = $this->getRaithSeinar();
     	//preconditions
     	$this->assertNotEmpty($vcard->n, print_r($vcard, true));
-    	$this->assertNotEmpty($vcard->n[0]['LastName'], print_r($vcard, true));
+    	$this->assertNotEmpty($vcard->n[0]['FamilyName'], print_r($vcard, true));
     	 
     	$output = $template->output($vcard);
-    	$this->assertEquals($vcard->n[0]['LastName'], $output);
+    	$this->assertEquals($vcard->n[0]['FamilyName'], $output);
     }
     
     /**

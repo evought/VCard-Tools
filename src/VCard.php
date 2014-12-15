@@ -58,7 +58,7 @@ class VCard implements \Countable, \Iterator
     private static $Spec_StructuredElements
         = array(
             'n' => array(
-                    'LastName', 'FirstName', 'AdditionalNames',
+                    'FamilyName', 'GivenName', 'AdditionalNames',
                     'Prefixes', 'Suffixes' ),
 
 	    'adr' => array( 'POBox', 'ExtendedAddress', 'StreetAddress', 
