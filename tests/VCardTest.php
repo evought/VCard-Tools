@@ -297,6 +297,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * @depends testConstructEmptyVCard
+     */
+    public function testKeyAllowedFields($vcard)
+    {
+        $this->assertContains('GivenName', $vcard::keyAllowedFields('n'));
+    }
+    
+    /**
      * @covers VCard::__construct
      * @covers VCARD::__get
      * @depends testConstructEmptyVCard

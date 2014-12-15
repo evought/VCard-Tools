@@ -1115,5 +1115,20 @@ class VCard implements \Countable, \Iterator
         assert(array_key_exists($key, VCard::$Spec_ElementTypes));
         return VCard::$Spec_ElementTypes[$key];
     }
+    
+    /**
+     * Returns the fields defined for the structured property identified by
+     * $key.
+     * @param string $key The name of the property. Not null.
+     * keyIsStructuredElement($key) must be true.
+     * @return array An array of allowed field names.
+     */
+    public static function keyAllowedFields($key)
+    {
+        assert(null !== $key);
+        assert(is_string($key));
+        assert(array_key_exists($key, VCard::$Spec_StructuredElements));
+        return VCard::$Spec_StructuredElements[$key];
+    }
 } // VCard
 
