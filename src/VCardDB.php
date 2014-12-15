@@ -238,21 +238,13 @@ class VCardDB
     	assert(!empty($propertyValue));
     	assert(!empty($uid));
     	assert(is_string($uid));
-    	
-        // FIXME: #41 Get information from VCard instead of duplicating here.
-    	static $fields = [
-    	    'adr'=>[ 'StreetAddress', 'Locality', 'Region',
-    	             'PostalCode', 'Country'],
-    	    'org'=>['Name', 'Unit1', 'Unit2'],
-            'n'=>[ 'Prefixes', 'GivenName', 'AdditionalNames', 'FamilyName',
-              'Suffixes' ]
-    	];
-    	
+        assert(VCard::keyIsStructuredElement($propertyName));
+    	    	
     	$stmt = $this->connection->prepare(
                     $this->getQueryInfo('store', $propertyName) );
         
         $stmt->bindValue(':uid', $uid);
-    	foreach($fields[$propertyName] as $key)
+    	foreach(VCard::keyAllowedFields($propertyName) as $key)
     	{
             $value = empty($propertyValue[$key])
                     ? null : $propertyValue[$key];
