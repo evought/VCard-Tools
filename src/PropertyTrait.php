@@ -1,10 +1,8 @@
 <?php
 /**
- * A Trait for a SimpleProperty.
- *
- * @link https://github.com/evought/VCard-Tools
- * @author Eric Vought
- * @see RFC 2426, RFC 2425, RFC 6350
+ * Trait for a minimal Property.
+ * @author Eric Vought <evought@pobox.com>
+ * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
 
@@ -34,17 +32,15 @@
 
 namespace EVought\vCardTools;
 
-trait SimplePropertyTrait
+trait PropertyTrait
 {
-    use PropertyTrait;
-    
-    protected function setValueFromBuilder(PropertyBuilder $builder)
+    protected function setNameFromBuilder(PropertyBuilder $builder)
     {
-        $this->value = $builder->getValue();
+        $this->name = $builder->getName();   
     }
-        
-    public function getValue()
+    
+    public function getName()
     {
-        return $this->value;
+        return $this->name;
     }
 }
