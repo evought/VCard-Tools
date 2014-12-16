@@ -78,4 +78,26 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $property->getTypes());
         $this->assertContains('cell', $property->getTypes());
     }
+    
+    /**
+     * @depends testSetAndBuild
+     * @expectedException \DomainException
+     */
+    public function testAddInvalidType()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $builder->setValue('999-555-1212');
+        $builder->addType('skadgamagoozie');
+    }
+    
+    /**
+     * @depends testSetAndBuild
+     * @expectedException \DomainException
+     */
+    public function testSetInvalidType()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $builder->setValue('999-555-1212');
+        $builder->setTypes(['skadgamagoozie']);
+    }
 }
