@@ -38,13 +38,11 @@ class SimpleProperty implements \EVought\vCardTools\Property
 {
     private $name;
     private $value;
-    private $parameters;
 
     public function __construct(SimplePropertyBuilder $builder)
     {
         $this->name = $builder->getName();
         $this->value = $builder->getValue();
-        $this->parameters = $builder->getParameters();
     }
     
     public function __toString()
@@ -59,24 +57,16 @@ class SimpleProperty implements \EVought\vCardTools\Property
 
     public function getParameter($key)
     {
-        \assert(null !== $key);
-        \assert(is_string($key));
-        if (array_key_exists($key, $this->parameters))
-        {
-            return $this->parameters[$key];
-        } else {
-            return null;
-        }
+        return null;
     }
     
     public function getParameters()
     {
-        return $this->parameters;
+        return [];
     }
     
     public function getValue()
     {
         return $this->value;
     }
-    
 }

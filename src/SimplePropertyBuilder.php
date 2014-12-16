@@ -39,7 +39,6 @@ class SimplePropertyBuilder
 {
     private $name;
     private $value;
-    private $parameters;
     
     public function __construct($name)
     {
@@ -48,11 +47,13 @@ class SimplePropertyBuilder
         
         $this->name = $name;
         $this->value = null;
-        $this->parameters = [];
     }
     
-    public function build() {
-        
+    public function build()
+    {
+        \assert(null !== $this->value);
+        \assert(null !== $this->name);
+        return new SimpleProperty($this);
     }
 
     public function isFileProperty()
@@ -70,25 +71,17 @@ class SimplePropertyBuilder
 
     public function pushParameter($key, $value)
     {
-        \assert(null !== $key);
-        \assert(is_string($key));
-        \assert(null !== $value);
-        
-        $this->parameters[$key][] = $value;
-        return $this;
+        throw new \DomainException('This property does not allow parameters.');
     }
 
     public function setParameter($key, Array $valueArray)
     {
-        \assert(null !== $key);
-        \assert(is_string($key));        
-        $this->parameters = $valueArray;
-        return $this;
+        throw new \DomainException('This property does not allow parameters.');
     }
     
     public function getParameters()
     {
-        return $this->parameters;
+        return [];
     }
 
     public function setValue($value)

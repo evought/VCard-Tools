@@ -37,6 +37,32 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     public function testConstruct()
     {
         $builder = new SimplePropertyBuilder('url');
-        $this->assertInstanceOf('EVought\vCardTools\SimplePropertyBuilder', $builder);
-    }    
+        $this->assertInstanceOf( 'EVought\vCardTools\SimplePropertyBuilder',
+                                    $builder );
+    }
+    
+    /**
+     * @depends testConstruct
+     */
+    public function testSetAndBuild()
+    {
+        $builder = new SimplePropertyBuilder('url');
+        $builder->setValue('http://liquor.cabi.net');
+        $property = $builder->build();
+        
+        $this->assertInstanceOf('EVought\vCardTools\SimpleProperty', $property);
+        $this->assertEquals('url', $property->getName());
+        $this->assertEquals('http://liquor.cabi.net', $property->getValue());
+        $this->assertEmpty($property->getParameters());
+    }
+    
+    /**
+     * @depends testConstruct
+     * @expectedException \DomainException
+     */
+    public function testsSetTypeFails()
+    {
+        $builder = new SimplePropertyBuilder('tel');
+        $builder->setParameter('type', ['work']);
+    }
 }
