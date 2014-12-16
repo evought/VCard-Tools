@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for representing a Property of a VCard.
+ * A Trait for a SimplePropertyBuilder.
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -34,19 +34,23 @@
 
 namespace EVought\vCardTools;
 
-interface Property
+trait SimplePropertyBuilderTrait
 {
-    /**
-     * Return the RFC 6350 VCard Property Name (e.g. adr) this property
-     * represents.
-     * @return string
-     */
-    public function getName();
-    
-    /**
-     * Return the value of this property. Value may be simple or structured
-     * as dependendent on the property name and type.
-     * @return mixed The property value.
-     */
-    public function getValue();
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function setValue($value)
+    {
+        \assert(null !== $value);
+        \assert(is_string($value));
+        $this->value = $value;
+        return $this;
+    }
+
+    public function getValue()
+    {
+        return $this->value;
+    }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for representing a Property of a VCard.
+ * A TypedProperty implementation.
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -34,19 +34,20 @@
 
 namespace EVought\vCardTools;
 
-interface Property
+class TypedPropertyImpl implements \EVought\vCardTools\TypedProperty
 {
-    /**
-     * Return the RFC 6350 VCard Property Name (e.g. adr) this property
-     * represents.
-     * @return string
-     */
-    public function getName();
+    use SimplePropertyTrait;
     
-    /**
-     * Return the value of this property. Value may be simple or structured
-     * as dependendent on the property name and type.
-     * @return mixed The property value.
-     */
-    public function getValue();
+    private $types;
+    
+    public function __construct(TypedPropertyBuilder $builder)
+    {
+        $this->setFromBuilder($builder);
+        $this->types = $builder->getTypes();
+    }
+    
+    public function getTypes()
+    {
+        return $this->types;
+    }
 }

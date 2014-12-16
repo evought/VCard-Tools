@@ -36,37 +36,13 @@ namespace EVought\vCardTools;
 
 class SimpleProperty implements \EVought\vCardTools\Property
 {
+    use SimplePropertyTrait;
+    
     private $name;
     private $value;
 
     public function __construct(SimplePropertyBuilder $builder)
     {
-        $this->name = $builder->getName();
-        $this->value = $builder->getValue();
-    }
-    
-    public function __toString()
-    {
-        \assert(false, 'Not implemented.');
-    }
-    
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function getParameter($key)
-    {
-        return null;
-    }
-    
-    public function getParameters()
-    {
-        return [];
-    }
-    
-    public function getValue()
-    {
-        return $this->value;
+        $this->setFromBuilder($builder);
     }
 }

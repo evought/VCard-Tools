@@ -37,6 +37,8 @@ namespace EVought\vCardTools;
 class SimplePropertyBuilder
         implements \EVought\vCardTools\PropertyBuilder
 {
+    use SimplePropertyBuilderTrait;
+    
     private $name;
     private $value;
     
@@ -46,7 +48,6 @@ class SimplePropertyBuilder
         \assert(is_string($name));
         
         $this->name = $name;
-        $this->value = null;
     }
     
     public function build()
@@ -56,55 +57,8 @@ class SimplePropertyBuilder
         return new SimpleProperty($this);
     }
 
-    public function isFileProperty()
-    {
-        return false;
-    }
-
-    public function isStructured() {
-        return false;
-    }
-
-    public function isTypeAble() {
-        return false;
-    }
-
-    public function pushParameter($key, $value)
-    {
-        throw new \DomainException('This property does not allow parameters.');
-    }
-
-    public function setParameter($key, Array $valueArray)
-    {
-        throw new \DomainException('This property does not allow parameters.');
-    }
-    
-    public function getParameters()
-    {
-        return [];
-    }
-
-    public function setValue($value)
-    {
-        \assert(null !== $value);
-        \assert(is_string($value));
-        $this->value = $value;
-        return $this;
-    }
-
     public static function fromVCardLine($line, VCard $vcard)
     {
         \assert(false, 'Not Implemented.');        
     }
-
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function getValue()
-    {
-        return $this->value;
-    }
-
 }

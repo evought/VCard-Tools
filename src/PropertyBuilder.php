@@ -61,48 +61,6 @@ interface PropertyBuilder
      * @return mixed may be simple or structured depending on the property.
      */
     public function getValue();
-    
-    /**
-     * Set a parameter for this property.
-     * @param string $key The name of the parameter to set.
-     * @param array $valueArray The list of values for the parameter.
-     * @see PropertyBuilder::pushParameter()
-     * @return PropertyBuilder $this
-     */
-    public function setParameter($key, Array $valueArray);
-    
-    /**
-     * Return the values of assigned parameters.
-     * @return array An array of arrays of parameter values, indexed by
-     * parameter name.
-     */
-    public function getParameters();
-    
-    /**
-     * Add a value for the parameter $key against this property.
-     * @param string $key The name of the parameter to set.
-     * @param string $value The value of the parameter to add.
-     * @return PropertyBuilder $this
-     */
-    public function pushParameter($key, $value);
-    
-    /**
-     * Returns true if-and-only-if this property takes the type parameter.
-     * @return bool
-     */
-    public function isTypeAble();
-    
-    /**
-     * Returns true if-and-only-if this property requires structured values.
-     * @return bool
-     */
-    public function isStructured();
-    
-    /**
-     * Returns true if-and-only-if this property stores external data (files
-     * or BLOBs.
-     */
-    public function isFileProperty();
 
     /**
      * Parse a line of a VCard text representation and push any resulting

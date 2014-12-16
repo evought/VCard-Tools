@@ -1,10 +1,8 @@
 <?php
 /**
- * Class for representing a Property of a VCard.
- *
- * @link https://github.com/evought/VCard-Tools
- * @author Eric Vought
- * @see RFC 2426, RFC 2425, RFC 6350
+ * Tests for TypedPropertyBuilder.
+ * @author Eric Vought <evought@pobox.com>
+ * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
 
@@ -34,19 +32,30 @@
 
 namespace EVought\vCardTools;
 
-interface Property
+class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * Return the RFC 6350 VCard Property Name (e.g. adr) this property
-     * represents.
-     * @return string
-     */
-    public function getName();
+    public function testConstruct()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel');
+        $this->assertInstanceOf( 'EVought\vCardTools\TypedPropertyBuilder',
+                                    $builder );
+    }
     
-    /**
-     * Return the value of this property. Value may be simple or structured
-     * as dependendent on the property name and type.
-     * @return mixed The property value.
-     */
-    public function getValue();
+    public function testSetAndBuild()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel');
+        $builder->setValue('999-555-1212');
+        $builder->setTypes(['work']);
+        $builder->addType('cell');
+        
+        /* @var $property TypedProperty */
+        $property = $builder->build();
+        
+        $this->assertInstanceOf('EVought\vCardTools\TypedProperty', $property);
+        $this->assertEquals('tel', $property->getName());
+        $this->assertEquals('999-555-1212', $property->getValue());
+        $this->assertCount(2, $property->getTypes());
+        $this->assertContains('work', $property->getTypes());
+        $this->assertContains('cell', $property->getTypes());
+    }
 }
