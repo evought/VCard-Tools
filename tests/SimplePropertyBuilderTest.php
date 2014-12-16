@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for SinglePropertyBuilder.
+ * Tests for SimplePropertyBuilder.
  * @author Eric Vought <evought@pobox.com>
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
