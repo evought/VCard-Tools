@@ -1,6 +1,6 @@
 <?php
 /**
- * A Trait for a SimpleProperty.
+ * A trait for a TypedPropertyBuilder.
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -34,25 +34,39 @@
 
 namespace EVought\vCardTools;
 
-trait SimplePropertyTrait
+trait TypedPropertyBuilderTrait
 {
-    protected function setNameFromBuilder(PropertyBuilder $builder)
+    public function addType($type)
     {
-        $this->name = $builder->getName();   
+        $this->checkType($type);
+        if (!(in_array($type, $this->types)))
+            $this->types[] = $type;
+        return $this;
+    }
+
+    protected function checkType($type)
+    {
+        \assert(null !== $type);
+        \assert(is_string($type));
+        if (!(in_array($type, $this->allowedTypes)))
+            throw new \DomainException( $type . ' is not an allowed type for '
+                                        . $this->name );
+        return true;
     }
     
-    protected function setValueFromBuilder(PropertyBuilder $builder)
+    public function getTypes()
     {
-        $this->value = $builder->getValue();
+        return $this->types;
+    }
+
+    public function setTypes(Array $types)
+    {
+        $this->types = array_filter( $types, [$this, 'checkType']);
+        return $this;
     }
     
-    public function getName()
+    public function getAllowedTypes()
     {
-        return $this->name;
-    }
-    
-    public function getValue()
-    {
-        return $this->value;
+        return $this->allowedTypes;
     }
 }

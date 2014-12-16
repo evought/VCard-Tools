@@ -57,4 +57,10 @@ interface TypedPropertyBuilder extends PropertyBuilder
      * @param string $type
      */
     public function addType($type);
+    
+    /**
+     * Return the list of allowed types for this property.
+     * @return Array An array of strings.
+     */
+    public function getAllowedTypes();
 }

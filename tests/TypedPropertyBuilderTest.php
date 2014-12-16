@@ -36,14 +36,17 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $builder = new TypedPropertyBuilderImpl('tel');
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
         $this->assertInstanceOf( 'EVought\vCardTools\TypedPropertyBuilder',
                                     $builder );
     }
     
+    /**
+     * @depends testConstruct
+     */
     public function testSetAndBuild()
     {
-        $builder = new TypedPropertyBuilderImpl('tel');
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
         $builder->setValue('999-555-1212');
         $builder->setTypes(['work']);
         $builder->addType('cell');
@@ -56,6 +59,23 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('999-555-1212', $property->getValue());
         $this->assertCount(2, $property->getTypes());
         $this->assertContains('work', $property->getTypes());
+        $this->assertContains('cell', $property->getTypes());
+    }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testDuplicateTypes()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $builder->setValue('999-555-1212');
+        $builder->addType('cell');
+        $builder->addType('cell');
+        
+        /* @var $property TypedProperty */
+        $property = $builder->build();
+        
+        $this->assertCount(1, $property->getTypes());
         $this->assertContains('cell', $property->getTypes());
     }
 }

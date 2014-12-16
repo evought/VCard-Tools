@@ -1,6 +1,6 @@
 <?php
 /**
- * A Trait for a SimpleProperty.
+ * A TypedProperty implementation.
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -32,27 +32,18 @@
  * THE SOFTWARE.
  */
 
+
 namespace EVought\vCardTools;
 
-trait SimplePropertyTrait
+trait TypedPropertyTrait
 {
-    protected function setNameFromBuilder(PropertyBuilder $builder)
+    protected function setTypesFromBuilder(TypedPropertyBuilder $builder)
     {
-        $this->name = $builder->getName();   
+        $this->types = $builder->getTypes();
     }
     
-    protected function setValueFromBuilder(PropertyBuilder $builder)
+    public function getTypes()
     {
-        $this->value = $builder->getValue();
-    }
-    
-    public function getName()
-    {
-        return $this->name;
-    }
-    
-    public function getValue()
-    {
-        return $this->value;
+        return $this->types;
     }
 }
