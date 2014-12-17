@@ -1,6 +1,6 @@
 <?php
 /**
- * A concrete StructuredPropertyBuilder.
+ * A trait for a StructuredProperty.
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -8,7 +8,7 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-/*
+/* 
  * The MIT License
  *
  * Copyright 2014 evought.
@@ -34,30 +34,16 @@
 
 namespace EVought\vCardTools;
 
-/**
- * Description of StructuredPropertyBuilderImpl
- *
- * @author evought
- */
-class StructuredPropertyBuilderImpl implements StructuredPropertyBuilder
+trait StructuredPropertyTrait
 {
-    use StructuredPropertyBuilderTrait;
+    use SimplePropertyTrait;
     
-    public function __construct($name, Array $allowedFields)
+    public function getField($field)
     {
-        $this->initName($name);
-        $this->initFields($allowedFields);
-    }
-    
-    /**
-     * 
-     * @return \EVought\vCardTools\StructuredProperty
-     */
-    public function build()
-    {
-        \assert(null !== $this->value);
-        \assert(null !== $this->name);
         \assert(is_array($this->value));
-        return new StructuredPropertyImpl($this);
+        if (array_key_exists($field, $this->value))
+           return $this->value[$field];
+        else
+            return null;
     }
 }

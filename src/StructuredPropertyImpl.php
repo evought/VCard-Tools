@@ -39,7 +39,7 @@ namespace EVought\vCardTools;
  */
 class StructuredPropertyImpl implements StructuredProperty
 {
-    use SimplePropertyTrait;
+    use StructuredPropertyTrait;
     
     public function __construct(StructuredPropertyBuilder $builder)
     {
@@ -48,12 +48,4 @@ class StructuredPropertyImpl implements StructuredProperty
         \assert(is_array($this->value));
     }
     
-    public function getField($field)
-    {
-        \assert(is_array($this->value));
-        if (array_key_exists($field, $this->value))
-           return $this->value[$field];
-        else
-            return null;
-    }
 }
