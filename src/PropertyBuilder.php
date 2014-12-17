@@ -34,6 +34,13 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * Minimal interface for a PropertyBuilder.
+ * PropertyBuilders are utilities for creating and returning instances of
+ * Properties according to a specification.
+ * Each Builder subtype creates a Property according to the rules for that
+ * Property type.
+ */
 interface PropertyBuilder
 {
     /**

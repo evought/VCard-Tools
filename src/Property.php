@@ -34,6 +34,10 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * Minimal interface for a VCard property. Instances of Properties are created
+ * by the appropriate Builder class and are not instantiated directly.
+ */
 interface Property
 {
     /**
