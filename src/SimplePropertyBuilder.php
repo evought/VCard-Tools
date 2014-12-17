@@ -39,15 +39,10 @@ class SimplePropertyBuilder
 {
     use SimplePropertyBuilderTrait;
     
-    private $name;
-    private $value;
-    
     public function __construct($name)
     {
-        \assert(null !== $name);
-        \assert(is_string($name));
-        
-        $this->name = $name;
+        $this->initName($name);
+        $this->initValue();
     }
     
     public function build()

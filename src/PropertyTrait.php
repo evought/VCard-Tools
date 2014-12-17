@@ -34,6 +34,8 @@ namespace EVought\vCardTools;
 
 trait PropertyTrait
 {
+    private $name;
+    
     protected function setNameFromBuilder(PropertyBuilder $builder)
     {
         $this->name = $builder->getName();   

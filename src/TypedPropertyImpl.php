@@ -38,8 +38,6 @@ class TypedPropertyImpl implements \EVought\vCardTools\TypedProperty
 {
     use SimplePropertyTrait, TypedPropertyTrait;
     
-    private $types;
-    
     public function __construct(TypedPropertyBuilder $builder)
     {
         $this->setNameFromBuilder($builder);

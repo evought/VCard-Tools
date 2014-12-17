@@ -37,9 +37,6 @@ namespace EVought\vCardTools;
 class SimpleProperty implements \EVought\vCardTools\Property
 {
     use SimplePropertyTrait;
-    
-    private $name;
-    private $value;
 
     public function __construct(SimplePropertyBuilder $builder)
     {

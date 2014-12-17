@@ -36,11 +36,15 @@ namespace EVought\vCardTools;
 
 trait SimplePropertyBuilderTrait
 {
-    public function getName()
-    {
-        return $this->name;
-    }
+    use PropertyBuilderTrait;
+    
+    private $value;
 
+    /**
+     * Initialize the value.
+     */
+    protected function initValue() {$this->value = null;}
+    
     public function setValue($value)
     {
         \assert(null !== $value);

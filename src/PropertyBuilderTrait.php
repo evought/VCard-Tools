@@ -1,6 +1,6 @@
 <?php
 /**
- * A TypedProperty implementation.
+ * A trait for a PropertyBuilder.
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -32,20 +32,22 @@
  * THE SOFTWARE.
  */
 
-
 namespace EVought\vCardTools;
 
-trait TypedPropertyTrait
+trait PropertyBuilderTrait
 {
-    private $types;
+    private $name;
     
-    protected function setTypesFromBuilder(TypedPropertyBuilder $builder)
+    public function getName()
     {
-        $this->types = $builder->getTypes();
+        return $this->name;
     }
     
-    public function getTypes()
+    protected function initName($name)
     {
-        return $this->types;
+        \assert(null !== $name);
+        \assert(is_string($name));
+        
+        $this->name = $name;
     }
 }

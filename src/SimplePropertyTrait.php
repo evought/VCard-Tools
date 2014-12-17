@@ -38,6 +38,8 @@ trait SimplePropertyTrait
 {
     use PropertyTrait;
     
+    private $value;
+    
     protected function setValueFromBuilder(PropertyBuilder $builder)
     {
         $this->value = $builder->getValue();

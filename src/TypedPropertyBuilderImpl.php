@@ -37,20 +37,12 @@ namespace EVought\vCardTools;
 class TypedPropertyBuilderImpl implements TypedPropertyBuilder
 {
     use SimplePropertyBuilderTrait, TypedPropertyBuilderTrait;
-
-    private $name;
-    private $value;
-    private $types;
-    private $allowedTypes;
     
     public function __construct($name, Array $allowedTypes)
     {
-        \assert(null !== $name);
-        \assert(is_string($name));
-        $this->name = $name;
-        $this->value = null;
-        $this->types = [];
-        $this->allowedTypes = $allowedTypes;
+        $this->initName($name);
+        $this->initValue();
+        $this->initTypes($allowedTypes);
     }
 
     public function build()
