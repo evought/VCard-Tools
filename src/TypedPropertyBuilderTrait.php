@@ -36,6 +36,15 @@ namespace EVought\vCardTools;
 
 trait TypedPropertyBuilderTrait
 {
+    private $types;
+    private $allowedTypes;
+    
+    protected function initTypes(Array $allowedTypes)
+    {
+        $this->types = [];
+        $this->allowedTypes = $allowedTypes;
+    }
+    
     public function addType($type)
     {
         $this->checkType($type);
