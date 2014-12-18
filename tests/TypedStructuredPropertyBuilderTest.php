@@ -35,21 +35,30 @@ class TypedStructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $builder = new TypedStructuredPropertyBuilder(
-            'adr', ['work', 'home'], ['Locality', 'Region'] );
+        $specification = new PropertySpecification(
+                'adr',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedStructuredPropertyBuilder',
+                [
+                    'allowedTypes'=>['work', 'home'],
+                    'allowedFields'=>['Locality', 'Region']
+                ]
+            );
+        $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\TypedPropertyBuilder',
             $builder );
         $this->assertInstanceOf( 'EVought\vCardTools\StructuredPropertyBuilder',
             $builder );
+        
+        return $specification;
     }
     
     /**
      * @depends testConstruct
      */
-    public function testSetAndBuild()
+    public function testSetAndBuild(PropertySpecification $specification)
     {
-        $builder = new TypedStructuredPropertyBuilder(
-            'adr', ['work', 'home'], ['Locality', 'Region'] );
+        $builder = $specification->getBuilder();
         $builder->setValue(['Locality'=>'Manhattan', 'Region'=>'Kansas'])
                 ->setTypes(['work']);
         
@@ -63,15 +72,16 @@ class TypedStructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals( ['Locality'=>'Manhattan', 'Region'=>'Kansas'],
                                 $property->getValue() );
         $this->assertEquals(['work'], $property->getTypes());
+        
+        return $specification;
     }
     
     /**
-     * @depends testConstruct
+     * @depends testSetAndBuild
      */
-    public function testToString()
+    public function testToString(PropertySpecification $specification)
     {
-        $builder = new TypedStructuredPropertyBuilder(
-            'adr', ['work', 'home'], ['Locality', 'Region'] );
+        $builder = $specification->getBuilder();
         $builder->setValue(['Locality'=>'value1', 'Region'=>'value2'])
                 ->addType('home');
         $property = $builder->build();

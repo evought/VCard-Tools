@@ -42,9 +42,13 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $builder = new StructuredPropertyBuilderImpl( 'adr',
-                            [ 'StreetAddress', 'Locality', 'Region',
-                                'PostalCode', 'Country' ] );
+        $specification = new PropertySpecification(
+                'adr',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                ['allowedFields'=>['StreetAddress', 'Locality', 'Region']]
+            );
+        $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\StructuredPropertyBuilder',
                                     $builder );
     }
@@ -59,11 +63,15 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
                     'Locality'=>'Washington',
                     'Region' => 'DC'
                   ];
-        $builder = new StructuredPropertyBuilderImpl( 'adr',
-                            [ 'StreetAddress', 'Locality', 'Region',
-                                'PostalCode', 'Country' ] );
-        $builder ->setField('StreetAddress', $fields['StreetAddress']);
-        $property = $builder->build();
+        $specification = new PropertySpecification(
+                'adr',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                ['allowedFields'=>['StreetAddress', 'Locality', 'Region']]
+            );
+        $builder1 = $specification->getBuilder();
+        $builder1->setField('StreetAddress', $fields['StreetAddress']);
+        $property = $builder1->build();
         
         $this->assertInstanceOf('EVought\vCardTools\StructuredProperty', $property);
         
@@ -76,11 +84,9 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
                                 $property->getValue()['StreetAddress'] );
         
         
-        $builder = new StructuredPropertyBuilderImpl( 'adr',
-                            [ 'StreetAddress', 'Locality', 'Region',
-                                'PostalCode', 'Country' ] );
-        $builder->setValue($fields);
-                $property = $builder->build();
+        $builder2 = $specification->getBuilder();
+        $builder2->setValue($fields);
+                $property = $builder2->build();
         
         $this->assertInstanceOf('EVought\vCardTools\StructuredProperty', $property);
         
@@ -101,7 +107,13 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetInvalidField()
     {
-        $builder = new StructuredPropertyBuilderImpl('foo', ['Bar', 'Baz']);
+        $specification = new PropertySpecification(
+                'foo',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                ['allowedFields'=>['Bar', 'Baz']]
+            );
+        $builder = $specification->getBuilder();
         $builder->setField('Bozo', 'Whatever');
     }
     
@@ -111,7 +123,13 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetInvalidFieldViaValue()
     {
-        $builder = new StructuredPropertyBuilderImpl('foo', ['Bar', 'Baz']);
+        $specification = new PropertySpecification(
+                'foo',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                ['allowedFields'=>['Bar', 'Baz']]
+            );
+        $builder = $specification->getBuilder();
         $builder->setValue(['Bozo'=>'Whatever']);
     }
     
@@ -120,8 +138,13 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      */
     public function testToString()
     {
-        $builder = new StructuredPropertyBuilderImpl(
-                                'struct', ['field1', 'field2'] );
+        $specification = new PropertySpecification(
+                'struct',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                ['allowedFields'=>['field1', 'field2']]
+            );
+        $builder = $specification->getBuilder();
         $builder->setValue(['field1'=>'value1', 'field2'=>'value2']);
         $property = $builder->build();
         

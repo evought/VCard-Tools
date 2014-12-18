@@ -42,12 +42,11 @@ class TypedStructuredPropertyBuilder
 {
     use TypedPropertyBuilderTrait, StructuredPropertyBuilderTrait;
     
-    public function __construct( $name, Array $allowedTypes,
-                                 Array $allowedFields )
+    public function __construct(PropertySpecification $specification)
     {
-        $this->initName($name);
-        $this->initTypes($allowedTypes);
-        $this->initFields($allowedFields);
+        $this->initBuilder($specification);
+        $this->initTypes();
+        $this->initFields();
     }
     
     public function build()

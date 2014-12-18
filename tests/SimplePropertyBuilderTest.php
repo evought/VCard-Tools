@@ -36,7 +36,12 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $builder = new SimplePropertyBuilder('url');
+        $specification = new PropertySpecification(
+                'url',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            );
+        $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\SimplePropertyBuilder',
                                     $builder );
     }
@@ -46,11 +51,16 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetAndBuild()
     {
-        $builder = new SimplePropertyBuilder('url');
+        $specification = new PropertySpecification(
+                'url',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            );
+        $builder = $specification->getBuilder();
         $builder->setValue('http://liquor.cabi.net');
         $property = $builder->build();
         
-        $this->assertInstanceOf('EVought\vCardTools\SimpleProperty', $property);
+        $this->assertInstanceOf(__NAMESPACE__ . '\SimpleProperty', $property);
         $this->assertEquals('url', $property->getName());
         $this->assertEquals('http://liquor.cabi.net', $property->getValue());
     }
@@ -60,7 +70,12 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
      */
     public function testToString()
     {
-        $builder = new SimplePropertyBuilder('fn');
+        $specification = new PropertySpecification(
+                'fn',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            );
+        $builder = $specification->getBuilder();
         $builder->setValue('Mr. Toad');
         $property = $builder->build();
         

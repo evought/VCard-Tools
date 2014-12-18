@@ -43,10 +43,16 @@ class StructuredPropertyBuilderImpl implements StructuredPropertyBuilder
 {
     use StructuredPropertyBuilderTrait;
     
-    public function __construct($name, Array $allowedFields)
+    /**
+     * Create a new builder from the given PropertySpecification. 
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * 'allowedFields' shall be defined by getConstraints() to be a list
+     * of fields permitted for this property.
+     */
+    public function __construct(PropertySpecification $specification)
     {
-        $this->initName($name);
-        $this->initFields($allowedFields);
+        $this->initBuilder($specification);
+        $this->initFields();
     }
     
     /**
@@ -56,7 +62,6 @@ class StructuredPropertyBuilderImpl implements StructuredPropertyBuilder
     public function build()
     {
         \assert(null !== $this->value);
-        \assert(null !== $this->name);
         \assert(is_array($this->value));
         return new StructuredPropertyImpl($this);
     }

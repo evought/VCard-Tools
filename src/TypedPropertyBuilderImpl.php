@@ -34,15 +34,24 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A concrete TypedPropertyBuilder.
+ */
 class TypedPropertyBuilderImpl implements TypedPropertyBuilder
 {
     use SimplePropertyBuilderTrait, TypedPropertyBuilderTrait;
     
-    public function __construct($name, Array $allowedTypes)
+    /**
+     * Construct a new builder.
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * 'allowedTypes' shall be a key in getConstraints() containing an array
+     * of permitted types.
+     */
+    public function __construct(PropertySpecification $specification)
     {
-        $this->initName($name);
+        $this->initBuilder($specification);
         $this->initValue();
-        $this->initTypes($allowedTypes);
+        $this->initTypes();
     }
 
     public function build()

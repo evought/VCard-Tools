@@ -34,20 +34,33 @@ namespace EVought\vCardTools;
 
 trait PropertyTrait
 {
-    private $name;
-    private $hasParameters;
-    private $builder;
+    /**
+     * The PropertySpecification defining this property type.
+     * @var PropertySpecification
+     */
+    private $specification;
     
+    /**
+     * True if-and-only-if this Property has parameters to output.
+     * @var bool
+     */
+    private $hasParameters;
+    
+    /**
+     * Initialize core Property from PropertyBuilder
+     * @param \EVought\vCardTools\PropertyBuilder $builder
+     */
     protected function initProperty(PropertyBuilder $builder)
     {
-        $this->name = $builder->getName();
+        $this->specification = $builder->getSpecification();
         $this->hasParameters = false;
-        $this->builder = $builder;
     }
+    
+    public function getSpecification() {return $this->specification;}
     
     public function getName()
     {
-        return $this->name;
+        return $this->specification->getName();
     }
     
     public function __toString()
@@ -60,17 +73,16 @@ trait PropertyTrait
         $output .= "\n";
         return $output;
     }
-    
+
+    /**
+     * Format the property name for output as part of a raw vcard line.
+     * @return type
+     */
     protected function outputName()
     {
         return \strtoupper( $this->getName());
     }
-    
-    /**
-     * Format value for output as part of a raw vcard string.
-     * @return string
-     */
-    
+       
     /**
      * Format parameters for output as part of a raw vcard string.
      * Should only be called if hasParameters() returns true.

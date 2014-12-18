@@ -47,10 +47,17 @@ trait StructuredPropertyTrait
             return null;
     }
     
+    public function getAllowedFields()
+    {
+        \assert(\array_key_exists( 'allowedFields',
+                $this->getSpecification()->getConstraints()) );
+        return $this->getSpecification()->getConstraints()['allowedFields'];
+    }
+    
     protected function outputValue()
     {
         $fieldStrings = [];
-        foreach ($this->builder->fields() as $field)
+        foreach ($this->getAllowedFields() as $field)
         {
             $fieldStrings[] = array_key_exists($field, $this->value)
                               ? $this->value[$field] : '';

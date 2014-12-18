@@ -68,4 +68,10 @@ interface PropertyBuilder
      * @return mixed may be simple or structured depending on the property.
      */
     public function getValue();
+    
+    /**
+     * Returns the PropertySpecification defining the property being built.
+     * @return PropertySpecification
+     */
+    public function getSpecification();
 }

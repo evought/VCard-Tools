@@ -34,15 +34,18 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A trait to contain reusable code for TypePropertyBuilders.
+ */
 trait TypedPropertyBuilderTrait
 {
     private $types;
-    private $allowedTypes;
     
-    protected function initTypes(Array $allowedTypes)
+    protected function initTypes()
     {
         $this->types = [];
-        $this->allowedTypes = $allowedTypes;
+        \assert(array_key_exists( 'allowedTypes',
+            $this->getSpecification()->getConstraints()) );
     }
     
     public function addType($type)
@@ -57,9 +60,9 @@ trait TypedPropertyBuilderTrait
     {
         \assert(null !== $type);
         \assert(is_string($type));
-        if (!(in_array($type, $this->allowedTypes)))
+        if (!(in_array($type, $this->getAllowedTypes())))
             throw new \DomainException( $type . ' is not an allowed type for '
-                                        . $this->name );
+                                        . $this->getName() );
         return true;
     }
     
@@ -70,12 +73,12 @@ trait TypedPropertyBuilderTrait
 
     public function setTypes(Array $types)
     {
-        $this->types = array_filter( $types, [$this, 'checkType']);
+        $this->types = array_filter($types, [$this, 'checkType']);
         return $this;
     }
     
     public function getAllowedTypes()
     {
-        return $this->allowedTypes;
+        return $this->getSpecification()->getConstraints()['allowedTypes'];
     }
 }

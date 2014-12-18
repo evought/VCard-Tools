@@ -39,16 +39,15 @@ class SimplePropertyBuilder
 {
     use SimplePropertyBuilderTrait;
     
-    public function __construct($name)
+    public function __construct($specification)
     {
-        $this->initName($name);
+        $this->initBuilder($specification);
         $this->initValue();
     }
     
     public function build()
     {
         \assert(null !== $this->value);
-        \assert(null !== $this->name);
         return new SimpleProperty($this);
     }
 }

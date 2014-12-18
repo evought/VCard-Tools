@@ -36,18 +36,23 @@ namespace EVought\vCardTools;
 
 trait PropertyBuilderTrait
 {
-    private $name;
+    /**
+     * The PropertySpecification defining the property being built.
+     * @var PropertySpecification
+     */
+    private $specification;
+    
+    public function getSpecification() {return $this->specification;}
     
     public function getName()
     {
-        return $this->name;
+        return $this->specification->getName();
     }
     
-    protected function initName($name)
+    protected function initBuilder($specification)
     {
-        \assert(null !== $name);
-        \assert(is_string($name));
+        \assert(null !== $specification);
         
-        $this->name = $name;
+        $this->specification = $specification;
     }
 }

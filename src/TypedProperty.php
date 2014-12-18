@@ -34,6 +34,9 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A Property which accepts a TYPE parameter.
+ */
 interface TypedProperty extends Property
 {
     /**
@@ -41,4 +44,10 @@ interface TypedProperty extends Property
      * @return array An array of types, or null if none assigned.
      */
     public function getTypes();
+    
+    /**
+     * Returns the list of allowed types as specified for this property.
+     * @return Array An array of string type names.
+     */
+    public function getAllowedTypes();
 }

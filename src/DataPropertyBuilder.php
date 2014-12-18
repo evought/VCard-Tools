@@ -46,10 +46,10 @@ class DataPropertyBuilder implements TypedPropertyBuilder
     private $value;
     private $mediaType;
     
-    public function __construct($name, Array $allowedTypes)
+    public function __construct(PropertySpecification $specification)
     {
-        $this->initName($name);
-        $this->initTypes($allowedTypes);
+        $this->initBuilder($specification);
+        $this->initTypes();
         $this->value = null;
         $this->mediaType = null;
     }

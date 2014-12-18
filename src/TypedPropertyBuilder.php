@@ -34,6 +34,9 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A PropertyBuilder for a TypedProperty.
+ */
 interface TypedPropertyBuilder extends PropertyBuilder
 {
     /**

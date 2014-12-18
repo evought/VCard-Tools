@@ -43,19 +43,27 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $specification = new PropertySpecification(
+                'logo',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\DataPropertyBuilder',
+                ['allowedTypes'=>['work', 'home']]
+            );
+        $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\TypedPropertyBuilder',
                                     $builder );
         $this->assertInstanceOf( 'EVought\vCardTools\DataPropertyBuilder',
                                     $builder );
+        
+        return $specification;
     }
     
      /**
      * @depends testConstruct
      */
-    public function testSetAndBuild()
+    public function testSetAndBuild(PropertySpecification $specification)
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg')
                 ->setMediaType('image/jpeg')
                 ->setTypes(['work']);
@@ -70,15 +78,17 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
                              $property->getValue() );
         $this->assertEquals('image/jpeg', $property->getMediaType());
         $this->assertEquals(['work'], $property->getTypes());
+        
+        return $specification;
     }
 
     /**
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
-    public function testBadURL()
+    public function testBadURL(PropertySpecification $specification)
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder = $specification->getBuilder();
         $builder->setValue('@NOT@URL');
     }
     
@@ -86,18 +96,18 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
-    public function testMediaType()
+    public function testMediaType(PropertySpecification $specification)
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder = $specification->getBuilder();
         $builder->setValue('Edsel');
     }
     
     /**
      * @depends testSetAndBuild
      */
-    public function testToStringJustValue()
+    public function testToStringJustValue(PropertySpecification $specification)
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg');
         $property = $builder->build();
         
@@ -109,9 +119,9 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testSetAndBuild
      */
-    public function testToStringOneType()
+    public function testToStringOneType(PropertySpecification $specification)
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg')
                 ->addType('work');
         $property = $builder->build();
@@ -124,9 +134,9 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testSetAndBuild
      */
-    public function testToStringMediaType()
+    public function testToStringMediaType(PropertySpecification $specification)
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg')
                 ->setMediaType('image/png');
         $property = $builder->build();
@@ -139,9 +149,9 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testSetAndBuild
      */
-    public function testToStringMediaTypeAndType()
+    public function testToStringMediaTypeAndType(PropertySpecification $specification)
     {
-        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg')
                 ->setMediaType('image/png')
                 ->addType('home'); // Who has a home logo?

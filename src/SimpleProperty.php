@@ -38,6 +38,10 @@ class SimpleProperty implements \EVought\vCardTools\Property
 {
     use SimplePropertyTrait;
 
+    /**
+     * Create a new SimpleProperty from the PropertyBuilder.
+     * @param \EVought\vCardTools\PropertyBuilder $builder
+     */
     public function __construct(SimplePropertyBuilder $builder)
     {
         $this->initProperty($builder);

@@ -41,6 +41,11 @@ namespace EVought\vCardTools;
 interface Property
 {
     /**
+     * Return the PropertySpecification defining this Property.
+     */
+    public function getSpecification();
+    
+    /**
      * Return the RFC 6350 VCard Property Name (e.g. adr) this property
      * represents.
      * @return string

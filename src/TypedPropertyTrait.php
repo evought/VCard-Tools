@@ -50,6 +50,11 @@ trait TypedPropertyTrait
         return $this->types;
     }
     
+    public function getAllowedTypes()
+    {
+        return $this->getSpecification()->getConstraints()['allowedTypes'];
+    }
+    
     /**
      * Takes the array of types and turns them into a single string for
      * inclusion in a raw vCard line.

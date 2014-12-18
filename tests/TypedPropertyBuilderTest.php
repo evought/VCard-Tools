@@ -36,22 +36,29 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $specification = new PropertySpecification(
+                'tel',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home', 'cell', 'voice']]
+            );
+        $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\TypedPropertyBuilder',
                                     $builder );
+        
+        return $specification;
     }
     
     /**
      * @depends testConstruct
      */
-    public function testSetAndBuild()
+    public function testSetAndBuild(PropertySpecification $specification)
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
-        $builder->setValue('999-555-1212');
-        $builder->setTypes(['work']);
-        $builder->addType('cell');
+        $builder = $specification->getBuilder();
+        $builder->setValue('999-555-1212')
+                ->setTypes(['work'])
+                ->addType('cell');
         
-        /* @var $property TypedProperty */
         $property = $builder->build();
         
         $this->assertInstanceOf('EVought\vCardTools\TypedProperty', $property);
@@ -60,17 +67,19 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(2, $property->getTypes());
         $this->assertContains('work', $property->getTypes());
         $this->assertContains('cell', $property->getTypes());
+        
+        return $specification;
     }
     
     /**
      * @depends testSetAndBuild
      */
-    public function testDuplicateTypes()
+    public function testDuplicateTypes(PropertySpecification $specification)
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
-        $builder->setValue('999-555-1212');
-        $builder->addType('cell');
-        $builder->addType('cell');
+        $builder = $specification->getBuilder();
+        $builder->setValue('999-555-1212')
+                ->addType('cell')
+                ->addType('cell');
         
         /* @var $property TypedProperty */
         $property = $builder->build();
@@ -83,30 +92,30 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
-    public function testAddInvalidType()
+    public function testAddInvalidType(PropertySpecification $specification)
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
-        $builder->setValue('999-555-1212');
-        $builder->addType('skadgamagoozie');
+        $builder = $specification->getBuilder();
+        $builder->setValue('999-555-1212')
+                ->addType('skadgamagoozie');
     }
     
     /**
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
-    public function testSetInvalidType()
+    public function testSetInvalidType(PropertySpecification $specification)
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
-        $builder->setValue('999-555-1212');
-        $builder->setTypes(['skadgamagoozie']);
+        $builder = $specification->getBuilder();
+        $builder->setValue('999-555-1212')
+                ->setTypes(['skadgamagoozie']);
     }
     
     /**
      * @depends testSetAndBuild
      */
-    public function testToStringNoTypes()
+    public function testToStringNoTypes(PropertySpecification $specification)
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $builder = $specification->getBuilder();
         $builder->setValue('1-800-PHP-KING');
         $property = $builder->build();
         
@@ -116,9 +125,9 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testSetAndBuild
      */
-    public function testToStringOneType()
+    public function testToStringOneType(PropertySpecification $specification)
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $builder = $specification->getBuilder();
         $builder->setValue('1-800-PHP-KING')
                 ->addType('work');
         $property = $builder->build();
@@ -129,9 +138,9 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @depends testSetAndBuild
      */
-    public function testToStringTwoTypes()
+    public function testToStringTwoTypes(PropertySpecification $specification)
     {
-        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'voice']);
+        $builder = $specification->getBuilder();
         $builder->setValue('1-800-PHP-KING')
                 ->addType('work')->addType('voice');
         $property = $builder->build();

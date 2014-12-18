@@ -38,19 +38,18 @@ trait StructuredPropertyBuilderTrait
 {
     use PropertyBuilderTrait;
     
-    private $allowedFields;
     private $value;
     
-    protected function initFields(Array $allowedFields)
+    protected function initFields()
     {
-        \assert(!empty($allowedFields));
-        $this->allowedFields = $allowedFields;
+        \assert(array_key_exists( 'allowedFields',
+                                  $this->getSpecification()->getConstraints()) );
         $this->value = [];
     }
     
     public function fields()
     {
-        return $this->allowedFields;
+        return $this->getSpecification()->getConstraints()['allowedFields'];
     }
 
     public function getField($field)
@@ -74,9 +73,9 @@ trait StructuredPropertyBuilderTrait
     {
         \assert(null !== $field);
         \assert(is_string($field));
-        if (!(in_array($field, $this->allowedFields)))
+        if (!(in_array($field, $this->fields())))
             throw new \DomainException( $field . ' is not an allowed field for '
-                                        . $this->name );
+                                        . $this->getName() );
         return true;
     }
 
@@ -94,11 +93,11 @@ trait StructuredPropertyBuilderTrait
     
     public function setValue($value)
     {
-        $badKeys = \array_diff_key($value, \array_flip($this->allowedFields));
+        $badKeys = \array_diff_key($value, \array_flip($this->fields()));
         if (!empty($badKeys))
             throw new \DomainException(\implode(' ', $badKeys)
-                                                . ': not an allowed fields for '
-                                                . $this->name );
+                                                . ': not in allowed fields for '
+                                                . $this->getName() );
         $this->value = $value;
         return $this;
     }

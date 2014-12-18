@@ -43,4 +43,9 @@ interface StructuredProperty extends Property
      */
     public function getField($field);
     
+    /**
+     * Returns the list of fields specified for this property.
+     * @return Array Array of field names.
+     */
+    public function getAllowedFields();
 }
