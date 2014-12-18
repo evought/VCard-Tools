@@ -68,13 +68,4 @@ interface PropertyBuilder
      * @return mixed may be simple or structured depending on the property.
      */
     public function getValue();
-
-    /**
-     * Parse a line of a VCard text representation and push any resulting
-     * properties to the specified VCard.
-     * Note that some vcard lines may generate *more than one property*
-     * (e.g. categories) in a single parsing pass.
-     * @param type $line
-     */
-    public static function fromVCardLine($line, VCard $vcard);
 }

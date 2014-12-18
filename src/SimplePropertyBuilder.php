@@ -51,9 +51,4 @@ class SimplePropertyBuilder
         \assert(null !== $this->name);
         return new SimpleProperty($this);
     }
-
-    public static function fromVCardLine($line, VCard $vcard)
-    {
-        \assert(false, 'Not Implemented.');        
-    }
 }

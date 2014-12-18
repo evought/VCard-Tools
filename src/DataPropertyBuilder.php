@@ -115,10 +115,4 @@ class DataPropertyBuilder implements TypedPropertyBuilder
     {
         return $this->mediaType;
     }
-
-    public static function fromVCardLine($line, VCard $vcard)
-    {
-        assert(false, "Not Implemented.");
-    }
-
 }

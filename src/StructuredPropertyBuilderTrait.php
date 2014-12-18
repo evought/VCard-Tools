@@ -103,11 +103,6 @@ trait StructuredPropertyBuilderTrait
         return $this;
     }
 
-    public static function fromVCardLine($line, VCard $vcard)
-    {
-        assert(false, 'Not Implemented.');
-    }
-
     public function isFieldSet($field)
     {
         \assert(is_array($this->value));

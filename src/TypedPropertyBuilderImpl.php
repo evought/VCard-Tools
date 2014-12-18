@@ -49,10 +49,4 @@ class TypedPropertyBuilderImpl implements TypedPropertyBuilder
     {
         return new TypedPropertyImpl($this);
     }
-
-    public static function fromVCardLine($line, VCard $vcard)
-    {
-        assert(false, 'Not Implemented');
-    }
-
 }
