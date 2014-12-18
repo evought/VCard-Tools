@@ -809,7 +809,7 @@ class VCard implements \Countable, \Iterator
      *
      * @return string Resulting text.
      */
-    private static function Unescape($Text)
+    public static function unescape($Text)
     {
     	assert(null !== $Text);
     	assert(is_string($Text));
@@ -826,7 +826,7 @@ class VCard implements \Countable, \Iterator
      *
      * @return string Resulting text.
      */
-    private static function Escape($text)
+    public static function escape($text)
     {
     	assert(null !== $text);
     	assert(is_string($text));

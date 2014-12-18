@@ -40,7 +40,9 @@ class SimpleProperty implements \EVought\vCardTools\Property
 
     public function __construct(SimplePropertyBuilder $builder)
     {
-        $this->setNameFromBuilder($builder);
+        $this->initProperty($builder);
         $this->setValueFromBuilder($builder);
     }
+
+    protected function outputParameters() {return '';}
 }

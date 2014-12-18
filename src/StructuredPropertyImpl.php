@@ -43,9 +43,10 @@ class StructuredPropertyImpl implements StructuredProperty
     
     public function __construct(StructuredPropertyBuilder $builder)
     {
-        $this->setNameFromBuilder($builder);
+        $this->initProperty($builder);
         $this->setValueFromBuilder($builder);
         \assert(is_array($this->value));
     }
     
+    protected function outputParameters(){return '';}
 }

@@ -53,4 +53,6 @@ interface Property
      * @return mixed The property value.
      */
     public function getValue();
+    
+    public function __toString();
 }

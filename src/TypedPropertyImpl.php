@@ -40,8 +40,13 @@ class TypedPropertyImpl implements \EVought\vCardTools\TypedProperty
     
     public function __construct(TypedPropertyBuilder $builder)
     {
-        $this->setNameFromBuilder($builder);
+        $this->initProperty($builder);
         $this->setValueFromBuilder($builder);
         $this->setTypesFromBuilder($builder);
+    }
+
+    protected function outputParameters()
+    {
+        return $this->outputTypes();
     }
 }

@@ -46,4 +46,15 @@ trait StructuredPropertyTrait
         else
             return null;
     }
+    
+    protected function outputValue()
+    {
+        $fieldStrings = [];
+        foreach ($this->builder->fields() as $field)
+        {
+            $fieldStrings[] = array_key_exists($field, $this->value)
+                              ? $this->value[$field] : '';
+        }
+        return \implode(';', $fieldStrings);
+    }
 }

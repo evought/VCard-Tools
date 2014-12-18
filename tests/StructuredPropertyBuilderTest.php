@@ -114,4 +114,17 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder = new StructuredPropertyBuilderImpl('foo', ['Bar', 'Baz']);
         $builder->setValue(['Bozo'=>'Whatever']);
     }
+    
+    /**
+     * @depends testConstruct
+     */
+    public function testToString()
+    {
+        $builder = new StructuredPropertyBuilderImpl(
+                                'struct', ['field1', 'field2'] );
+        $builder->setValue(['field1'=>'value1', 'field2'=>'value2']);
+        $property = $builder->build();
+        
+        $this->assertEquals('STRUCT:value1;value2'."\n", (string) $property);
+    }
 }

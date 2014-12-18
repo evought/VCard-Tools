@@ -54,4 +54,16 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('url', $property->getName());
         $this->assertEquals('http://liquor.cabi.net', $property->getValue());
     }
+
+    /**
+     * @depends testConstruct
+     */
+    public function testToString()
+    {
+        $builder = new SimplePropertyBuilder('fn');
+        $builder->setValue('Mr. Toad');
+        $property = $builder->build();
+        
+        $this->assertEquals('FN:Mr. Toad'."\n", (string) $property);
+    }
 }

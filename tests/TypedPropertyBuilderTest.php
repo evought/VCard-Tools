@@ -100,4 +100,43 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder->setValue('999-555-1212');
         $builder->setTypes(['skadgamagoozie']);
     }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testToStringNoTypes()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $builder->setValue('1-800-PHP-KING');
+        $property = $builder->build();
+        
+        $this->assertEquals('TEL:1-800-PHP-KING'."\n", (string) $property);
+    }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testToStringOneType()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'cell']);
+        $builder->setValue('1-800-PHP-KING')
+                ->addType('work');
+        $property = $builder->build();
+        
+        $this->assertEquals('TEL;TYPE=WORK:1-800-PHP-KING'."\n", (string) $property);
+    }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testToStringTwoTypes()
+    {
+        $builder = new TypedPropertyBuilderImpl('tel', ['work', 'home', 'voice']);
+        $builder->setValue('1-800-PHP-KING')
+                ->addType('work')->addType('voice');
+        $property = $builder->build();
+        
+        $this->assertEquals( 'TEL;TYPE=WORK,VOICE:1-800-PHP-KING'."\n",
+                             (string) $property );
+    }
 }

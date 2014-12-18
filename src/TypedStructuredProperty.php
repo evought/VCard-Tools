@@ -43,9 +43,14 @@ class TypedStructuredProperty implements TypedProperty, StructuredProperty
     
     public function __construct(TypedStructuredPropertyBuilder $builder)
     {
-        $this->setNameFromBuilder($builder);
+        $this->initProperty($builder);
         $this->setValueFromBuilder($builder);
         \assert(is_array($this->value));
         $this->setTypesFromBuilder($builder);
+    }
+    
+    public function outputParameters()
+    {
+        return $this->outputTypes();
     }
 }

@@ -41,24 +41,19 @@ namespace EVought\vCardTools;
  */
 class DataProperty implements TypedProperty
 {
-    use PropertyTrait, TypedPropertyTrait;
+    use SimplePropertyTrait, TypedPropertyTrait;
     
-    private $value;
     private $mediaType;
     
     public function __construct(DataPropertyBuilder $builder)
     {
-        $this->setNameFromBuilder($builder);
+        $this->initProperty($builder);
+        $this->setValueFromBuilder($builder);
         $this->setTypesFromBuilder($builder);
-        $this->value = $builder->getValue();
         $this->mediaType = $builder->getMediaType();
+        if (!empty($this->mediaType)) $this->hasParameters = true;
     }
-    
-    public function getValue()
-    {
-        return $this->value;
-    }
-    
+        
     /**
      * Returns the media-type associated with the URL if-and-only-if such has
      * been explicitly provided. Does _not_ attempt to resolve the media-type
@@ -70,5 +65,19 @@ class DataProperty implements TypedProperty
         return $this->mediaType;
     }
 
-
+    protected function outputMediaType()
+    {
+        assert(!empty($this->mediaType));
+        return 'MEDIATYPE=' . $this->getMediaType();
+    }
+    
+    protected function outputParameters()
+    {
+        $parameters = [];
+        if (!empty($this->getTypes()))
+            $parameters[] = $this->outputTypes();
+        if (!empty($this->getMediaType()))
+            $parameters[] = $this->outputMediaType();
+        return \implode(';', $parameters);
+    }
 }

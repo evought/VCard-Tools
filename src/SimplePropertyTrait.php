@@ -49,4 +49,9 @@ trait SimplePropertyTrait
     {
         return $this->value;
     }
+    
+    protected function outputValue()
+    {
+        return VCard::escape($this->getValue());
+    }
 }

@@ -42,10 +42,22 @@ trait TypedPropertyTrait
     protected function setTypesFromBuilder(TypedPropertyBuilder $builder)
     {
         $this->types = $builder->getTypes();
+        if (!empty($this->types)) $this->hasParameters  = true;
     }
     
     public function getTypes()
     {
         return $this->types;
+    }
+    
+    /**
+     * Takes the array of types and turns them into a single string for
+     * inclusion in a raw vCard line.
+     * @return string
+     */
+    protected function outputTypes()
+    {
+        assert(!empty($this->types));
+        return 'TYPE=' . \implode(',', \array_map('\strtoupper', $this->types));
     }
 }

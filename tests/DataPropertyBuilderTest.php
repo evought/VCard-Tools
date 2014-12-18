@@ -91,4 +91,65 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder = new DataPropertyBuilder('logo', ['work', 'home']);
         $builder->setValue('Edsel');
     }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testToStringJustValue()
+    {
+        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder->setValue('http://example.com/logo.jpg');
+        $property = $builder->build();
+        
+        $this->assertEquals( 'LOGO:'
+                             . VCard::escape('http://example.com/logo.jpg')
+                             . "\n", (string) $property );
+    }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testToStringOneType()
+    {
+        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder->setValue('http://example.com/logo.jpg')
+                ->addType('work');
+        $property = $builder->build();
+        
+        $this->assertEquals( 'LOGO;TYPE=WORK:'
+                             . VCard::escape('http://example.com/logo.jpg')
+                             . "\n", (string) $property );
+    }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testToStringMediaType()
+    {
+        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder->setValue('http://example.com/logo.jpg')
+                ->setMediaType('image/png');
+        $property = $builder->build();
+        
+        $this->assertEquals( 'LOGO;MEDIATYPE=image/png:'
+                             . VCard::escape('http://example.com/logo.jpg')
+                             . "\n", (string) $property );
+    }
+    
+    /**
+     * @depends testSetAndBuild
+     */
+    public function testToStringMediaTypeAndType()
+    {
+        $builder = new DataPropertyBuilder('logo', ['work', 'home']);
+        $builder->setValue('http://example.com/logo.jpg')
+                ->setMediaType('image/png')
+                ->addType('home'); // Who has a home logo?
+        $property = $builder->build();
+        
+        // NOTE: Sensitive to output order.
+        $this->assertEquals( 'LOGO;TYPE=HOME;MEDIATYPE=image/png:'
+                             . VCard::escape('http://example.com/logo.jpg')
+                             . "\n", (string) $property );
+    }
 }
