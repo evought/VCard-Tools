@@ -1678,19 +1678,4 @@ class VCardTest extends PHPUnit_Framework_TestCase {
        $output = vCard::unfold21($folded);
        $this->assertEquals($unfolded, $output);
    }
-   
-   public function testGetBody()
-   {
-       $input =	self::$vcard_begin . "\r\n"
-			. self::$vcard_version . "\r\n"
-			. "FN:Willie\r\n"
-			. self::$vcard_end . "\r\n";
-       $fragments = [];
-       $matches = \preg_match(
-            '/^BEGIN:VCARD\r\nVERSION:(?P<version>\d+\.\d+)\r\n(?P<body>.*)(?P<end>END:VCARD\r\n)$/s',
-                    $input, $fragments );
-       $this->assertEquals(1, $matches);
-       $this->assertEquals('4.0', $fragments['version'], print_r($fragments, true));
-       $this->assertEquals("FN:Willie\r\n", $fragments['body']);
-   }
 }
