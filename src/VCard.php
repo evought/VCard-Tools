@@ -458,7 +458,7 @@ class VCard implements \Countable, \Iterator
 	} elseif ($Key == 'Mode') {
             return $this -> Mode;
 	}
-	return null;
+	return ($this->keyIsSingleValueElement($Key)) ? null : [];
     } // __get()
 
     /**
