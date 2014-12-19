@@ -154,105 +154,117 @@ class VCard implements \Countable, \Iterator
 
        if ($Options) $this->Options = array_merge($this -> Options, $Options);
 
-       $RawData = $this->checkRawDataAndSetMode($RawData);
-
-       // In multiple card mode the raw text is split at card 
-       // beginning markers and each
-       // fragment is parsed in a separate vCard object.
-       if ($this -> Mode == self::MODE_MULTIPLE)
-           $this->processMultipleRawCards($RawData);
-       else
-           $this->processSingleRawCard($RawData);
+       $this->processRawCard($RawData);
     } // --construct()
 
     /**
-     * Checks the raw VCard data for major errors (such as BEGIN and
-     * END markers) and throws an exception if malformed.
-     * Sets mode to single or multiple.
-     * @param string $rawData Not null.
-     * @throws \Exception if the matching BEGIN and END lines are not found.
+     * Perform unfolding (joining of continued lines) according to RFC6350.
+     * Text must be unfolded before properties are parsed.
+     * @param type $rawData
+     * @return string The raw text with line continuations removed.
+     * @see https://tools.ietf.org/html/rfc6350#section-3.2
      */
-    protected function checkRawDataAndSetMode($rawData)
+    public static function unfold4($rawData)
     {
-    	assert(null !== $rawData);
-    	assert(is_string($rawData));
-    	
-        // Counting the begin/end separators. If none or the count doesn't match,
-        // there is a problem with the file. If there is only one, this is a 
-        // single vCard, if more, multiple vCards are combined.
-	$Matches = array();
-	$vCardBeginCount = preg_match_all( '{^BEGIN\:VCARD}miS', $rawData,       
-                                           $Matches );
-        $vCardEndCount = preg_match_all('{^END\:VCARD}miS', $rawData, $Matches);
-
-        if (($vCardBeginCount != $vCardEndCount) || !$vCardBeginCount)
-	{
-            throw new Exception('vCard: invalid vCard');
-	}
-
-
-        $this->Mode = ($vCardBeginCount == 1)
-                          ? VCard::MODE_SINGLE : VCard::MODE_MULTIPLE;
-
-        // Removing/changing inappropriate newlines, i.e., all CRs or 
-        // multiple newlines are changed to a single newline
-        $rawData = str_replace("\r", "\n", $rawData);
-        $rawData = preg_replace('{(\n+)}', "\n", $rawData);
-	return $rawData;
-    } // checkRawDataAndSetMode()
-
+        \assert(null !== $rawData);
+        \assert(\is_string($rawData));
+        
+        // Joining multiple lines that are split with a soft
+        // wrap (space or tab on the beginning of the next line
+        $folded = \str_replace(["\r\n ", "\r\n\t"], '', $rawData);
+        
+        return $folded;
+    }
+    
     /**
-     * If there are multiple VCards in the raw input, process them
-     * recursively by constructing new VCard objects.
-     * @param string $rawData Not null.
+     * Perform unfolding (joining of continued lines) according to VCard 2.1.
+     * Text must be unfolded before properties are parsed.
+     * In VCard 2.1 soft-breaks only occur in Linear-White-Space (LWSP) and
+     * are reduced to the LWSP char as opposed to later versions where the LWSP
+     * is removed as well. 
+     * @param type $rawData
+     * @return string The raw text with line continuations removed.
+     * @see https://tools.ietf.org/html/rfc6350#section-3.2
      */
-    protected function processMultipleRawCards($rawData)
+    public static function unfold21($rawData)
     {
-    	assert(null !== $rawData);
-    	assert(is_string($rawData));
-    	
-        $rawData = explode('BEGIN:VCARD', $rawData);
-        $rawData = array_filter($rawData);
-
-        foreach ($rawData as $SinglevCardRawData)
+        \assert(null !== $rawData);
+        \assert(\is_string($rawData));
+        
+        // Joining multiple lines that are split with a soft
+        // wrap (space or tab on the beginning of the next line
+        $folded = \str_replace(["\r\n ", "\r\n\t"], [" ", "\t"], $rawData);
+        
+        return $folded;
+    }
+    
+    /**
+     * Extracts the body of the VCard from the given raw text string,
+     * determining and storing the version at the same time.
+     * The BEGIN, VERSION, and END properties are discarded, the body returned.
+     * This must be done before unfolding occurs because the vcard version may
+     * determine other parsing steps (including unfolding rules).
+     * @param string $text The raw VCard text
+     * @return string The body of the VCard
+     * @throws \DomainException If the VCard is not well-formed.
+     */
+    private function getCardBody($text)
+    {
+        $fragments = [];
+        $matches = \preg_match(
+            '/^BEGIN:VCARD\r\nVERSION:(?P<version>\d+\.\d+)\r\n(?P<body>.*)(?P<end>END:VCARD\r\n)$/s',
+                    $text, $fragments );
+        if (1 !== $matches)
+            throw new \DomainException('Malformed VCard');
+        $this->Data['version'] = $fragments['version'];
+        return $fragments['body'];
+    }
+    
+    /**
+     * Handle the legacy AGENT property by parsing and storing the embedded
+     * VCard.
+     * @param string $agentText
+     */
+    protected function handleAgent($agentText)
+    {
+        $ClassName = \get_class($this);
+        
+        // Replace newline-only wraps in the agent text with CRLF so that it
+        // can be parsed as another VCard. Wraps are handled differently within
+        // an embedded VCard as per RFC2426 Sec 2.4.2.
+        // @see https://www.ietf.org/rfc/rfc2426.txt
+        $withNewlines = \str_replace(["\n ", "\n\t"], "\r\n", $agentText);
+        
+        // Unescape embedded special characters (e.g. comma) so they can be
+        // parsed.
+        $unescaped = self::unescape($withNewlines);
+        
+        $agent = new $ClassName(false, $unescaped);
+        if (!isset($this -> Data['agent']))
         {
-            // Prepending "BEGIN:VCARD" to the raw string because
-            // we exploded on that one.
-	    // If there won't be the BEGIN marker in the new object, 
-            // it will fail.
-	    $SinglevCardRawData = 'BEGIN:VCARD' . "\n" . $SinglevCardRawData;
-
-            $ClassName = get_class($this);
-	    $this->Data[] = new $ClassName(false, $SinglevCardRawData);
-	}
-    } // processMultipleRawCards()
+            $this -> Data['agent'] = [];
+        }
+	$this -> Data['agent'][] = $agent;
+    }
 
     /**
      * Parsing loop for one raw vCard. Sets appropriate internal properties.
      * @param string $rawData Not null.
      */
-    protected function processSingleRawCard($rawData)
+    protected function processRawCard($rawData)
     {
-    	assert(null !== $rawData);
-    	assert(is_string($rawData));
+    	\assert(null !== $rawData);
+    	\assert(\is_string($rawData));
     	
-        // Protect the BASE64 final = sign (detected by the line beginning 
-        // with whitespace), otherwise the next replace will get rid of it
-        $rawData = preg_replace('{(\n\s.+)=(\n)}', '$1-base64=-$2', $rawData);
-
-        // Joining multiple lines that are split with a hard wrap
-        // and indicated by an equals sign at the end of line
-        // (quoted-printable-encoded values in v2.1 vCards)
-        $rawData = str_replace("=\n", '', $rawData);
-
-        // Joining multiple lines that are split with a soft
-        // wrap (space or tab on the beginning of the next line
-        $rawData = str_replace(array("\n ", "\n\t"), '-wrap-', $rawData);
-
-        // Restoring the BASE64 final equals sign (see a few lines above)
-        $rawData = str_replace( "-base64=-\n", "=\n", $rawData );
-
-        $Lines = explode("\n", $rawData);
+        $body = $this->getCardBody($rawData);
+        
+        if ('2.1' === $this->Data['version'])
+            $unfoldedData = self::unfold21($body);
+        else
+            $unfoldedData = self::unfold4($body);
+        \assert(\is_string($unfoldedData));
+                
+        $Lines = \explode("\r\n", $unfoldedData);
 
         foreach ($Lines as $Line)
         {
@@ -287,19 +299,10 @@ class VCard implements \Countable, \Iterator
             if ( (strpos($Key, 'agent') === 0)
                  && (stripos($Value, 'begin:vcard') !== false) )
             {
-                $ClassName = get_class($this);
-		$Value = new $ClassName( false,
-                                         str_replace('-wrap-', "\n", $Value) );
-                if (!isset($this -> Data[$Key]))
-                {
-                    $this -> Data[$Key] = array();
-                }
-		$this -> Data[$Key][] = $Value;
+                $this->handleAgent($Value);
 		continue;
-            } else {
-                $Value = str_replace('-wrap-', '', $Value);
-	    }
-
+            }
+            
             $Value = trim(self::Unescape($Value));
 	    $Type = array();
 
@@ -455,7 +458,7 @@ class VCard implements \Countable, \Iterator
 	} elseif ($Key == 'Mode') {
             return $this -> Mode;
 	}
-	return array();
+	return null;
     } // __get()
 
     /**

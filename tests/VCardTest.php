@@ -1241,13 +1241,12 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testImportEmptyVCard()
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertInstanceOf('EVought\vCardTools\vCard', $vcard);
-	$this->assertEmpty($vcard->fn);
+        $this->assertEquals('4.0', $vcard->version);
     }
 
     /**
@@ -1256,10 +1255,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testImportVCardEmptyFN()
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. self::$vcard_empty_fn . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. self::$vcard_empty_fn . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 	$this->assertEmpty($vcard->fn);
@@ -1272,13 +1271,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testImportVCardFN($unescaped, $escaped)
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "FN:" . $escaped . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "FN:" . $escaped . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertEquals($unescaped, $vcard->fn);
+	$this->assertEquals($unescaped, $vcard->fn, print_r($vcard, true));
     }
     
     /**
@@ -1289,15 +1288,15 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
         $jDoeInputs = $this->getJohnDoeInputs();
         
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
 			. 'ADR:;;'
                             . $jDoeInputs['adr_StreetAddress']
                             . ';' . $jDoeInputs['adr_Locality']
                             . ';' . $jDoeInputs['adr_Region']
                             . ';' . $jDoeInputs['adr_Postal']
-                            . ';' . $jDoeInputs['adr_Country'] . "\n"
-			. self::$vcard_end . "\n";
+                            . ';' . $jDoeInputs['adr_Country'] . "\r\n"
+			. self::$vcard_end . "\r\n";
 
         $expectedAdr = [
             'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
@@ -1321,10 +1320,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
         $jDoeInputs = $this->getJohnDoeInputs();
         
-	$input = self::$vcard_begin . "\n"
-		. self::$vcard_version . "\n"
-		. 'ADR;TYPE=HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America' . "\n"
-		. self::$vcard_end . "\n";
+	$input = self::$vcard_begin . "\r\n"
+		. self::$vcard_version . "\r\n"
+		. 'ADR;TYPE=HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America' . "\r\n"
+		. self::$vcard_end . "\r\n";
 
         $expectedAdr = [
             'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
@@ -1343,13 +1342,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends testImportEmptyVCard
+     * @depends @depends testImportVCardFN
      */
     public function testImportVCardNoCategories()
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 	$this->assertEmpty($vcard->categories);
@@ -1357,14 +1356,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends testImportEmptyVCard
+     * @depends testImportVCardFN
      */
     public function testImportVCardEmptyCategories()
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "CATEGORIES:\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "CATEGORIES:\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 	$this->assertEmpty( $vcard->categories,
@@ -1373,15 +1372,15 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends testImportEmptyVCard
+     * @depends testImportVCardFN
      * @dataProvider stringEscapeProvider
      */
     public function testImportVCardOneCategory($unescaped, $escaped)
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "CATEGORIES:" . $escaped . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "CATEGORIES:" . $escaped . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 
@@ -1400,11 +1399,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
 	$category1 = "farrier";
 	$category2 = "smurf";
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "CATEGORIES:" . $category1 . "\n"
-			. "CATEGORIES:" . $category2 . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "CATEGORIES:" . $category1 . "\r\n"
+			. "CATEGORIES:" . $category2 . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 
@@ -1420,13 +1419,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends testImportEmptyVCard
+     * @depends testImportVCardFN
      */
     public function testImportVCardNoURL()
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 	$this->assertEmpty($vcard->url);
@@ -1434,14 +1433,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends testImportEmptyVCard
+     * @depends testImportVCardFN
      */
     public function testImportVCardEmptyURL()
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "URL:\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "URL:\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 
@@ -1451,15 +1450,15 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends testImportEmptyVCard
+     * @depends testImportVCardFN
      * @dataProvider stringEscapeProvider
      */
     public function testImportVCardOneURL($unescaped, $escaped)
     {
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "URL:" . $escaped . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "URL:" . $escaped . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 
@@ -1479,10 +1478,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$url = "http\://somewhere";
 	$unescaped = "http://somewhere";
 
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "URL:" . $url . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "URL:" . $url . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 
@@ -1495,17 +1494,17 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends testImportEmptyVCard
+     * @depends testImportVCardOneURL
      */
     public function testImportVCardTwoURLs()
     {
 	$url1 = "tweedldee";
 	$url2 = "tweedledum";
-	$input =	self::$vcard_begin . "\n"
-			. self::$vcard_version . "\n"
-			. "URL:" . $url1 . "\n"
-			. "URL:" . $url2 . "\n"
-			. self::$vcard_end . "\n";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "URL:" . $url1 . "\r\n"
+			. "URL:" . $url2 . "\r\n"
+			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
 
@@ -1520,7 +1519,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
    
    /**
-    * @depends testImportEmptyVCard
+    * @depends testImportVCardFN
     * @depends testToStringDDBinks
     */
    public function testImportVCardDDBinks()
@@ -1534,7 +1533,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
    
    /**
-    * @depends testImportEmptyVCard
+    * @depends testImportVCardFN
     * @depends testToStringRaithSeinar
     */
    public function testImportVCardRaithSeinar()
@@ -1548,7 +1547,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
 
    /**
-    * @depends testImportEmptyVCard
+    * @depends testImportVCardFN
     * @depends testToStringSeinarAPL
     */
    public function testImportVCardSeinarAPL()
@@ -1562,7 +1561,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }
 
    /**
-    * @depends testImportEmptyVCard
+    * @depends testImportVCardDDBinks
     * @depends testToStringDDBinks
     */
    public function testImportVCardDDBinksFromFile()
@@ -1577,7 +1576,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    }   
    
    /**
-    * @depends testImportEmptyVCard
+    * @depends testImportVCardRaithSeinar
     * @depends testToStringRaithSeinar
     */
    public function testImportVCardRaithSeinarFromFile()
@@ -1593,7 +1592,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     
    
    /**
-    * @depends testImportEmptyVCard
+    * @depends testImportVCardSeinarAPL
     * @depends testToStringSeinarAPL
     */
    public function testImportVCardSeinarAPLFromFile()
@@ -1636,5 +1635,62 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    	$this->assertContains( $tel, $vcard->tel,
    			print_r($vcard->tel, true) );
    	
+   }
+   
+    public function unfold4Provider()
+    {
+        // folded, unfolded
+        return [
+            ["Text \r\n with soft wrap.", "Text with soft wrap."],
+            ["Tab\r\n\t wrap",            "Tab wrap"],
+            ["No following \r\nLWSP",     "No following \r\nLWSP"],
+            ["Nothing interesting",       "Nothing interesting"],
+            ["\r\n \r\n\t\r\n ",          ""]
+        ];
+    }
+   
+   /**
+    * @dataProvider unfold4Provider
+    */
+   public function testUnfold4($folded, $unfolded)
+   {
+       $output = vCard::unfold4($folded);
+       $this->assertEquals($unfolded, $output);
+   }
+
+    public function unfold21Provider()
+    {
+        // folded, unfolded
+        return [
+            ["Text\r\n with soft wrap.", "Text with soft wrap."],
+            ["Tab\r\n\t wrap",            "Tab\t wrap"],
+            ["No following \r\nLWSP",     "No following \r\nLWSP"],
+            ["Nothing interesting",       "Nothing interesting"],
+            ["\r\n \r\n\t\r\n ",          " \t "]
+        ];
+    }
+   
+   /**
+    * @dataProvider unfold21Provider
+    */
+   public function testUnfold21($folded, $unfolded)
+   {
+       $output = vCard::unfold21($folded);
+       $this->assertEquals($unfolded, $output);
+   }
+   
+   public function testGetBody()
+   {
+       $input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "FN:Willie\r\n"
+			. self::$vcard_end . "\r\n";
+       $fragments = [];
+       $matches = \preg_match(
+            '/^BEGIN:VCARD\r\nVERSION:(?P<version>\d+\.\d+)\r\n(?P<body>.*)(?P<end>END:VCARD\r\n)$/s',
+                    $input, $fragments );
+       $this->assertEquals(1, $matches);
+       $this->assertEquals('4.0', $fragments['version'], print_r($fragments, true));
+       $this->assertEquals("FN:Willie\r\n", $fragments['body']);
    }
 }
