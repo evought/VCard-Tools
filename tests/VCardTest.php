@@ -1281,6 +1281,41 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     }
     
     /**
+     * Verify that import works the same with just newlines instead of CRLF.
+     * @covers vCard::__construct
+     * @depends testImportVCardEmptyFN
+     * @dataProvider stringEscapeProvider
+     */
+    public function testImportVCardFNNL($unescaped, $escaped)
+    {
+	$input =	self::$vcard_begin . "\n"
+			. self::$vcard_version . "\n"
+			. "FN:" . $escaped . "\n"
+			. self::$vcard_end . "\n";
+
+	$vcard = new vCard(false, $input);
+	$this->assertEquals($unescaped, $vcard->fn, print_r($vcard, true));
+    }
+    
+    /**
+     * Verify that import works the same with just carriage returns (Mac)
+     * instead of CRLF.
+     * @covers vCard::__construct
+     * @depends testImportVCardEmptyFN
+     * @dataProvider stringEscapeProvider
+     */
+    public function testImportVCardFNCR($unescaped, $escaped)
+    {
+	$input =	self::$vcard_begin . "\r"
+			. self::$vcard_version . "\r"
+			. "FN:" . $escaped . "\r"
+			. self::$vcard_end . "\r";
+
+	$vcard = new vCard(false, $input);
+	$this->assertEquals($unescaped, $vcard->fn, print_r($vcard, true));
+    }
+    
+    /**
      * @covers vCard::__construct
      * @depends testImportVCardFN
      */
@@ -1641,11 +1676,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
         // folded, unfolded
         return [
-            ["Text \r\n with soft wrap.", "Text with soft wrap."],
-            ["Tab\r\n\t wrap",            "Tab wrap"],
-            ["No following \r\nLWSP",     "No following \r\nLWSP"],
-            ["Nothing interesting",       "Nothing interesting"],
-            ["\r\n \r\n\t\r\n ",          ""]
+            ["Text \n with soft wrap.", "Text with soft wrap."],
+            ["Tab\n\t wrap",            "Tab wrap"],
+            ["No following \nLWSP",     "No following \nLWSP"],
+            ["Nothing interesting",     "Nothing interesting"],
+            ["\n \n\t\n ",              ""]
         ];
     }
    
@@ -1662,11 +1697,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
         // folded, unfolded
         return [
-            ["Text\r\n with soft wrap.", "Text with soft wrap."],
-            ["Tab\r\n\t wrap",            "Tab\t wrap"],
-            ["No following \r\nLWSP",     "No following \r\nLWSP"],
-            ["Nothing interesting",       "Nothing interesting"],
-            ["\r\n \r\n\t\r\n ",          " \t "]
+            ["Text\n with soft wrap.", "Text with soft wrap."],
+            ["Tab\n\t wrap",           "Tab\t wrap"],
+            ["No following \nLWSP",    "No following \nLWSP"],
+            ["Nothing interesting",    "Nothing interesting"],
+            ["\n \n\t\n ",             " \t "]
         ];
     }
    

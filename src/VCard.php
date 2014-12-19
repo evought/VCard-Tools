@@ -171,7 +171,7 @@ class VCard implements \Countable, \Iterator
         
         // Joining multiple lines that are split with a soft
         // wrap (space or tab on the beginning of the next line
-        $folded = \str_replace(["\r\n ", "\r\n\t"], '', $rawData);
+        $folded = \str_replace(["\n ", "\n\t"], '', $rawData);
         
         return $folded;
     }
@@ -193,7 +193,7 @@ class VCard implements \Countable, \Iterator
         
         // Joining multiple lines that are split with a soft
         // wrap (space or tab on the beginning of the next line
-        $folded = \str_replace(["\r\n ", "\r\n\t"], [" ", "\t"], $rawData);
+        $folded = \str_replace(["\n ", "\n\t"], [" ", "\t"], $rawData);
         
         return $folded;
     }
@@ -212,7 +212,7 @@ class VCard implements \Countable, \Iterator
     {
         $fragments = [];
         $matches = \preg_match(
-            '/^BEGIN:VCARD\r\nVERSION:(?P<version>\d+\.\d+)\r\n(?P<body>.*)(?P<end>END:VCARD\r\n)$/s',
+            '/^BEGIN:VCARD\nVERSION:(?P<version>\d+\.\d+)\n(?P<body>.*)(?P<end>END:VCARD\n)$/s',
                     $text, $fragments );
         if (1 !== $matches)
             throw new \DomainException('Malformed VCard');
@@ -229,15 +229,9 @@ class VCard implements \Countable, \Iterator
     {
         $ClassName = \get_class($this);
         
-        // Replace newline-only wraps in the agent text with CRLF so that it
-        // can be parsed as another VCard. Wraps are handled differently within
-        // an embedded VCard as per RFC2426 Sec 2.4.2.
-        // @see https://www.ietf.org/rfc/rfc2426.txt
-        $withNewlines = \str_replace(["\n ", "\n\t"], "\r\n", $agentText);
-        
-        // Unescape embedded special characters (e.g. comma) so they can be
-        // parsed.
-        $unescaped = self::unescape($withNewlines);
+        // Unescape embedded special characters (e.g. comma, newline) so they
+        // can be parsed.
+        $unescaped = self::unescape($agentText);
         
         $agent = new $ClassName(false, $unescaped);
         if (!isset($this -> Data['agent']))
@@ -255,8 +249,12 @@ class VCard implements \Countable, \Iterator
     {
     	\assert(null !== $rawData);
     	\assert(\is_string($rawData));
+        
+        // Make newlines consistent, spec requires CRLF, but PHP often strips
+        // carriage returns before data gets to us, so we can't depend on it.
+        $fixNewlines = \str_replace(["\r\n", "\r"], "\n", $rawData);
     	
-        $body = $this->getCardBody($rawData);
+        $body = $this->getCardBody($fixNewlines);
         
         if ('2.1' === $this->Data['version'])
             $unfoldedData = self::unfold21($body);
@@ -264,7 +262,7 @@ class VCard implements \Countable, \Iterator
             $unfoldedData = self::unfold4($body);
         \assert(\is_string($unfoldedData));
                 
-        $Lines = \explode("\r\n", $unfoldedData);
+        $Lines = \explode("\n", $unfoldedData);
 
         foreach ($Lines as $Line)
         {
