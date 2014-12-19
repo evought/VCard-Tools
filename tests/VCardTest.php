@@ -878,7 +878,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__call, vCard::__unset
-     * @depends testSetKind
+     * @depends testConstructEmptyVCard
      */
     public function testSetKind(vCard $vcard)
     {
@@ -1248,6 +1248,34 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$vcard = new vCard(false, $input);
         $this->assertEquals('4.0', $vcard->version);
     }
+    
+    /**
+     * @expectedException \DomainException
+     */
+    public function testImportBadVCardGarbage()
+    {
+        new vCard(false, 'Garbage');
+    }
+    
+    /**
+     * @expectedException \DomainException
+     */
+    public function testImportBadVCardNoVersion()
+    {
+        $input =    self::$vcard_begin . "\r\n"
+                    . self::$vcard_end . "\r\n";
+        new vCard(false, $input);
+    }
+
+    /**
+     * @expectedException \DomainException
+     */
+    public function testImportBadVCardNoEnd()
+    {
+        $input =    self::$vcard_begin . "\r\n"
+                    . self::$vcard_version . "\r\n";
+        new vCard(false, $input);
+    }
 
     /**
      * @covers vCard::__construct
@@ -1377,7 +1405,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @covers vCard::__construct
-     * @depends @depends testImportVCardFN
+     * @depends testImportVCardFN
      */
     public function testImportVCardNoCategories()
     {
