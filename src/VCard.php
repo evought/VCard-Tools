@@ -258,7 +258,7 @@ class VCard implements \Countable, \Iterator
         // https://tools.ietf.org/html/rfc6350#section-5        
         // FIXME: Deal with Non-significant whitespace characters in VCard 2.1
         $fragments = [];
-        // https://regex101.com/r/uY5tY2/1
+        // https://regex101.com/r/uY5tY2/2
         $re = "/(
                 (?P<group>[[:alnum:]-]+)
                 \\.
