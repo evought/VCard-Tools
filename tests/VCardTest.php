@@ -1280,6 +1280,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @covers vCard::__construct
      * @depends testImportEmptyVCard
+     * @expectedException \DomainException
      */
     public function testImportVCardEmptyFN()
     {
@@ -1289,7 +1290,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertEmpty($vcard->fn);
     }
 
     /**
@@ -1420,6 +1420,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @covers vCard::__construct
      * @depends testImportVCardFN
+     * @expectedException \DomainException
      */
     public function testImportVCardEmptyCategories()
     {
@@ -1429,8 +1430,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertEmpty( $vcard->categories,
-			    print_r($vcard->categories, true) );
     }
 
     /**
@@ -1497,6 +1496,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     /**
      * @covers vCard::__construct
      * @depends testImportVCardFN
+     * @expectedException \DomainException
      */
     public function testImportVCardEmptyURL()
     {
@@ -1506,9 +1506,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-
-	$this->assertEmpty( $vcard->url,
-			    print_r($vcard->url, true) );
     }
 
     /**

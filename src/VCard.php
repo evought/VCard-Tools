@@ -240,6 +240,56 @@ class VCard implements \Countable, \Iterator
         }
 	$this -> Data['agent'][] = $agent;
     }
+    
+    public function parseVCardLine($line)
+    {
+        $parsed = [ 'group'=>'', // parsed group name, if any
+                    'name'=>'', // parsed property name
+                    'params'=>'', // the raw text of the parmaters
+                    'parameter'=>[], // array, parsed parameter/values
+                    'value'=>'']; // raw value text
+        
+        // Lines without colons are skipped because, most
+        // likely, they contain no data.
+	if (strpos($line, ':') === false)
+            return [];
+        
+        // FIXME: Deal properly with quoted parameter values (may escape :)
+        // https://tools.ietf.org/html/rfc6350#section-5        
+        // FIXME: Deal with Non-significant whitespace characters in VCard 2.1
+        $fragments = [];
+        // https://regex101.com/r/uY5tY2/1
+        $re = "/(
+                (?P<group>[[:alnum:]-]+)
+                \\.
+                )?
+                (?P<name>[[:alnum:]-]+)
+                (?P<params>(;.+)*)?
+                (?<![^\\\\]\\\\):
+                (?P<value>.+)/x"; 
+        $matches = \preg_match($re, $line, $parsed);
+        if (1 !== $matches)
+            throw new \DomainException('Malformed property entry: ' . $line);
+        
+        $parsed['value']
+            = \trim(self::unescape($parsed['value']));
+        $parsed['name'] = \trim(\strtolower($parsed['name']));
+        $parsed['group'] = \trim(\strtolower($parsed['group']));
+        
+        if (empty($parsed['params']))
+        {
+            $parsed['parameter'] = [];
+        } else {
+            // NOTE: params string always starts with a semicolon we don't need
+            $parameters = \preg_split( preg_quote('/(?<![^\\]\\);/'),
+                                       \substr($parsed['params'], 1) );
+        
+            $parsed['parameter']
+                = $this->parseParameters($parsed['name'], $parameters);
+        }
+        
+        return $parsed;
+    }
 
     /**
      * Parsing loop for one raw vCard. Sets appropriate internal properties.
@@ -262,150 +312,70 @@ class VCard implements \Countable, \Iterator
             $unfoldedData = self::unfold4($body);
         \assert(\is_string($unfoldedData));
                 
-        $Lines = \explode("\n", $unfoldedData);
+        $lines = \explode("\n", $unfoldedData);
 
-        foreach ($Lines as $Line)
+        foreach ($lines as $line)
         {
-	    // Lines without colons are skipped because, most
-            // likely, they contain no data.
-	    if (strpos($Line, ':') === false)
-	    {
-	        continue;
-	    }
-					
-            // Each line is split into two parts.
-            // The key contains the element name and additional 
-            // parameters, if present; value is just the value
-	    list($Key, $Value) = explode(':', $Line, 2);
-	    if (empty($Value)) continue;
-
-	    // Key is transformed to lowercase because, even
-            // though the element and parameter names are written
-            // in uppercase, it is quite possible that they will
-            // be in lower- or mixed case.
-	    // The key is trimmed to allow for non-significant
-            // WSP characters as allowed by v2.1
-	    $Key = strtolower(trim(self::Unescape($Key)));
-
-	    // These two lines can be skipped as they aren't 
-            // necessary at all.
-	    if ($Key == 'begin' || $Key == 'end')
-	    {
-	        continue;
-	    }
-
-            if ( (strpos($Key, 'agent') === 0)
-                 && (stripos($Value, 'begin:vcard') !== false) )
-            {
-                $this->handleAgent($Value);
-		continue;
-            }
+            $parsed = $this->parseVCardLine($line);
             
-            $Value = trim(self::Unescape($Value));
-	    $Type = array();
-
-	    // Here additional parameters are parsed
-	    $KeyParts = explode(';', $Key);
-	    $Key = $KeyParts[0];
-	    $Encoding = false;
-
-	    if (strpos($Key, 'item') === 0)
+            if (empty($parsed))
 	    {
-	        $TmpKey = explode('.', $Key, 2);
-	        $Key = $TmpKey[1];
-	        $ItemIndex = (int)str_ireplace('item', '', $TmpKey[0]);
+	        continue;
 	    }
 
-	    if (count($KeyParts) > 1)
-	    {
-	        $Parameters = self::ParseParameters( $Key,
-                                    array_slice($KeyParts, 1) );
-
-		foreach ($Parameters as $ParamKey => $ParamValue)
-		{
-		    switch ($ParamKey)
-		    {
-		        case 'encoding':
-			    $Encoding = $ParamValue;
-			    if (in_array($ParamValue, array('b', 'base64')))
-			    {
-			        //$Value = base64_decode($Value);
-			    } elseif ($ParamValue == 'quoted-printable') {
-                                // v2.1
-				$Value = quoted_printable_decode($Value);
-                            }
-                            break;
-                        case 'charset': // v2.1
-                            if ($ParamValue != 'utf-8' && $ParamValue != 'utf8')
-                            {
-                                $Value = mb_convert_encoding(
-                                             $Value, 'UTF-8', $ParamValue );
-			    }
-			    break;
-                        case 'type':
-			    $Type = $ParamValue;
-			    break;
-		    } //switch
-	        } //foreach $Parameters
-            } // if
-
-            // Checking files for colon-separated additional parameters 
-            // (Apple's Address Book does this), for example,
-            // "X-ABCROP-RECTANGLE" for photos
-            if ( $this->keyIsFileElement($Key)
-                     && isset($Parameters['encoding'])
-                     && in_array($Parameters['encoding'], array('b', 'base64')) )
-            {
-		// If colon is present in the value, it must contain Address
-                // Book parameters (colon is an invalid character for base64 
-                // so it shouldn't appear in valid files)
-                if (strpos($Value, ':') !== false)
-                {
-		    $Value = explode(':', $Value);
-		    $Value = array_pop($Value);
-                }
-	    }
-
+            unset($value);
+            
+            // FIXME: Make sure that TYPE, ENCODING, CHARSET and group are dealt
+            // with by PropertyBuilder
+            
 	    // Values are parsed according to their type
-            if ($this->keyIsStructuredElement($Key))
+            if ($this->keyIsStructuredElement($parsed['name']))
 	    {
-	        $Value = self::ParseStructuredValue($Value, $Key);
-                if ($Type)
+	        $value = self::ParseStructuredValue($parsed['value'], $parsed['name']);
+                if (!(empty($parsed['parameter']['type'])))
                 {
-                    $Value['Type'] = $Type;
+                    $value['Type'] = $parsed['parameter']['type'];
                 }
             } else {
-		if ($this->keyIsMultipleValueElement($Key))
+		if ($this->keyIsMultipleValueElement($parsed['name']))
                 {
-                    $Value = self::ParseMultipleTextValue($Value, $Key);
+                    $value = self::ParseMultipleTextValue($parsed['value'], $parsed['name']);
                 }
 
-	        if ($Type)
+	        if (!empty($parsed['parameter']['type']))
                 {
-		    $Value = array('Value' => $Value, 'Type' => $Type);
+		    $value = [ 'Value' => $parsed['value'],
+                               'Type' => $parsed['parameter']['type']
+                             ];
                 }
+                
+                if (!isset($value)) {$value = $parsed['value'];}
 	    }
 
-	    if (is_array($Value) && $Encoding)
+	    if (is_array($value) && array_key_exists('encoding', $parsed['parameter']))
 	    {
-	        $Value['Encoding'] = $Encoding;
+	        $value['Encoding'] = $parsed['parameter']['encoding'];
+	    }
+            
+            if (is_array($value) && !empty($parsed['group']))
+	    {
+	        $value['Group'] = $parsed['group'];
 	    }
 
-
-	    if ($this->keyIsSingleValueElement($Key))
+	    if ($this->keyIsSingleValueElement($parsed['name']))
             {
-	        $this -> Data[$Key] = $Value;
+	        $this -> Data[$parsed['name']] = $value;
 	    } else {
-	        if (!isset($this -> Data[$Key]))
+	        if (!isset($this->Data[$parsed['name']]))
                 {
-		    $this -> Data[$Key] = array();
+		    $this -> Data[$parsed['name']] = [];
 	        }
 
-                if ($this->keyIsMultipleValueElement($Key))
-                    $this->Data[$Key]
-                                    = array_merge($this -> Data[$Key], $Value);
+                if ($this->keyIsMultipleValueElement($parsed['name']))
+                    $this->Data[$parsed['name']]
+                            = array_merge($this->Data[$parsed['name']], $value);
 		else
-                        $this -> Data[$Key][] = $Value;
+                        $this->Data[$parsed['name']][] = $value;
             }
         } // foreach $Lines
     } // processSingleRawCard()
@@ -885,95 +855,112 @@ class VCard implements \Countable, \Iterator
      * Helper for parsing raw vCard text. Parse the parameters for the
      * property, $Key, from an array of raw parameters. Return the parameters
      * as keys and values.
-     * @param string $Key The name of the property as parsed from the vCard.
-     * Not null.
-     * @param array $RawParams The array of parameters (separated by delimiter and delimiter
-     * already removed. Not null.
+     * At this stage, we are not processing the parameter values or doing much
+     * checking on whether allowed or disallowed.
+     * Rather, we are gathering the parameter values for the specific properties
+     * to interpret.
+     * We do do some checking on parameters whose definition has changed between
+     * versions to canonicalize them. For example, bare TYPEs are aggregated
+     * for 2.1 cards and the PREF TYPE is turned into a PREF parameter.
+     * If we otherwise have malformed parameters (no value), then we throw
+     * an exception.
+     * @param string $key The name of the property as parsed from the vCard.
+     * Mainly used for diagnostics. Not null.
+     * @param array $rawParams The array of parameter strings (delimiter
+     * already removed) from the VCard.
      * @return array
-     * @access private
      */
-    private static function ParseParameters($Key, array $RawParams = null)
+    private function parseParameters($key, array $rawParams = null)
     {
-    	assert(null !== $Key);
-    	assert(is_string($Key));
-    	assert(null !== $RawParams);
+    	\assert(null !== $key);
+    	\assert(is_string($key));
+    	\assert(null !== $rawParams);
     	
-        if (!$RawParams)
+        if (empty($rawParams))
 	{
-	    return array();
+	    return [];
 	}
 
 	// Parameters are split into (key, value) pairs
-	$Parameters = array();
-	foreach ($RawParams as $Item)
+	
+	$result = [];
+        $parameters = [];
+	foreach ($rawParams as $paramStr)
 	{
-	    $Parameters[] = explode('=', strtolower($Item));
-	}
-
-	$Type = array();
-	$Result = array();
-
-	// And each parameter is checked whether anything can/should be done 
-        // because of it
-	foreach ($Parameters as $Index => $Parameter)
-	{
-	    // Skipping empty elements
-	    if (!$Parameter)
+            if (empty($paramStr))
+                throw new \DomainException(
+                    'Empty or mal-formed parameter in property: ' . $key
+                    . '; check colons, semi-colons, and unmatched quotes.');
+            
+            // We should not need to worry about escaping/quoting with respect
+            // to the first equals, directly following the parameter name, as
+            // parameter names are only alpha-numeric and hyphen.
+            // There may be other, quoted equals-signs in the value, but we
+            // don't care about them at this point.
+	    $param = \explode('=', $paramStr, 2);
+            if (\count($param) == 1)
             {
-                continue;
-            }
-
-            // Handling type parameters without the explicit TYPE parameter name 
-            // (2.1 valid)
-            if (count($Parameter) == 1)
-            {
-		// Checks if the type value is allowed for the specific element
-		// The second part of the "if" statement means that email 
-                // elements can have non-standard types (see the spec)
-		if ( ( isset(self::$Spec_ElementTypes[$Key])
-                       && in_array( $Parameter[0],
-                           self::$Spec_ElementTypes[$Key] ) )
-                     || ($Key == 'email' && is_scalar($Parameter[0])) )
-                {
-		    $Type[] = $Parameter[0];
-                }
-            } elseif (count($Parameter) > 2) {
-		$TempTypeParams = self::ParseParameters( $Key,
-                    explode(',', $RawParams[$Index]) );
-		if ($TempTypeParams['type'])
-		{
-		    $Type = array_merge($Type, $TempTypeParams['type']);
-		}
+                // Store non-valued parameters and see if anyone claims them
+                // later.
+                if (!array_key_exists($parameters['_novalue']))
+                    $parameters['_novalue'] = [];
+                $parameters['_novalue'][] = strtolower($param)[0];
             } else {
-                switch ($Parameter[0])
-		{
-		    case 'encoding':
-                        if ( in_array( $Parameter[1],
-                                array('quoted-printable', 'b', 'base64') ) )
-                        {
-                            $Result['encoding'] = $Parameter[1] == 'base64'
-                                                  ? 'b' : $Parameter[1];
-			}
-			break;
-                    case 'charset':
-                        $Result['charset'] = $Parameter[1];
-                        break;
-                    case 'type':
-                        $Type = array_merge($Type, explode(',', $Parameter[1]));
-                        break;
-                    case 'value':
-                        if (strtolower($Parameter[1]) == 'url')
-                        {
-                            $Result['encoding'] = 'uri';
-                        }
-			break;
-                } // switch
-            } // else
-        } // foreach
+                $nameLower = strtolower($param[0]);
+                if (!array_key_exists($nameLower, $parameters))
+                    $parameters[$nameLower] = [];
+                $parameters[$nameLower][] = $param[1];
+            }            
+	}
+        
+        if (array_key_exists('_novalue', $parameters))
+        {
+            if ($this->Data['version'] === '2.1')
+            {
+                if (!array_key_exists('type', $parameters))
+                    $parameters['type'] = $parameters['_novalue'];
+                else
+                    $parameters['type'] = array_merge( $parameters['type'],
+                                                      $parameters['_novalue'] );
+                unset($parameters['_novalue']);
+            } else {
+                throw new \DomainException(
+                    'One or more parameters do not have values and version '
+                    . ' is not 2.1: '
+                    . \implode(',', $parameters['_novalue']) );
+                unset($parameters['_novalue']);
+            }
+        }
+        
+        // Canonicalize some parameter names
+        foreach (['type', 'encoding', 'value'] as $paramName)
+        {
+            if (array_key_exists($paramName, $parameters))
+            {
+                $parameters[$paramName]
+                    = array_map('strtolower', $parameters[$paramName]);
+            }
+        }
+        
+        if ( array_key_exists('type', $parameters)
+             && in_array('pref', $parameters['type']) )
+        {
+            // PREF was allowed as a type in 3.0
+            // NOTE: if PREF was specified bare in 2.1, it will have already
+            // been moved into TYPE
+            if ( $this->Data['version'] === '3.0'
+                 || $this->Data['version' === '2.1'] )
+            {
+                if (!array_key_exists('pref', $parameters))
+                    $parameters['pref'] = '1';
+                $parameters['type'] = array_diff($parameters['type'], ['pref']);
+            } else {
+                throw new \DomainException(
+                    'PREF is given as TYPE and VERSION is not 2.1 or 3.0' );
+            }
+        }
 
-        $Result['type'] = $Type;
-
-	return $Result;
+	return $parameters;
     } // ParseParameters()
 
     // !Interface methods
