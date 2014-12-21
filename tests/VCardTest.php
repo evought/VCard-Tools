@@ -1407,7 +1407,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @covers vCard::__construct
      * @depends testImportVCardFN
      */
-    public function testImportVCardAdrWBareType()
+    public function testImportVCardAdrWBareType21()
     {
         $jDoeInputs = $this->getJohnDoeInputs();
         
@@ -1430,6 +1430,33 @@ class VCardTest extends PHPUnit_Framework_TestCase {
         $this->assertCount(1, $vcard->adr);
         $this->assertEquals($expectedAdr, $vcard->adr[0]);
     }
+
+    /**
+     * @covers vCard::__construct
+     * @depends testImportVCardFN
+     * @expectedException \DomainException
+     */
+    public function testImportVCardAdrWBareType40()
+    {
+        $jDoeInputs = $this->getJohnDoeInputs();
+        
+	$input = self::$vcard_begin . "\r\n"
+		. self::$vcard_version . "\r\n"
+		. 'ADR;HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America' . "\r\n"
+		. self::$vcard_end . "\r\n";
+
+        $expectedAdr = [
+            'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
+            'Locality'=>$jDoeInputs['adr_Locality'],
+            'Region'=>$jDoeInputs['adr_Region'],
+            'PostalCode'=>$jDoeInputs['adr_Postal'],
+            'Country'=>$jDoeInputs['adr_Country'],
+            'Type'=>[strtolower($jDoeInputs['adr_type'])]
+        ];
+
+	$vcard = new vCard(false, $input);
+    }
+
 
     /**
      * @covers vCard::__construct
