@@ -242,19 +242,14 @@ class VCard implements \Countable, \Iterator
     }
     
     public function parseVCardLine($line)
-    {
-        $parsed = [ 'group'=>'', // parsed group name, if any
-                    'name'=>'', // parsed property name
-                    'params'=>'', // the raw text of the parmaters
-                    'parameter'=>[], // array, parsed parameter/values
-                    'value'=>'']; // raw value text
-        
+    {   
         // Lines without colons are skipped because, most
         // likely, they contain no data.
 	if (strpos($line, ':') === false)
-            return [];
+            return null;
+     
+        $parsed = [];
         
-        $fragments = [];
         // https://regex101.com/r/uY5tY2/5
         $re = "/
 #Parse a VCard 4.0 (RFC6350) property line into
@@ -296,24 +291,21 @@ class VCard implements \Countable, \Iterator
         if (1 !== $matches)
             throw new \DomainException('Malformed property entry: ' . $line);
         
-        $parsed['value']
-            = \trim(self::unescape($parsed['value']));
-        $parsed['name'] = \trim(\strtolower($parsed['name']));
-        $parsed['group'] = \trim(\strtolower($parsed['group']));
+        $vcardLine = new VCardLine($this->version);
+        $vcardLine  ->setValue(self::unescape($parsed['value']))
+                    ->setName($parsed['name'])
+                    ->setGroup($parsed['group']);
         
-        if (empty($parsed['params']))
+        if (!empty($parsed['params']))
         {
-            $parsed['parameter'] = [];
-        } else {
             // NOTE: params string always starts with a semicolon we don't need
             $parameters = \preg_split( preg_quote('/(?<![^\\]\\);/'),
                                        \substr($parsed['params'], 1) );
         
-            $parsed['parameter']
-                = $this->parseParameters($parsed['name'], $parameters);
+            $this->parseParameters($vcardLine, $parameters);
         }
         
-        return $parsed;
+        return $vcardLine;
     }
 
     /**
@@ -341,12 +333,10 @@ class VCard implements \Countable, \Iterator
 
         foreach ($lines as $line)
         {
-            $parsed = $this->parseVCardLine($line);
+            $vcardLine = $this->parseVCardLine($line);
             
-            if (empty($parsed))
-	    {
+            if (null === $vcardLine)
 	        continue;
-	    }
 
             unset($value);
             
@@ -354,55 +344,49 @@ class VCard implements \Countable, \Iterator
             // with by PropertyBuilder
             
 	    // Values are parsed according to their type
-            if ($this->keyIsStructuredElement($parsed['name']))
+            if ($this->keyIsStructuredElement($vcardLine->getName()))
 	    {
-	        $value = self::ParseStructuredValue($parsed['value'], $parsed['name']);
-                if (!(empty($parsed['parameter']['type'])))
-                {
-                    $value['Type'] = $parsed['parameter']['type'];
-                }
+	        $value = self::ParseStructuredValue(
+                        $vcardLine->getValue(), $vcardLine->getName() );
+                if ($vcardLine->hasParameter('type'))
+                    $value['Type'] = $vcardLine->getParameter('type');
             } else {
-		if ($this->keyIsMultipleValueElement($parsed['name']))
-                {
-                    $value = self::ParseMultipleTextValue($parsed['value'], $parsed['name']);
-                }
+		if ($this->keyIsMultipleValueElement($vcardLine->getName()))
+                    $value = self::ParseMultipleTextValue(
+                        $vcardLine->getValue(), $vcardLine->getName());
 
-	        if (!empty($parsed['parameter']['type']))
-                {
-		    $value = [ 'Value' => $parsed['value'],
-                               'Type' => $parsed['parameter']['type']
+	        if ($vcardLine->hasParameter('type'))
+		    $value = [ 'Value' => $vcardLine->getValue(),
+                               'Type' => $vcardLine->getParameter('type')
                              ];
-                }
                 
-                if (!isset($value)) {$value = $parsed['value'];}
+                if (!isset($value)) {$value = $vcardLine->getValue();}
 	    }
 
-	    if (is_array($value) && array_key_exists('encoding', $parsed['parameter']))
-	    {
-	        $value['Encoding'] = $parsed['parameter']['encoding'];
-	    }
+	    if (is_array($value) && $vcardLine->hasParameter('encoding'))
+	        $value['Encoding'] = $vcardLine->getParameter('encoding');
             
-            if (is_array($value) && !empty($parsed['group']))
-	    {
-	        $value['Group'] = $parsed['group'];
-	    }
+            if (is_array($value) && !empty($vcardLine->getGroup()))
+	        $value['Group'] = $vcardLine->getGroup();
 
-	    if ($this->keyIsSingleValueElement($parsed['name']))
+	    if ($this->keyIsSingleValueElement($vcardLine->getName()))
             {
-	        $this -> Data[$parsed['name']] = $value;
+	        $this -> Data[$vcardLine->getName()] = $value;
 	    } else {
-	        if (!isset($this->Data[$parsed['name']]))
+	        if (!isset($this->Data[$vcardLine->getName()]))
                 {
-		    $this -> Data[$parsed['name']] = [];
+		    $this -> Data[$vcardLine->getName()] = [];
 	        }
 
-                if ($this->keyIsMultipleValueElement($parsed['name']))
-                    $this->Data[$parsed['name']]
-                            = array_merge($this->Data[$parsed['name']], $value);
+                if ($this->keyIsMultipleValueElement($vcardLine->getName()))
+                    $this->Data[$vcardLine->getName()]
+                        = array_merge($this->Data[$vcardLine->getName()], $value);
 		else
-                        $this->Data[$parsed['name']][] = $value;
+                        $this->Data[$vcardLine->getName()][] = $value;
             }
         } // foreach $Lines
+        
+        $this->Data['version'] = '4.0';
     } // processSingleRawCard()
 
     /**
@@ -889,32 +873,26 @@ class VCard implements \Countable, \Iterator
      * for 2.1 cards and the PREF TYPE is turned into a PREF parameter.
      * If we otherwise have malformed parameters (no value), then we throw
      * an exception.
-     * @param string $key The name of the property as parsed from the vCard.
-     * Mainly used for diagnostics. Not null.
+     * @param VCardLine $vcardLine The VCardLine structure where the information
+     * from the parameters is to be stored.
      * @param array $rawParams The array of parameter strings (delimiter
      * already removed) from the VCard.
-     * @return array
      */
-    private function parseParameters($key, array $rawParams = null)
+    private function parseParameters(VCardLine $vcardLine, array $rawParams)
     {
-    	\assert(null !== $key);
-    	\assert(is_string($key));
-    	\assert(null !== $rawParams);
-    	
         if (empty($rawParams))
 	{
-	    return [];
+	    return;
 	}
 
 	// Parameters are split into (key, value) pairs
 	
-	$result = [];
-        $parameters = [];
 	foreach ($rawParams as $paramStr)
 	{
             if (empty($paramStr))
                 throw new \DomainException(
-                    'Empty or mal-formed parameter in property: ' . $key
+                    'Empty or mal-formed parameter in property: '
+                    . $vcardLine->getName()
                     . '; check colons, semi-colons, and unmatched quotes.');
             
             // We should not need to worry about escaping/quoting with respect
@@ -924,68 +902,51 @@ class VCard implements \Countable, \Iterator
             // don't care about them at this point.
 	    $param = \explode('=', $paramStr, 2);
             if (\count($param) == 1)
-            {
-                // Store non-valued parameters and see if anyone claims them
-                // later.
-                if (!array_key_exists($parameters['_novalue']))
-                    $parameters['_novalue'] = [];
-                $parameters['_novalue'][] = strtolower($param)[0];
-            } else {
-                $nameLower = strtolower($param[0]);
-                if (!array_key_exists($nameLower, $parameters))
-                    $parameters[$nameLower] = [];
-                $parameters[$nameLower][] = $param[1];
-            }            
+                $vcardLine->pushNoValue($param[0]);
+            else
+                $vcardLine->pushParameter($param[0], $param[1]);         
 	}
         
-        if (array_key_exists('_novalue', $parameters))
+        if (!empty($vcardLine->getNoValues()))
         {
-            if ($this->Data['version'] === '2.1')
+            if ($vcardLine->getVersion() === '2.1')
             {
-                if (!array_key_exists('type', $parameters))
-                    $parameters['type'] = $parameters['_novalue'];
+                if ($vcardLine->hasParameter('type'))
+                    $vcardLine->setParameter( 'type',
+                        \array_merge( $vcardLine->getParameter('type'),
+                            $vcardLine->getNoValues() ) );
                 else
-                    $parameters['type'] = array_merge( $parameters['type'],
-                                                      $parameters['_novalue'] );
-                unset($parameters['_novalue']);
+                    $vcardLine->setParameter('type', $vcardLine->getNoValues());
+                $vcardLine->clearNoValues();
             } else {
                 throw new \DomainException(
                     'One or more parameters do not have values and version '
                     . ' is not 2.1: '
-                    . \implode(',', $parameters['_novalue']) );
-                unset($parameters['_novalue']);
+                    . \implode(',', $vcardLine->getNoValues()) );
+                $vcardLine->clearNoValues();
             }
         }
         
-        // Canonicalize some parameter names
-        foreach (['type', 'encoding', 'value'] as $paramName)
-        {
-            if (array_key_exists($paramName, $parameters))
-            {
-                $parameters[$paramName]
-                    = array_map('strtolower', $parameters[$paramName]);
-            }
-        }
+        $vcardLine->lowercaseParameters(['type', 'encoding', 'value']);
         
-        if ( array_key_exists('type', $parameters)
-             && in_array('pref', $parameters['type']) )
+        if ( $vcardLine->hasParameter('type')
+             && in_array('pref', $vcardLine->getParameter('type')) )
         {
             // PREF was allowed as a type in 3.0
             // NOTE: if PREF was specified bare in 2.1, it will have already
             // been moved into TYPE
-            if ( $this->Data['version'] === '3.0'
-                 || $this->Data['version' === '2.1'] )
+            if ( $vcardLine->getVersion() === '3.0'
+                 || $vcardLine->getVersion() === '2.1' )
             {
-                if (!array_key_exists('pref', $parameters))
-                    $parameters['pref'] = '1';
-                $parameters['type'] = array_diff($parameters['type'], ['pref']);
+                if (!($vcardLine->hasParameter('pref')))
+                    $vcardLine->setParameter('pref', '1');
+                $vcardLine->clearParamValues('type', ['pref']);
             } else {
                 throw new \DomainException(
-                    'PREF is given as TYPE and VERSION is not 2.1 or 3.0' );
+                    'PREF is given as TYPE for ' . $vcardLine->getName()
+                    . ' and VERSION is not 2.1 or 3.0' );
             }
         }
-
-	return $parameters;
     } // ParseParameters()
 
     // !Interface methods
