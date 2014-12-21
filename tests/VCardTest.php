@@ -1444,16 +1444,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 		. self::$vcard_version . "\r\n"
 		. 'ADR;HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America' . "\r\n"
 		. self::$vcard_end . "\r\n";
-
-        $expectedAdr = [
-            'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
-            'Locality'=>$jDoeInputs['adr_Locality'],
-            'Region'=>$jDoeInputs['adr_Region'],
-            'PostalCode'=>$jDoeInputs['adr_Postal'],
-            'Country'=>$jDoeInputs['adr_Country'],
-            'Type'=>[strtolower($jDoeInputs['adr_type'])]
-        ];
-
 	$vcard = new vCard(false, $input);
     }
 
