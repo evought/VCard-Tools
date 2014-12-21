@@ -137,7 +137,7 @@ class VCardLine
         \assert(\is_array($this->parameters));
         \assert(null !== $parameter);
         \assert(\is_string($parameter));
-        $this->parameters[strtolower($parameter)] = \trim($value);
+        $this->parameters[$parameter] = $value;
         return $this;
     }
     
@@ -155,10 +155,7 @@ class VCardLine
         \assert(\is_array($this->parameters));
         \assert(null !== $parameter);
         \assert(\is_string($parameter));
-        $lowerParameter = strtolower($parameter);
-        if (!array_key_exists($lowerParameter, $this->parameters))
-            $this->parameters[$lowerParameter] = [];
-        $this->parameters[$lowerParameter][] = \trim($value);
+        $this->parameters[$parameter][] = $value;
         return $this;
     }
     
@@ -200,16 +197,113 @@ class VCardLine
         return $this;
     }
     
-    public function getNoValues() {return $this->novalue;}
-    public function pushNoValue($name)
+    /**
+     * Prepare a parameter value for storage:
+     * * Strip extra whitespace.
+     * * Strip double quotes, if present.
+     * * Unescape escaped characters.
+     * @param string $rawValue The raw value to strip.
+     * @return string The prepared value.
+     */
+    protected function stripParamValue($rawValue)
     {
-        $this->novalue[] = \strtolower($name);
-        return $this;
+        $value = \trim($rawValue);
+        if (\strpos($value, '"', 0))
+        {
+            $value = \substr($value, 1, -1);
+        }
+        return VCard::unescape($value);
     }
     
-    public function clearNoValues()
+    /**
+     * Helper for parsing raw vCard text. Parse the parameter names/values from
+     * an array of raw parameters and store them in this strucure.
+     * At this stage, we are not processing the parameter values or doing much
+     * checking on whether allowed or disallowed.
+     * Rather, we are gathering the parameter values for the specific properties
+     * to interpret.
+     * Parameter names are canonicalized to lowercase.
+     * Parameter values are stripped of quotes and NSWSP if necessary, and
+     * unescaped.
+     * We do do some checking on parameters whose definition has changed between
+     * versions to canonicalize them. For example, bare TYPEs are aggregated
+     * for 2.1 cards and the PREF TYPE is turned into a PREF parameter.
+     * If we otherwise have malformed parameters (no value), then we throw
+     * an exception.
+     * @param array $rawParams The array of parameter strings (delimiter
+     * already removed) from the VCard.
+     * @return VCardLine $this
+     * @throws \DomainException For certain malformed parameter conditions.
+     */
+    public function parseParameters(Array $rawParams)
     {
-        $this->novalue = [];
+        if (empty($rawParams))
+	    return $this;
+
+	// Parameters are split into (key, value) pairs
+	
+	foreach ($rawParams as $paramStr)
+	{
+            if (empty($paramStr))
+                throw new \DomainException(
+                    'Empty or malformed parameter in property: '
+                    . $this->name
+                    . '; check colons, semi-colons, and unmatched quotes.');
+            
+            // We should not need to worry about escaping/quoting with respect
+            // to the first equals, directly following the parameter name, as
+            // parameter names are only alpha-numeric and hyphen.
+            // There may be other, quoted equals-signs in the value, but we
+            // don't care about them at this point.
+	    $param = \explode('=', $paramStr, 2);
+            $paramName = \trim(\strtolower($param[0]));
+            if (\count($param) == 1)
+                $this->novalue[] = $paramName;
+            else
+                $this->pushParameter( $paramName,
+                                      $this->stripParamValue($param[1]) );         
+	}
+        
+        if (!empty($this->novalue))
+        {
+            if ($this->version === '2.1')
+            {
+                if ($this->hasParameter('type'))
+                    $this->parameters['type'] =
+                        \array_merge( $this->parameters['type'],
+                            $this->novalues );
+                else
+                    $this->parameters['type'] = $this->novalue;
+                unset($this->novalue);
+            } else {
+                throw new \DomainException(
+                    'One or more parameters do not have values and version '
+                    . ' is not 2.1: '
+                    . \implode(',', $this->novalue ) );
+                unset($this->novalue);
+            }
+        }
+        
+        $this->lowercaseParameters(['type', 'encoding', 'value']);
+        
+        if ( $this->hasParameter('type')
+             && in_array('pref', $this->getParameter('type')) )
+        {
+            // PREF was allowed as a type in 3.0
+            // NOTE: if PREF was specified bare in 2.1, it will have already
+            // been moved into TYPE
+            if ( $this->getVersion() === '3.0'
+                 || $this->getVersion() === '2.1' )
+            {
+                if (!($this->hasParameter('pref')))
+                    $this->setParameter('pref', '1');
+                $this->clearParamValues('type', ['pref']);
+            } else {
+                throw new \DomainException(
+                    'PREF is given as TYPE for ' . $this->getName()
+                    . ' and VERSION is not 2.1 or 3.0' );
+            }
+        }
         return $this;
     }
 }

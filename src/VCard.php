@@ -302,7 +302,7 @@ class VCard implements \Countable, \Iterator
             $parameters = \preg_split( preg_quote('/(?<![^\\]\\);/'),
                                        \substr($parsed['params'], 1) );
         
-            $this->parseParameters($vcardLine, $parameters);
+            $vcardLine->parseParameters($parameters);
         }
         
         return $vcardLine;
@@ -859,96 +859,7 @@ class VCard implements \Countable, \Iterator
 	// escaped by a backslash does not count...
 	return preg_split(preg_quote('/(?<![^\\]\\),/'), $Text);
     }
-
-    /**
-     * Helper for parsing raw vCard text. Parse the parameters for the
-     * property, $Key, from an array of raw parameters. Return the parameters
-     * as keys and values.
-     * At this stage, we are not processing the parameter values or doing much
-     * checking on whether allowed or disallowed.
-     * Rather, we are gathering the parameter values for the specific properties
-     * to interpret.
-     * We do do some checking on parameters whose definition has changed between
-     * versions to canonicalize them. For example, bare TYPEs are aggregated
-     * for 2.1 cards and the PREF TYPE is turned into a PREF parameter.
-     * If we otherwise have malformed parameters (no value), then we throw
-     * an exception.
-     * @param VCardLine $vcardLine The VCardLine structure where the information
-     * from the parameters is to be stored.
-     * @param array $rawParams The array of parameter strings (delimiter
-     * already removed) from the VCard.
-     */
-    private function parseParameters(VCardLine $vcardLine, array $rawParams)
-    {
-        if (empty($rawParams))
-	{
-	    return;
-	}
-
-	// Parameters are split into (key, value) pairs
-	
-	foreach ($rawParams as $paramStr)
-	{
-            if (empty($paramStr))
-                throw new \DomainException(
-                    'Empty or mal-formed parameter in property: '
-                    . $vcardLine->getName()
-                    . '; check colons, semi-colons, and unmatched quotes.');
-            
-            // We should not need to worry about escaping/quoting with respect
-            // to the first equals, directly following the parameter name, as
-            // parameter names are only alpha-numeric and hyphen.
-            // There may be other, quoted equals-signs in the value, but we
-            // don't care about them at this point.
-	    $param = \explode('=', $paramStr, 2);
-            if (\count($param) == 1)
-                $vcardLine->pushNoValue($param[0]);
-            else
-                $vcardLine->pushParameter($param[0], $param[1]);         
-	}
-        
-        if (!empty($vcardLine->getNoValues()))
-        {
-            if ($vcardLine->getVersion() === '2.1')
-            {
-                if ($vcardLine->hasParameter('type'))
-                    $vcardLine->setParameter( 'type',
-                        \array_merge( $vcardLine->getParameter('type'),
-                            $vcardLine->getNoValues() ) );
-                else
-                    $vcardLine->setParameter('type', $vcardLine->getNoValues());
-                $vcardLine->clearNoValues();
-            } else {
-                throw new \DomainException(
-                    'One or more parameters do not have values and version '
-                    . ' is not 2.1: '
-                    . \implode(',', $vcardLine->getNoValues()) );
-                $vcardLine->clearNoValues();
-            }
-        }
-        
-        $vcardLine->lowercaseParameters(['type', 'encoding', 'value']);
-        
-        if ( $vcardLine->hasParameter('type')
-             && in_array('pref', $vcardLine->getParameter('type')) )
-        {
-            // PREF was allowed as a type in 3.0
-            // NOTE: if PREF was specified bare in 2.1, it will have already
-            // been moved into TYPE
-            if ( $vcardLine->getVersion() === '3.0'
-                 || $vcardLine->getVersion() === '2.1' )
-            {
-                if (!($vcardLine->hasParameter('pref')))
-                    $vcardLine->setParameter('pref', '1');
-                $vcardLine->clearParamValues('type', ['pref']);
-            } else {
-                throw new \DomainException(
-                    'PREF is given as TYPE for ' . $vcardLine->getName()
-                    . ' and VERSION is not 2.1 or 3.0' );
-            }
-        }
-    } // ParseParameters()
-
+    
     // !Interface methods
 
     /**
