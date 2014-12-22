@@ -240,73 +240,6 @@ class VCard implements \Countable, \Iterator
         }
 	$this -> Data['agent'][] = $agent;
     }
-    
-    public function parseVCardLine($line)
-    {   
-        // Lines without colons are skipped because, most
-        // likely, they contain no data.
-	if (strpos($line, ':') === false)
-            return null;
-     
-        $parsed = [];
-        
-        // https://regex101.com/r/uY5tY2/5
-        $re = "/
-#Parse a VCard 4.0 (RFC6350) property line into
-#group, name, params, value components
-#VCard 2.1 allowed NSWSP ([:blank]) in some places
-#Match the property name which starts with an optional
-#group name followed by a dot
-(?:
-  (?>(?P<group>[[:alnum:]-]+))
-  \\.
-)?
-(?P<name>[[:alnum:]-]+)
-[[:blank:]]*
-#The optional params section: each repeating group
-#starts with a semicolon and parameter name.
-#Value starts with '=' and may be quoted.
-#Unquoted must be SAFE-CHAR, otherwise QSAFE-CHAR
-#Vcard 2.1 may omit parameter value
-(?P<params>
-  (?:; [[:blank:]]*[[:alnum:]-]+[[:blank:]]*
-    (?:= [[:blank:]]*
-      (?>
-        (?:\\\"[[:blank:]\\!\\x23-\\x7E[:^ascii:]]*\\\")
-        | (?:[[:blank:]\\!\\x23-\\x39\\x3c-\\x7e[:^ascii:]]*)
-      )
-    )?
-  )*
-)
-#Unescaped colon starts value section
-[[:blank:]]*
-(?<![^\\\\]\\\\):
-[[:blank:]]*
-#Value itself contains VALUE-CHAR and anything
-#not permitted expected to be removed before regex
-#is run.
-(?P<value>.+)
-/x";
-        $matches = \preg_match($re, $line, $parsed);
-        if (1 !== $matches)
-            throw new \DomainException('Malformed property entry: ' . $line);
-        
-        $vcardLine = new VCardLine($this->version);
-        $vcardLine  ->setValue(self::unescape($parsed['value']))
-                    ->setName($parsed['name'])
-                    ->setGroup($parsed['group']);
-        
-        if (!empty($parsed['params']))
-        {
-            // NOTE: params string always starts with a semicolon we don't need
-            $parameters = \preg_split( preg_quote('/(?<![^\\]\\);/'),
-                                       \substr($parsed['params'], 1) );
-        
-            $vcardLine->parseParameters($parameters);
-        }
-        
-        return $vcardLine;
-    }
 
     /**
      * Parsing loop for one raw vCard. Sets appropriate internal properties.
@@ -333,7 +266,7 @@ class VCard implements \Countable, \Iterator
 
         foreach ($lines as $line)
         {
-            $vcardLine = $this->parseVCardLine($line);
+            $vcardLine = VCardLine::fromLineText($line, $this->version);
             
             if (null === $vcardLine)
 	        continue;

@@ -3,7 +3,7 @@
  * vCard class for parsing a vCard and/or creating one
  *
  * @link https://github.com/evought/VCard-Tools
- * @author Martins Pilsetnieks, Roberts Bruveris, Eric Vought
+ * @author Eric Vought
  * @see RFC 2426, RFC 2425, RFC 6350
  * @license MIT http://opensource.org/licenses/MIT
  */
@@ -99,30 +99,64 @@ class VCardLine
         $this->version = $version;
     }
     
+    /**
+     * Returns the VCard version being used for parsing/interpreting parameters.
+     * @return string
+     */
     public function getVersion() {return $this->version;}
     
+    /**
+     * Returns the property group (a sequence of alphanumeric or hyphen characters
+     * separated from the property name by a dot) or null if none.
+     * @return string
+     */
     public function getGroup() {return $this->group;}
 
+    /**
+     * Sets the property group.
+     * @param string $group It is advisable to store this in lowercase.
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function setGroup($group)
     {
-        $this->group = \trim(\strtolower($group));
+        $this->group = $group;
         return $this;
     }
     
+    /**
+     * Gets the property name.
+     * @return string
+     */
     public function getName() {return $this->name;}
     
+    /**
+     * Sets the property name.
+     * @param string $name It is advisable to store this in lowercase.
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function setName($name)
     {
-        $this->name = \trim(\strtolower($name));
+        $this->name = $name;
         return $this;
     }
     
+    /**
+     * Gets the entire array of parameters.
+     * @return Array Will be an array of parameter values indexed by parameter
+     * names. Values may be complex.
+     * @see getParameter()
+     */
     public function getParameters()
     {
         \assert(\is_array($this->parameters));
         return $this->parameters;
     }
     
+    /**
+     * Gets a single parameter value by name.
+     * @param string $parameter
+     * @return mixed Values may be complex.
+     */
     public function getParameter($parameter)
     {
         \assert(\is_array($this->parameters));
@@ -132,6 +166,12 @@ class VCardLine
                ? $this->parameters[$parameter] : null;
     }
     
+    /**
+     * Sets the value of a single parameter by name.
+     * @param string $parameter The name of the parameter to set.
+     * @param mixed $value
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function setParameter($parameter, $value)
     {
         \assert(\is_array($this->parameters));
@@ -141,6 +181,11 @@ class VCardLine
         return $this;
     }
     
+    /**
+     * Unsets any values for a single named parameter.
+     * @param string $parameter
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function unsetParameter($parameter)
     {
         \assert(\is_array($this->parameters));
@@ -150,15 +195,39 @@ class VCardLine
         return $this;
     }
     
+    /**
+     * Adds a parameter value to the named parameter.
+     * Many parameters may have multiple values (e.g. TYPE) which should be
+     * compiled as a list.
+     * For the most part, we should avoid figuring out whether extra values are
+     * meaningful at this stage and just store them for later processing.
+     * @param string $parameter The name of the parameter. Not null.
+     * @param string $value The value to add. Not null.
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function pushParameter($parameter, $value)
     {
         \assert(\is_array($this->parameters));
         \assert(null !== $parameter);
         \assert(\is_string($parameter));
+        \assert(null !== $value);
+        \assert(\is_string($value));
         $this->parameters[$parameter][] = $value;
         return $this;
     }
     
+    /**
+     * Remove matching values from those set for the named parameter, retaining
+     * any non-matching values.
+     * This is a convenience method for doing version tweaks on parameter values
+     * where a value is moved from one parameter to another.
+     * 
+     * For example: "$vcardLine->clearParamValues('type', [pref]);" removes
+     * any/all values matching 'pref' from the 'type' parameter.
+     * @param string $parameter The parameter name. Not null.
+     * @param array $values A list of string values to remove.
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function clearParamValues($parameter, Array $values)
     {
         \assert(\is_array($this->parameters));
@@ -166,17 +235,33 @@ class VCardLine
         \assert(\is_string($parameter));
         if (\array_key_exists($parameter, $this->parameters))
         {
-            $parameters[$parameter]
-                = \array_diff($parameters[$parameter], $values);
+            // NOTE: \array_diff(..) does reindex, array_values(..) does.
+            $this->parameters[$parameter]
+                = \array_values(\array_diff($this->parameters[$parameter], $values));
         }
         return $this;
     }
     
+    /**
+     * Returns true if-and-only-if at least one value exists for the named
+     * parameter.
+     * @param string $parameter The name of the parameter to test. Not null.
+     * @return bool
+     */
     public function hasParameter($parameter)
     {
+        \assert(null !== $parameter);
+        \assert(is_string($parameter));
         return \array_key_exists($parameter, $this->parameters);
     }
     
+    /**
+     * Transforms all values for the named parameters to lowercase.
+     * Convenience method for canonicalizing chosen parameter values.
+     * 
+     * @param array $paramNames The names of the parameters to transform.
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function lowercaseParameters(Array $paramNames)
     {
         foreach ($paramNames as $parameter)
@@ -187,13 +272,14 @@ class VCardLine
                     = \array_map('strtolower', $this->parameters[$parameter]);
             }
         }
+        return $this;
     }
     
     public function getValue() {return $this->value;}
     
     public function setValue($value)
     {
-        $this->value = \trim($value);
+        $this->value = $value;
         return $this;
     }
     
@@ -305,5 +391,72 @@ class VCardLine
             }
         }
         return $this;
+    }
+    
+    public static function fromLineText($rawLine, $version)
+    {
+        // Lines without colons are skipped because, most
+        // likely, they contain no data.
+	if (strpos($rawLine, ':') === false)
+            return null;
+     
+        $parsed = [];
+        
+        // https://regex101.com/r/uY5tY2/5
+        $re = "/
+#Parse a VCard 4.0 (RFC6350) property line into
+#group, name, params, value components
+#VCard 2.1 allowed NSWSP ([:blank]) in some places
+#Match the property name which starts with an optional
+#group name followed by a dot
+(?:
+  (?>(?P<group>[[:alnum:]-]+))
+  \\.
+)?
+(?P<name>[[:alnum:]-]+)
+[[:blank:]]*
+#The optional params section: each repeating group
+#starts with a semicolon and parameter name.
+#Value starts with '=' and may be quoted.
+#Unquoted must be SAFE-CHAR, otherwise QSAFE-CHAR
+#Vcard 2.1 may omit parameter value
+(?P<params>
+  (?:; [[:blank:]]*[[:alnum:]-]+[[:blank:]]*
+    (?:= [[:blank:]]*
+      (?>
+        (?:\\\"[[:blank:]\\!\\x23-\\x7E[:^ascii:]]*\\\")
+        | (?:[[:blank:]\\!\\x23-\\x39\\x3c-\\x7e[:^ascii:]]*)
+      )
+    )?
+  )*
+)
+#Unescaped colon starts value section
+[[:blank:]]*
+(?<![^\\\\]\\\\):
+[[:blank:]]*
+#Value itself contains VALUE-CHAR and anything
+#not permitted expected to be removed before regex
+#is run.
+(?P<value>.+)
+/x";
+        $matches = \preg_match($re, $rawLine, $parsed);
+        if (1 !== $matches)
+            throw new \DomainException('Malformed property entry: ' . $rawLine);
+        
+        $vcardLine = new static($version);
+        $vcardLine  ->setValue(VCard::unescape($parsed['value']))
+                    ->setName(\trim(\strtolower($parsed['name'])))
+                    ->setGroup(\trim(\strtolower($parsed['group'])));
+        
+        if (!empty($parsed['params']))
+        {
+            // NOTE: params string always starts with a semicolon we don't need
+            $parameters = \preg_split( preg_quote('/(?<![^\\]\\);/'),
+                                       \substr($parsed['params'], 1) );
+        
+            $vcardLine->parseParameters($parameters);
+        }
+        
+        return $vcardLine;
     }
 }
