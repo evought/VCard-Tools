@@ -34,6 +34,9 @@ namespace EVought\vCardTools;
 
 class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @group default
+     */
     public function testConstruct()
     {
         $specification = new PropertySpecification(
@@ -47,6 +50,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetAndBuild()
@@ -66,6 +70,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testToString()

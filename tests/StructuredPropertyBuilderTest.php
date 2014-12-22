@@ -40,6 +40,9 @@ namespace EVought\vCardTools;
  */
 class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @group default
+     */
     public function testConstruct()
     {
         $specification = new PropertySpecification(
@@ -54,6 +57,7 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetAndBuild()
@@ -102,6 +106,7 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      * @expectedException \DomainException
      */
@@ -118,6 +123,7 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      * @expectedException \DomainException
      */
@@ -134,6 +140,7 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testToString()

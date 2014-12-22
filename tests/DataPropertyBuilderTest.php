@@ -41,6 +41,10 @@ namespace EVought\vCardTools;
  */
 class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @group default
+     * @return \EVought\vCardTools\PropertySpecification
+     */
     public function testConstruct()
     {
         $specification = new PropertySpecification(
@@ -58,7 +62,8 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         return $specification;
     }
     
-     /**
+    /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetAndBuild(PropertySpecification $specification)
@@ -83,6 +88,7 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
@@ -93,6 +99,7 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
@@ -103,6 +110,7 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testToStringJustValue(PropertySpecification $specification)
@@ -117,6 +125,7 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testToStringOneType(PropertySpecification $specification)
@@ -132,6 +141,7 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testToStringMediaType(PropertySpecification $specification)
@@ -147,6 +157,7 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testToStringMediaTypeAndType(PropertySpecification $specification)

@@ -74,6 +74,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
 	return $vcard;
     }
     
+    /**
+     * @group default
+     */
     public function testTemplateInfoFromArrayEmpty()
     {
     	$info = TemplateInfo::fromArray([]);
@@ -85,6 +88,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertEmpty($info->getInfo());
     }
     
+    /**
+     * @group default
+     */
     public function testTemplateInfoFromArray()
     {
     	$data = [ 'name' => 'George',
@@ -105,6 +111,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testTemplateInfoFromArray
      */
     public function testGetDefault()
@@ -121,6 +128,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
                            print_r($registeredTemplate, true) );
     }
     
+    /**
+     * @group default
+     */
     public function testConstructWFragments()
     {
     	$fragments = [];
@@ -130,6 +140,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertNull($template->getFallback());
     }
     
+    /**
+     * @group default
+     */
     public function testConstructWInfo()
     {	
     	$fragments = [];
@@ -141,6 +154,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	 
     }
     
+    /**
+     * @group default
+     */
     public function testGetTemplateNoneExists()
     {
     	$template = Template::getTemplate('testGetTemplateNoneExists');
@@ -148,6 +164,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstructWFragments
      */
     public function testRegisterTemplate()
@@ -159,6 +176,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @testConstructWFragments
      */
     public function testFromININoName()
@@ -176,6 +194,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testFromININoName
      * @depends testTemplateInfoFromArray
      */
@@ -201,6 +220,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testFromINIWithName
      */
     public function testFromINIWithNameExplicitFallback()
@@ -229,6 +249,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testFromINIWithName
      */
     public function testFromINIWithFallback()
@@ -259,6 +280,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @testFromINIWithName
      */
     public function testFromINILoadFallback()
@@ -289,6 +311,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertSame($template, $registeredTemplate);
     }
     
+    /**
+     * @group default
+     */
     public function testTrivialTemplate()
     {
     	$template = new Template([]);
@@ -300,6 +325,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testTrivialTemplate
      */
     public function testLiteralTemplate()
@@ -313,6 +339,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertEquals($fragments['vcard'], $output);
     }
     
+    /**
+     * @group default
+     */
     public function testSubstitutionFromTextFragment()
     {
     	$substitution = Substitution::fromText('key');
@@ -326,6 +355,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertFalse($substitution->iterates());
     }
     
+    /**
+     * @group default
+     */
     public function testSubstitutionFromTextQuest()
     {
     	$substitution = Substitution::fromText('key, ?adr');
@@ -341,6 +373,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertFalse($substitution->iterates());
     }
     
+    /**
+     * @group default
+     */
     public function testSubstitutionFromTextLookup()
     {
     	$substitution = Substitution::fromText('!n');
@@ -359,6 +394,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertFalse($substitution->iterates());
     }
     
+    /**
+     * @group default
+     */
     public function testSubstitutionFromTextLookupStructured()
     {
     	$substitution = Substitution::fromText('!n GivenName');
@@ -378,6 +416,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertFalse($substitution->iterates());
     }
     
+    /**
+     * @group default
+     */
     public function testSubstitutionFromTextLookupMagic()
     {
     	$substitution = Substitution::fromText('!_id');
@@ -395,6 +436,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @expectedException \DomainException
      */
     public function testSubstitutionFromTextLookupBadMagic()
@@ -402,7 +444,9 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$substitution = Substitution::fromText('!_abacadabra');
     }
     
-    
+    /**
+     * @group default
+     */
     public function testSubstitutionFromTextIterates()
     {
     	$substitution = Substitution::fromText('key, #n');
@@ -420,6 +464,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testLiteralTemplate
      * @depends testSubstitutionFromTextFragment
      */
@@ -438,6 +483,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testLiteralTemplate
      * @depends testSubstitutionFromTextFragment
      */
@@ -452,6 +498,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testOneRecursion
      */
     public function testSeveralLayers()
@@ -471,6 +518,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testOneRecursion
      */
     public function testInsideSubsitution()
@@ -488,6 +536,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testOneRecursion
      */
     public function testInsideSubsitutionEmpty()
@@ -502,6 +551,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testInsideSubsitution
      */
     public function testSubstitutionTree()
@@ -524,6 +574,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testLiteralTemplate
      */
     public function testFallback()
@@ -538,6 +589,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     } // testFallBack()
     
     /**
+     * @group default
      * @depends testLiteralTemplate
      * @depends testSubstitutionFromTextLookup
      */
@@ -552,6 +604,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testLiteralTemplate
      * @depends testSubstitutionFromTextLookup
      */
@@ -567,6 +620,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testLiteralTemplate
      * @depends testSubstitutionFromTextLookup
      */
@@ -584,6 +638,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testFNLookup
      * @depends testSubstitutionFromTextQuest
      */
@@ -600,6 +655,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testFNLookup
      * @depends testSubstitutionFromTextQuest
      */
@@ -616,6 +672,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testFNLookup
      * @depends testSubstitutionFromTextIterates
      */
@@ -631,6 +688,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testFNLookup
      * @depends testSubstitutionFromTextIterates
      */
@@ -664,6 +722,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     /**
      * Border case. Using iteration on a single-value property.
      * Principle of least surprise: should substitute once.
+     * @group default
      * @depends testCategoriesIter
      * @depends testSubstitutionFromTextIterates
      */
@@ -686,6 +745,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     /**
      * Border case. Using iteration on a single-value property, not set.
      * Principle of least surprise: should do nothing.
+     * @group default
      * @depends testCategoriesIter
      * @depends testSubstitutionFromTextIterates
      */
@@ -705,6 +765,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testOneRecursion
      * @depends testSubstitutionFromTextFragment
      */
@@ -720,6 +781,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testOneRecursion
      * @depends testSubstitutionFromTextFragment
      */

@@ -34,6 +34,10 @@ namespace EVought\vCardTools;
 
 class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @group default
+     * @return \EVought\vCardTools\PropertySpecification
+     */
     public function testConstruct()
     {
         $specification = new PropertySpecification(
@@ -50,6 +54,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetAndBuild(PropertySpecification $specification)
@@ -72,6 +77,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testDuplicateTypes(PropertySpecification $specification)
@@ -89,6 +95,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
@@ -100,6 +107,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      * @expectedException \DomainException
      */
@@ -111,6 +119,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testToStringNoTypes(PropertySpecification $specification)
@@ -123,6 +132,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testToStringOneType(PropertySpecification $specification)
@@ -136,6 +146,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetAndBuild
      */
     public function testToStringTwoTypes(PropertySpecification $specification)

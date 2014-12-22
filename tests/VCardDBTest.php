@@ -132,6 +132,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
     /**
      * Ensure that we can instantiate a VCardDB instance.
+     * @group default
      */
     public function testCreateVCardDB()
     {
@@ -145,6 +146,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
 
     /**
+     * @group default
      * @depends testCreateVCardDB
      */
     public function testFetchWhenEmpty(VCardDB $vcardDB)
@@ -158,6 +160,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
 
     /**
+     * @group default
      * @depends testCreateVCardDB
      */
     public function testSearchWhenEmpty(VCardDB $vcardDB)
@@ -170,6 +173,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
 
     /**
+     * @group default
      * @depends testCreateVCardDB
      */
     public function testStoreAndRetrieveTrivialVCard(VCardDB $vcardDB)
@@ -190,6 +194,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveTrivialVCard
      */
     public function testFetchWithOneVCard(VCardDB $vcardDB)
@@ -213,6 +218,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveTrivialVCard
      */
     public function testSearchWithOneVCardFails(VCardDB $vcardDB)
@@ -235,6 +241,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveTrivialVCard
      */
     public function testStoreAndRetrieveVCard(VCardDB $vcardDB)
@@ -264,6 +271,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveVCard()
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveVCardWAnniversary(VCardDB $vcardDB)
@@ -293,6 +301,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWName(VCardDB $vcardDB)
@@ -315,7 +324,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         return $vcardDB;
     } //testStoreAndRetrieveWName()
     
-     /**
+    /**
+     * @group default
      * @depends testStoreAndRetrieveWName
      */
     public function testStoreAndRetrieveWNames(VCardDB $vcardDB)
@@ -339,6 +349,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWNames()
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWAddress(VCardDB $vcardDB)
@@ -368,6 +379,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWAddress()
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveWAddress
      */
     public function testStoreAndRetrieveWAddressType(VCardDB $vcardDB)
@@ -397,6 +409,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWAddressType()
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWUID(VCardDB $vcardDB)
@@ -417,6 +430,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWRelated(VCardDB $vcardDB)
@@ -437,6 +451,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testFetchByID(VCardDB $vcardDB)
@@ -468,6 +483,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testFetchByID
      */
     public function testSearchWithOneVCardMatches(VCardDB $vcardDB)
@@ -492,6 +508,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWEmail(VCardDB $vcardDB)
@@ -521,6 +538,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWEmail()
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWOrg(VCardDB $vcardDB)
@@ -551,6 +569,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWOrg()
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWLogo(VCardDB $vcardDB)
@@ -581,6 +600,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWLogo()
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWNote(VCardDB $vcardDB)
@@ -604,6 +624,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWNote()
 
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWTel(VCardDB $vcardDB)
@@ -627,6 +648,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWKey(VCardDB $vcardDB)
@@ -649,7 +671,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 	$this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWKey()
     
-     /**
+    /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWGeo(VCardDB $vcardDB)
@@ -672,6 +695,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     } //testStoreAndRetrieveWTel()
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWCategory(VCardDB $vcardDB)
@@ -693,7 +717,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWCategory()
     
-        /**
+    /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveThreeVCards(VCardDB $vcardDB)
@@ -728,6 +753,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveThreeVCards
      */
     public function testFetchIDsForOrganization(VCardDB $vcardDB)
@@ -762,6 +788,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testFetchIDsForOrganization
      */
     public function testFetchIDsForOrganizationByKind(VCardDB $vcardDB)
@@ -797,6 +824,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveThreeVCards
      */
     public function testFetchIDsForCategory(VCardDB $vcardDB)
@@ -831,6 +859,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testFetchIDsForCategory
      */
     public function testFetchIDsForCategoryByKind(VCardDB $vcardDB)
@@ -864,6 +893,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     }
     
     /**
+     * @group default
      * @depends testStoreAndRetrieveThreeVCards
      * @param VCardDB $vcardDB
      */
