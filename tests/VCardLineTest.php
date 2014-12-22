@@ -129,4 +129,137 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
         $vcardLine->setParameter('foo', 'bar');
         $this->assertTrue($vcardLine->hasParameter('foo'));
     }
+
+    /**
+     * @depends testSetParameter
+     * @depends testHasParameter
+     */
+    public function testLowercaseParameters()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setParameter('name1', ['VALUE1', 'Value2'])
+                    ->setParameter('name2', ['VALUE1'])
+                    ->lowercaseParameters(['name1', 'name3']);
+        
+        $this->assertEquals( ['value1', 'value2'],
+                                $vcardLine->getParameter('name1') );
+        $this->assertEquals( ['VALUE1'], $vcardLine->getParameter('name2'));
+        $this->assertFalse($vcardLine->hasParameter('name3'));
+    }
+    
+    /**
+     * @depends testConstruct
+     */
+    public function testSetValue()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->setValue('Rumplestilskin');
+        
+        $this->assertEquals('Rumplestilskin', $vcardLine->getValue());
+    }
+    
+    /**
+     * @depends testConstruct
+     */
+    public function testParseParametersEmpty()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters([]);
+        
+        $this->assertEmpty($vcardLine->getParameters());
+    }
+    
+    /**
+     * @depends testParseParametersEmpty
+     * @expectedException \DomainException
+     */
+    public function testParseParametersNoValue40()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters(['foo']);
+    }
+
+    /**
+     * @depends testParseParametersEmpty
+     * @expectedException \DomainException
+     */
+    public function testParseParametersNoValue30()
+    {
+        $vcardLine = new VCardLine('3.0');
+        $vcardLine->parseParameters(['foo']);
+    }
+
+    /**
+     * @depends testParseParametersEmpty
+     */
+    public function testParseParametersNoValue21()
+    {
+        $vcardLine = new VCardLine('2.1');
+        $vcardLine->parseParameters(['foo']);
+        
+        $this->assertEquals(['foo'], $vcardLine->getParameter('type'));
+    }
+    
+    /**
+     * @depends testParseParametersEmpty
+     */
+    public function testParseParametersNameValue()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters(['foo=bar']);
+        $this->assertEquals(['bar'], $vcardLine->getParameter('foo'));
+    }
+    
+    /**
+     * @depends testParseParametersEmpty
+     */
+    public function testParseParametersTwoNames()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters(['foo=bar','baz=bozo']);
+        $this->assertEquals(['bar'], $vcardLine->getParameter('foo'));
+        $this->assertEquals(['bozo'], $vcardLine->getParameter('baz'));
+    }
+    
+    /**
+     * @depends testParseParametersEmpty
+     */
+    public function testParseParametersTwoValues()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters(['foo=bar','foo=baz']);
+        $this->assertCount(2, $vcardLine->getParameter('foo'));
+        $this->assertContains('bar', $vcardLine->getParameter('foo'));
+        $this->assertContains('baz', $vcardLine->getParameter('foo'));
+    }
+    
+    public function parameterProvider()
+    {
+        // paramText, parameters
+        return [
+                    ['foo=bar',             ['foo'=>['bar']]],
+                    [" foo\t=bar",          ['foo'=>['bar']]],
+                    ['foo = bar',           ['foo'=>['bar']]],
+                    ['foo="bar"',           ['foo'=>['bar']]],
+                    ["\tfoo = \t \"bar\"",  ['foo'=>['bar']]],
+                    ["foo=\"\tbar \"",      ['foo'=>["\tbar "]]],
+                    ['foo=line1\n\\\\line2',['foo'=>["line1\n\\line2"]]],
+                    ['foo=\:\;\,=',          ['foo'=>[':;,=']]],
+                    ['foo=":=;,"',         ['foo'=>[':=;,']]]
+        ];
+    }
+    
+    /**
+     * @depends testParseParametersNameValue
+     * @dataProvider parameterProvider
+     * @param string $paramText Parameter text to parse.
+     * @param array $parameters Expected value of $parameters.
+     */
+    public function testStripParamValue($paramText, $parameters)
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters([$paramText]);
+        
+        $this->assertEquals($parameters, $vcardLine->getParameters());
+    }
 }

@@ -275,8 +275,17 @@ class VCardLine
         return $this;
     }
     
+    /**
+     * Returns the property value parsed from this line.
+     * @return string
+     */
     public function getValue() {return $this->value;}
     
+    /**
+     * Sets the property value for this line.
+     * @param string $value
+     * @return \EVought\vCardTools\VCardLine
+     */
     public function setValue($value)
     {
         $this->value = $value;
@@ -294,8 +303,11 @@ class VCardLine
     protected function stripParamValue($rawValue)
     {
         $value = \trim($rawValue);
-        if (\strpos($value, '"', 0))
+        if (\substr($value, 0, 1) === '"')
         {
+            if (\substr($value, -1, 1) !== '"')
+                throw new \DomainException(
+                    'Unmatched double-quote in parameter: ' . $rawValue );
             $value = \substr($value, 1, -1);
         }
         return VCard::unescape($value);
