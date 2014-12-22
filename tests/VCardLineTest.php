@@ -237,15 +237,20 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     {
         // paramText, parameters
         return [
-                    ['foo=bar',             ['foo'=>['bar']]],
-                    [" foo\t=bar",          ['foo'=>['bar']]],
-                    ['foo = bar',           ['foo'=>['bar']]],
-                    ['foo="bar"',           ['foo'=>['bar']]],
-                    ["\tfoo = \t \"bar\"",  ['foo'=>['bar']]],
-                    ["foo=\"\tbar \"",      ['foo'=>["\tbar "]]],
-                    ['foo=line1\n\\\\line2',['foo'=>["line1\n\\line2"]]],
-                    ['foo=\:\;\,=',          ['foo'=>[':;,=']]],
-                    ['foo=":=;,"',         ['foo'=>[':=;,']]]
+                    'Trivial' =>
+                        ['foo=bar',             ['foo'=>['bar']]],
+                    'Remove NSWSP around name 1' =>
+                        [" foo\t=bar",          ['foo'=>['bar']]],
+                    'Remove NSWSP around name 2' =>
+                        ['foo = bar',           ['foo'=>['bar']]],
+                    'Remove double quotes' =>
+                        ['foo="bar"',           ['foo'=>['bar']]],
+                    'Remove NSWSP around quotes' =>
+                        ["\tfoo = \t \"bar\"",  ['foo'=>['bar']]],
+                    'Strip cslashes in value, nl & backslash' =>
+                        ['foo=line1\n\\\\line2',['foo'=>["line1\n\\line2"]]],
+                    'Quoted punction is safe' =>
+                        ['foo=":=;,"',         ['foo'=>[':=;,']]]
         ];
     }
     
@@ -255,11 +260,80 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
      * @param string $paramText Parameter text to parse.
      * @param array $parameters Expected value of $parameters.
      */
-    public function testStripParamValue($paramText, $parameters)
+    public function testParseParamValue($paramText, $parameters)
     {
         $vcardLine = new VCardLine('4.0');
         $vcardLine->parseParameters([$paramText]);
         
         $this->assertEquals($parameters, $vcardLine->getParameters());
+    }
+    
+    public function lineProvider()
+    {
+        return [
+                    'FN no parameters' =>
+                        ['FN:William Blakely',
+                            [
+                                'group'         =>'',
+                                'name'          =>'fn',
+                                'parameters'    =>[],
+                                'value'         =>'William Blakely'
+                            ]
+                        ],
+                    'N LANGUAGE and VALUE' =>
+                        ['N;LANGUAGE=en/us;VALUE=TEXT:Shmoe;Joe;;;;',
+                            [
+                                'group'         =>'',
+                                'name'          =>'n',
+                                'parameters'    =>[ 'language'=>['en/us'],
+                                                    'value'=>['text']],
+                                'value'         =>'Shmoe;Joe;;;;'
+                            ]
+                        ],
+                    'ADR' =>
+                        ['ADR:xtended;pobox;street;locality;region;postal',
+                            [
+                                'group'         =>'',
+                                'name'          =>'adr',
+                                'parameters'    =>[],
+                                'value'         =>'xtended;pobox;street;locality;region;postal'
+                            ]
+                        ],
+                    'ADR TYPE' =>
+                        ['ADR;TYPE=WORK:xtended;pobox;street;locality;region;postal',
+                            [
+                                'group'         =>'',
+                                'name'          =>'adr',
+                                'parameters'    =>['type'=>['work']],
+                                'value'         =>'xtended;pobox;street;locality;region;postal'
+                            ]
+                        ],
+                    'TEL, TYPES with group' =>
+                        ['group.TEL;TYPE=HOME,CELL:999-555-1212',
+                            [
+                                'group'         =>'group',
+                                'name'          =>'tel',
+                                'parameters'    =>['type'=>['home','cell']],
+                                'value'         =>'999-555-1212'
+                            ]
+                        ]
+        ];
+    }
+    
+    /**
+     * @depends testParseParametersNameValue
+     * @param string $rawLine Line to parse.
+     * @param array $components Components of expected value.
+     * @dataProvider lineProvider
+     */
+    public function testFromLineText($rawLine, array $components)
+    {
+        $vcardLine = VCardLine::fromLineText($rawLine, '4.0');
+        
+        $this->assertEquals($components['group'], $vcardLine->getGroup());
+        $this->assertEquals($components['name'], $vcardLine->getName());
+        $this->assertEquals( $components['parameters'],
+                                $vcardLine->getParameters() );
+        $this->assertEquals($components['value'], $vcardLine->getValue());
     }
 }

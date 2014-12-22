@@ -293,27 +293,6 @@ class VCardLine
     }
     
     /**
-     * Prepare a parameter value for storage:
-     * * Strip extra whitespace.
-     * * Strip double quotes, if present.
-     * * Unescape escaped characters.
-     * @param string $rawValue The raw value to strip.
-     * @return string The prepared value.
-     */
-    protected function stripParamValue($rawValue)
-    {
-        $value = \trim($rawValue);
-        if (\substr($value, 0, 1) === '"')
-        {
-            if (\substr($value, -1, 1) !== '"')
-                throw new \DomainException(
-                    'Unmatched double-quote in parameter: ' . $rawValue );
-            $value = \substr($value, 1, -1);
-        }
-        return VCard::unescape($value);
-    }
-    
-    /**
      * Helper for parsing raw vCard text. Parse the parameter names/values from
      * an array of raw parameters and store them in this strucure.
      * At this stage, we are not processing the parameter values or doing much
@@ -338,8 +317,6 @@ class VCardLine
         if (empty($rawParams))
 	    return $this;
 
-	// Parameters are split into (key, value) pairs
-	
 	foreach ($rawParams as $paramStr)
 	{
             if (empty($paramStr))
@@ -356,10 +333,14 @@ class VCardLine
 	    $param = \explode('=', $paramStr, 2);
             $paramName = \trim(\strtolower($param[0]));
             if (\count($param) == 1)
+            {
                 $this->novalue[] = $paramName;
-            else
-                $this->pushParameter( $paramName,
-                                      $this->stripParamValue($param[1]) );         
+            } else {
+                $values = \str_getcsv($param[1]);
+                foreach ($values as $value)
+                    $this->pushParameter( $paramName,
+                            \stripcslashes(\trim($value)) );
+            }
 	}
         
         if (!empty($this->novalue))
@@ -463,7 +444,7 @@ class VCardLine
         if (!empty($parsed['params']))
         {
             // NOTE: params string always starts with a semicolon we don't need
-            $parameters = \preg_split( preg_quote('/(?<![^\\]\\);/'),
+            $parameters = \preg_split( '/(?<![^\\\\]\\\\);/',
                                        \substr($parsed['params'], 1) );
         
             $vcardLine->parseParameters($parameters);
