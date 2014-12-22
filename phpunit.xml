@@ -8,5 +8,7 @@
 
 
 <phpunit bootstrap="bootstrap.php" colors="true">
-    
+    <groups>
+        <exclude><group>openIssues</group></exclude>
+    </groups>
 </phpunit>

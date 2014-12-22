@@ -81,7 +81,7 @@
   <target name="test" depends="init"
           description="Execute PHPUnit test suite">
     <phpunit haltonfailure="true" haltonerror="true"
-    	bootstrap="bootstrap.php">
+    	bootstrap="bootstrap.php" excludeGroups="openIssues">
       <formatter type="plain" usefile="false"/>
       <batchtest>
         <fileset dir="tests">

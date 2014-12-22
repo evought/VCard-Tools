@@ -41,6 +41,9 @@ namespace EVought\vCardTools;
  */
 class VCardLineTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @group default
+     */
     public function testConstruct()
     {
         $vcardLine = new VCardLine('4.0');
@@ -49,6 +52,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetName()
@@ -60,6 +64,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetGroup()
@@ -71,6 +76,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetParameter()
@@ -93,6 +99,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetParameter
      */
     public function testPushParameter()
@@ -107,6 +114,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testSetParameter
      */
     public function testClearParamValues()
@@ -119,6 +127,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testSetParameter
      */
     public function testHasParameter()
@@ -131,6 +140,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testSetParameter
      * @depends testHasParameter
      */
@@ -148,6 +158,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testSetValue()
@@ -159,6 +170,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testParseParametersEmpty()
@@ -170,6 +182,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testParseParametersEmpty
      * @expectedException \DomainException
      */
@@ -180,6 +193,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testParseParametersEmpty
      * @expectedException \DomainException
      */
@@ -190,6 +204,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testParseParametersEmpty
      */
     public function testParseParametersNoValue21()
@@ -201,6 +216,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testParseParametersEmpty
      */
     public function testParseParametersNameValue()
@@ -211,6 +227,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testParseParametersEmpty
      */
     public function testParseParametersTwoNames()
@@ -222,6 +239,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testParseParametersEmpty
      */
     public function testParseParametersTwoValues()
@@ -232,7 +250,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('bar', $vcardLine->getParameter('foo'));
         $this->assertContains('baz', $vcardLine->getParameter('foo'));
     }
-    
+
     public function parameterProvider()
     {
         // paramText, parameters
@@ -255,6 +273,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * @group default
      * @depends testParseParametersNameValue
      * @dataProvider parameterProvider
      * @param string $paramText Parameter text to parse.
@@ -316,6 +335,52 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                 'parameters'    =>['type'=>['home','cell']],
                                 'value'         =>'999-555-1212'
                             ]
+                        ],
+                    'hyphenated-group URL' =>
+                        ['hyphen-group.URL:http\://example.com',
+                            [
+                                'group'         =>'hyphen-group',
+                                'name'          =>'url',
+                                'parameters'    =>[],
+                                'value'         =>'http://example.com'
+                            ]
+                        ],
+                    'Version' =>
+                        ['VERSION:4.0',
+                            [
+                                'group'         =>'',
+                                'name'          =>'version',
+                                'parameters'    =>[],
+                                'value'         =>'4.0'
+                            ]
+                        ],
+                    'Nickname, TYPE' =>
+                        ['NICKNAME;TYPE=work:Boss',
+                            [
+                                'group'         =>'',
+                                'name'          =>'nickname',
+                                'parameters'    =>['type'=>['work']],
+                                'value'         =>'Boss'
+                            ]
+                        ],
+                    'BDAY' =>
+                        ['BDAY:19960415',
+                            [
+                                'group'         =>'',
+                                'name'          =>'bday',
+                                'parameters'    =>[],
+                                'value'         =>'19960415'
+                            ]
+                        ],
+                    'ADR GEO LABEL QUOTES NL' =>
+                        ['ADR;GEO="geo:12.3457,78.910";LABEL="Mr. John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A.":;;123 Main Street;Any Town;CA;91921-1234;U.S.A.',
+                            [
+                                'group'         =>'',
+                                'name'          =>'adr',
+                                'parameters'    =>['geo'=>['geo:12.3457,78.910'],
+                                                   'label'=>["Mr. John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A."]],
+                                'value'         =>';;123 Main Street;Any Town;CA;91921-1234;U.S.A.'
+                            ]
                         ]
         ];
     }
@@ -325,8 +390,44 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
      * @param string $rawLine Line to parse.
      * @param array $components Components of expected value.
      * @dataProvider lineProvider
+     * @group default
      */
     public function testFromLineText($rawLine, array $components)
+    {
+        $vcardLine = VCardLine::fromLineText($rawLine, '4.0');
+        
+        $this->assertEquals($components['group'], $vcardLine->getGroup());
+        $this->assertEquals($components['name'], $vcardLine->getName());
+        $this->assertEquals( $components['parameters'],
+                                $vcardLine->getParameters() );
+        $this->assertEquals($components['value'], $vcardLine->getValue());
+    }
+    
+    public function lineProviderOpenIssues()
+    {
+        return [
+                    'TEL QUOTED URI VALUES ISSUE #58' =>
+                        ['TEL;VALUE=uri;PREF=1;TYPE="voice,home":tel:+1-555-555-5555;ext=5555',
+                            [
+                                'group'         =>'',
+                                'name'          =>'tel',
+                                'parameters'    =>[ 'value'=>['uri'],
+                                                    'pref'=>['1'],
+                                                    'type'=>['voice','home'] ],
+                                'value'         =>'tel:+1-555-555-5555;ext=5555'
+                            ]
+                        ]
+                ];
+    }
+    
+    /**
+     * @depends testFromLineText
+     * @param string $rawLine Line to parse.
+     * @param array $components Components of expected value.
+     * @dataProvider lineProviderOpenIssues
+     * @group openIssues
+     */
+    public function testFromLineTextOpenIssues($rawLine, array $components)
     {
         $vcardLine = VCardLine::fromLineText($rawLine, '4.0');
         
