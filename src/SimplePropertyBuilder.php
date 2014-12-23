@@ -45,6 +45,13 @@ class SimplePropertyBuilder
         $this->initValue();
     }
     
+    public function setFromVCardLine(VCardLine $line)
+    {
+        $this->setBuilderFromLine($line);
+        $this->setValueFromLine($line);
+        return $this;
+    }
+    
     public function build()
     {
         \assert(null !== $this->value);

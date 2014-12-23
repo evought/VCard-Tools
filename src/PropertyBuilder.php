@@ -56,6 +56,21 @@ interface PropertyBuilder
     public function getName();
     
     /**
+     * Set the property group associated with this property.
+     * @param string $group The group name to set.
+     * @return PropertyBuilder $this
+     * @see https://tools.ietf.org/html/rfc6350#section-3.3
+     */
+    public function setGroup($group);
+    
+    /**
+     * Get the property group associated with this property (if any).
+     * @return string
+     * @see https://tools.ietf.org/html/rfc6350#section-3.3
+     */
+    public function getGroup();
+    
+    /**
      * Set the value of this property. Value may be simple or strucured
      * according to the specification for this property.
      * @param mixed $value
@@ -74,4 +89,13 @@ interface PropertyBuilder
      * @return PropertySpecification
      */
     public function getSpecification();
+    
+    /**
+     * Read a VCardLine and extract values for this property.
+     * @return VCardLine $this
+     * @throws \DomainException If any of the components found in $line violate
+     * constraints defined for this property.
+     */
+    public function setFromVCardLine(VCardLine $line);
+    
 }

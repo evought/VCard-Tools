@@ -55,6 +55,13 @@ class StructuredPropertyBuilderImpl implements StructuredPropertyBuilder
         $this->initFields();
     }
     
+    public function setFromVCardLine(VCardLine $line)
+    {
+        $this->setBuilderFromLine($line);
+        $this->setFieldsFromLine($line);
+        return $this;
+    }
+    
     /**
      * 
      * @return \EVought\vCardTools\StructuredProperty

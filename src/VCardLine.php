@@ -56,6 +56,12 @@ namespace EVought\vCardTools;
 class VCardLine
 {
     /**
+     * A regular expression for splitting strings on semicolons which
+     * may or may not be escaped with backslashes.
+     */
+    const SEMICOLON_SPLIT = '/(?<![^\\\\]\\\\);/';
+    
+    /**
      * The property group, a sequence of alphanumeric or hyphen characters
      * separated from the property name by a dot.
      * @var string.
@@ -444,7 +450,7 @@ class VCardLine
         if (!empty($parsed['params']))
         {
             // NOTE: params string always starts with a semicolon we don't need
-            $parameters = \preg_split( '/(?<![^\\\\]\\\\);/',
+            $parameters = \preg_split( self::SEMICOLON_SPLIT,
                                        \substr($parsed['params'], 1) );
         
             $vcardLine->parseParameters($parameters);

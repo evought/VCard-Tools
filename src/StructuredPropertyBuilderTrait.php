@@ -47,6 +47,25 @@ trait StructuredPropertyBuilderTrait
         $this->value = [];
     }
     
+    protected function setFieldsFromLine(VCardLine $line)
+    {
+        /* @var $fields array */
+        $fields = $this->fields();
+        /* @var $fieldStrs array */
+        $fieldStrs = \preg_split(VCardLine::SEMICOLON_SPLIT, $line->getValue());
+        
+        if (\count($fieldStrs) != \count($fields))
+            throw new \DomainException(
+                'Field count, ' . \count($fieldStrs)
+                . 'differs from the number of fields defined ('
+                . \count($fields) . ') for property '
+                . $this->getName() . " : " . $line->getValue() );
+        foreach($fieldStrs as $index=>$value)
+        {
+            $this->setField($fields[$index], \stripcslashes(\trim($value)));
+        }
+    }
+
     public function fields()
     {
         return $this->getSpecification()->getConstraints()['allowedFields'];
@@ -87,6 +106,7 @@ trait StructuredPropertyBuilderTrait
             unset ($this->value[$field]);
         else
             $this->value[$field] = $value;
+        return $this;
     }
     
     public function getValue() {return $this->value;}

@@ -48,6 +48,13 @@ trait TypedPropertyBuilderTrait
             $this->getSpecification()->getConstraints()) );
     }
     
+    protected function setTypesFromLine(VCardLine $line)
+    {
+        if (!empty($line->getParameter('type')))
+            $this->setTypes($line->getParameter('type'));
+    }
+
+
     public function addType($type)
     {
         $this->checkType($type);

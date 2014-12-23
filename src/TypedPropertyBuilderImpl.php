@@ -54,6 +54,14 @@ class TypedPropertyBuilderImpl implements TypedPropertyBuilder
         $this->initTypes();
     }
 
+    public function setFromVCardLine(VCardLine $line)
+    {
+        $this->setBuilderFromLine($line);
+        $this->setValueFromLine($line);
+        $this->setTypesFromLine($line);
+        return $this;
+    }
+
     public function build()
     {
         return new TypedPropertyImpl($this);

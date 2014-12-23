@@ -42,6 +42,12 @@ trait PropertyBuilderTrait
      */
     private $specification;
     
+    /**
+     * The property group associated with this property.
+     * @var string
+     */
+    private $group;
+    
     public function getSpecification() {return $this->specification;}
     
     public function getName()
@@ -49,10 +55,29 @@ trait PropertyBuilderTrait
         return $this->specification->getName();
     }
     
+    public function setGroup($group)
+    {
+        \assert(\is_string($group));
+        $this->group = $group;
+        return $this;
+    }
+    
+    public function getGroup()
+    {
+        return $this->group;
+    }
+    
     protected function initBuilder($specification)
     {
         \assert(null !== $specification);
         
         $this->specification = $specification;
+    }
+    
+    protected function setBuilderFromLine(VCardLine $vcardLine)
+    {
+        \assert($this->getName() === $vcardLine->getName());
+        $this->group = $vcardLine->getGroup();
+        return $this;
     }
 }

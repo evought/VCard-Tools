@@ -54,6 +54,14 @@ class DataPropertyBuilder implements TypedPropertyBuilder
         $this->mediaType = null;
     }
     
+    public function setFromVCardLine(VCardLine $line)
+    {
+        $this->setBuilderFromLine($line);
+        $this->setTypesFromLine($line);
+        $this->setValue(\stripcslashes($line->getValue()));
+        return $this;
+    }
+    
     public function build()
     {
         \assert(null !== $this->value);

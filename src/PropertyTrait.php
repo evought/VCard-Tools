@@ -41,6 +41,12 @@ trait PropertyTrait
     private $specification;
     
     /**
+     * The property group for this property.
+     * @var string
+     */
+    private $group;
+    
+    /**
      * True if-and-only-if this Property has parameters to output.
      * @var bool
      */
@@ -53,6 +59,7 @@ trait PropertyTrait
     protected function initProperty(PropertyBuilder $builder)
     {
         $this->specification = $builder->getSpecification();
+        $this->group = $builder->getGroup();
         $this->hasParameters = false;
     }
     
@@ -61,6 +68,11 @@ trait PropertyTrait
     public function getName()
     {
         return $this->specification->getName();
+    }
+    
+    public function getGroup()
+    {
+        return $this->group;
     }
     
     public function __toString()
@@ -80,7 +92,8 @@ trait PropertyTrait
      */
     protected function outputName()
     {
-        return \strtoupper( $this->getName());
+        $groupPart = empty($this->group) ? '' : \strtoupper($this->group . '.');
+        return \strtoupper($groupPart . $this->getName());
     }
        
     /**

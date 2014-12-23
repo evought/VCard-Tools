@@ -48,7 +48,15 @@ class TypedStructuredPropertyBuilder
         $this->initTypes();
         $this->initFields();
     }
-    
+
+    public function setFromVCardLine(VCardLine $line)
+    {
+        $this->setBuilderFromLine($line);
+        $this->setTypesFromLine($line);
+        $this->setFieldsFromLine($line);
+        return $this;
+    }
+
     public function build()
     {
         return new TypedStructuredProperty($this);

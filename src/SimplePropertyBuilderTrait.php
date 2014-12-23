@@ -45,6 +45,12 @@ trait SimplePropertyBuilderTrait
      */
     protected function initValue() {$this->value = null;}
     
+    protected function setValueFromLine(VCardLine $line)
+    {
+        $this->value = \stripcslashes($line->getValue());
+        return $this;
+    }
+    
     public function setValue($value)
     {
         \assert(null !== $value);

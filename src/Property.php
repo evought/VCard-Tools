@@ -53,6 +53,13 @@ interface Property
     public function getName();
     
     /**
+     * Return the property group associated with this property.
+     * @return string
+     * @see https://tools.ietf.org/html/rfc6350#section-3.3
+     */
+    public function getGroup();
+    
+    /**
      * Return the value of this property. Value may be simple or structured
      * as dependendent on the property name and type.
      * @return mixed The property value.

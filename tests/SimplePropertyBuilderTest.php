@@ -36,6 +36,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group default
+     * @return PropertySpecification
      */
     public function testConstruct()
     {
@@ -47,19 +48,16 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\SimplePropertyBuilder',
                                     $builder );
+        
+        return $specification;
     }
     
     /**
      * @group default
      * @depends testConstruct
      */
-    public function testSetAndBuild()
+    public function testSetAndBuild(PropertySpecification $specification)
     {
-        $specification = new PropertySpecification(
-                'url',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
-            );
         $builder = $specification->getBuilder();
         $builder->setValue('http://liquor.cabi.net');
         $property = $builder->build();
@@ -67,11 +65,28 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(__NAMESPACE__ . '\SimpleProperty', $property);
         $this->assertEquals('url', $property->getName());
         $this->assertEquals('http://liquor.cabi.net', $property->getValue());
+        $this->assertEmpty($property->getGroup());
+        
+        return $specification;
     }
-
+    
     /**
      * @group default
-     * @depends testConstruct
+     * @depends testSetAndBuild
+     */
+    public function testSetGroup(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setValue('foo')->setGroup('item1');
+        $property = $builder->build();
+        $this->assertEquals('item1', $property->getGroup());
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
      */
     public function testToString()
     {
@@ -85,5 +100,53 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $property = $builder->build();
         
         $this->assertEquals('FN:Mr. Toad'."\n", (string) $property);
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testToString
+     */
+    public function testToStringWithGroup(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setValue('Mr. Toad')->setGroup('agroup');
+        $property = $builder->build();
+        
+        $this->assertEquals('AGROUP.FN:Mr. Toad'."\n", (string) $property);
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     */
+    public function testSetFromVCardLine(PropertySpecification $specification)
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->setGroup('g')->setName('url')->setValue('http://abc.es');
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals('g', $builder->getGroup());
+        $this->assertEquals('http://abc.es', $builder->getValue());
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     */    
+    public function testSetFromVCardLineNoGroup(
+                PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->setName('url')->setValue('http://abc.es');
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEmpty($builder->getGroup());
+        $this->assertEquals('http://abc.es', $builder->getValue());
     }
 }

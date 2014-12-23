@@ -95,4 +95,25 @@ class TypedStructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals( 'ADR;TYPE=HOME:value1;value2'."\n",
                                 (string) $property );
     }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     */
+    public function testSetFromVCardLine(PropertySpecification $specification)
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setGroup('glurg')
+                    ->setName('adr')
+                    ->setValue('value1;value2')
+                    ->setParameter('type', ['work']);
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals('glurg', $builder->getGroup());
+        $this->assertEquals(['work'], $builder->getTypes());
+        $this->assertEquals( ['Locality'=>'value1', 'Region'=>'value2'],
+                               $builder->getValue() );
+    }
 }

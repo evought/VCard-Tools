@@ -159,4 +159,42 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals( 'TEL;TYPE=WORK,VOICE:1-800-PHP-KING'."\n",
                              (string) $property );
     }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     */
+    public function testSetFromVCardLine(PropertySpecification $specification)
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setName('tel')->setValue('+1-888-GET-PAID')
+                    ->pushParameter('type', 'work');
+        
+        /* @var PropertyBuilder $builder */
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals('+1-888-GET-PAID', $builder->getValue());
+        $this->assertEquals(['work'], $builder->getTypes());
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     */
+    public function testSetFromVCardLineNoTypes(
+            PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setName('tel')->setValue('+1-888-GET-PAID');
+        
+        /* @var PropertyBuilder $builder */
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals('+1-888-GET-PAID', $builder->getValue());
+        $this->assertEmpty($builder->getTypes());
+    }
 }

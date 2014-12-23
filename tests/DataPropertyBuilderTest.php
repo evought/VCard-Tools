@@ -173,4 +173,42 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
                              . VCard::escape('http://example.com/logo.jpg')
                              . "\n", (string) $property );
     }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     */
+    public function testSetFromVCardLine(PropertySpecification $specification)
+    {
+        $google = 'https://www.google.com/logos/doodles/2014/holidays-2014-day-1-5194759324827648.2-hp.gif';
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setGroup('google')
+                    ->setName('logo')
+                    ->setValue($google)
+                    ->setParameter('type', ['work']);
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals('google', $builder->getGroup());
+        $this->assertEquals($google, $builder->getValue());
+        $this->assertEquals(['work'], $builder->getTypes());
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     * @expectedException \DomainException
+     */
+    public function testSetFromVCardLineBadUrl(
+                                    PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setName('logo')
+                    ->setValue('<urf#--;purple')
+                    ->setParameter('type', ['work']);
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+    }
 }

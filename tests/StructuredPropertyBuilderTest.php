@@ -54,25 +54,20 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\StructuredPropertyBuilder',
                                     $builder );
+        return $specification;
     }
     
     /**
      * @group default
      * @depends testConstruct
      */
-    public function testSetAndBuild()
+    public function testSetAndBuild(PropertySpecification $specification)
     {
         $fields = [
                     'StreetAddress'=>'K St. NW',
                     'Locality'=>'Washington',
                     'Region' => 'DC'
                   ];
-        $specification = new PropertySpecification(
-                'adr',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
-                ['allowedFields'=>['StreetAddress', 'Locality', 'Region']]
-            );
         $builder1 = $specification->getBuilder();
         $builder1->setField('StreetAddress', $fields['StreetAddress']);
         $property = $builder1->build();
@@ -103,6 +98,8 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
                                 $property->getField('Locality') );
         $this->assertEquals( $fields['Region'],
                                 $property->getField('Region') );
+        
+        return $specification;
     }
     
     /**
@@ -110,16 +107,12 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @depends testConstruct
      * @expectedException \DomainException
      */
-    public function testSetInvalidField()
+    public function testSetInvalidField(PropertySpecification $specification)
     {
-        $specification = new PropertySpecification(
-                'foo',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
-                ['allowedFields'=>['Bar', 'Baz']]
-            );
         $builder = $specification->getBuilder();
         $builder->setField('Bozo', 'Whatever');
+
+        return $specification;
     }
     
     /**
@@ -127,34 +120,152 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @depends testConstruct
      * @expectedException \DomainException
      */
-    public function testSetInvalidFieldViaValue()
+    public function testSetInvalidFieldViaValue(
+                                        PropertySpecification $specification )
     {
-        $specification = new PropertySpecification(
-                'foo',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
-                ['allowedFields'=>['Bar', 'Baz']]
-            );
         $builder = $specification->getBuilder();
         $builder->setValue(['Bozo'=>'Whatever']);
+        
+        return $specification;
     }
     
     /**
      * @group default
      * @depends testConstruct
      */
-    public function testToString()
+    public function testToString(PropertySpecification $specification)
     {
-        $specification = new PropertySpecification(
-                'struct',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
-                ['allowedFields'=>['field1', 'field2']]
-            );
+        /* @var $builder StructuredPropertyBuilder */
         $builder = $specification->getBuilder();
-        $builder->setValue(['field1'=>'value1', 'field2'=>'value2']);
+        $builder->setField('StreetAddress', 'value1')
+                ->setField('Locality', 'value2')
+                ->setField('Region', 'value3');
         $property = $builder->build();
         
-        $this->assertEquals('STRUCT:value1;value2'."\n", (string) $property);
+        $this->assertEquals( 'ADR:value1;value2;value3'."\n",
+                                (string) $property );
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testConstruct
+     */
+    public function testToStringNoFields(PropertySpecification $specification)
+    {
+        /* @var $builder StructuredPropertyBuilder */
+        $builder = $specification->getBuilder();
+        $property = $builder->build();
+        
+        $this->assertEquals('ADR:;;'."\n", (string) $property);
+        return $specification;
+    }
+    
+    public function valueStringProducer()
+    {
+        // [valueString, fields]
+        return [
+                'Basic' =>
+                    [
+                        '2000 S Eads St;Arlington;VA',
+                            [
+                                'StreetAddress' =>'2000 S Eads St',
+                                'Locality'      =>'Arlington',
+                                'Region'        =>'VA'
+                            ]
+                    ],
+                'Escaped' =>
+                    [
+                        'Escaped \; Semicolon St.;Geekville;NC',
+                            [
+                                'StreetAddress' =>'Escaped ; Semicolon St.',
+                                'Locality'      =>'Geekville',
+                                'Region'        =>'NC'
+                            ]
+                    ],
+                'Escaped Backslash' =>
+                    [
+                        'Punctuation Trail;\\\\;VT',
+                            [
+                                'StreetAddress' =>'Punctuation Trail',
+                                'Locality'      =>'\\',
+                                'Region'        =>'VT'
+                            ]
+                    ]
+        ];
+    }
+
+    /**
+     * @group default
+     * @param string $valueString
+     * @param array $fields An array of fieldname => values.
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     * @dataProvider valueStringProducer
+     */
+    public function testSetFromVCardLine(
+        $valueString, Array $fields, PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setName('adr')
+                    ->setValue($valueString);
+        
+        /* @var StructuredPropertyBuilder $builder */
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals($fields, $builder->getValue());
+    }
+
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     * @expectedException \DomainException
+     */
+    public function testSetFromVCardLineNoFields(
+                                        PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setName('adr')->setValue('');
+        
+        /* @var StructuredPropertyBuilder $builder */
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     * @expectedException \DomainException
+     */
+    public function testSetFromVCardLineTooFewFields(
+                                        PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setName('adr')->setValue(';');
+        
+        /* @var StructuredPropertyBuilder $builder */
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
+     * @expectedException \DomainException
+     */
+    public function testSetFromVCardLineTooManyFields(
+                                        PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine  ->setName('adr')->setValue(';;;;;');
+        
+        /* @var StructuredPropertyBuilder $builder */
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
     }
 }
