@@ -293,7 +293,7 @@ class VCard implements \Countable, \Iterator
                                'Type' => $vcardLine->getParameter('type')
                              ];
                 
-                if (!isset($value)) {$value = $vcardLine->getValue();}
+                if (!isset($value)) {$value = self::unescape($vcardLine->getValue());}
 	    }
 
 	    if (is_array($value) && $vcardLine->hasParameter('encoding'))
@@ -772,7 +772,7 @@ class VCard implements \Countable, \Iterator
 	foreach (self::$Spec_StructuredElements[$Key] as $Index => $StructurePart)
 	{
 	    if (!empty($Text[$Index]))
-	        $Result[$StructurePart] = $Text[$Index];
+	        $Result[$StructurePart] = self::unescape($Text[$Index]);
 	}
 	return $Result;
     } // ParseStructuredValue(
@@ -790,7 +790,8 @@ class VCard implements \Countable, \Iterator
 	// split by commas, except that a comma escaped by
 	// a backslash does not count except that a backslash
 	// escaped by a backslash does not count...
-	return preg_split(preg_quote('/(?<![^\\]\\),/'), $Text);
+	return \array_map( ['static', 'unescape'],
+                           preg_split(preg_quote('/(?<![^\\]\\),/'), $Text) );
     }
     
     // !Interface methods

@@ -343,7 +343,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                 'group'         =>'hyphen-group',
                                 'name'          =>'url',
                                 'parameters'    =>[],
-                                'value'         =>'http://example.com'
+                                'value'         =>'http\://example.com'
                             ]
                         ],
                     'Version' =>
@@ -389,7 +389,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                 'group'         =>'',
                                 'name'          =>'geo',
                                 'parameters'    =>[],
-                                'value'         =>'geo:37.386013,-122.082932'
+                                'value'         =>'geo:37.386013\,-122.082932'
                             ]
                         ],
                     'LOGO data uri' =>

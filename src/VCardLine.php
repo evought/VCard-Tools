@@ -443,7 +443,7 @@ class VCardLine
             throw new \DomainException('Malformed property entry: ' . $rawLine);
         
         $vcardLine = new static($version);
-        $vcardLine  ->setValue(VCard::unescape($parsed['value']))
+        $vcardLine  ->setValue($parsed['value'])
                     ->setName(\trim(\strtolower($parsed['name'])))
                     ->setGroup(\trim(\strtolower($parsed['group'])));
         
