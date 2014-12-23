@@ -30,6 +30,14 @@ class VCard implements \Iterator
     const endl = "\n";
 
     /**
+     * An array of PropertySpecifications, name=>specification, which define
+     * the properties and their constraints as well as return PropertyBuilders
+     * on request.
+     * @var array
+     */
+    private static $specifications;
+    
+    /**
      * @var array Internal options container. Options:
      *	bool Collapse: If true, elements that can have multiple values but have only a single value are returned as that value instead of an array
      *		If false, an array is returned even if it has only one value.
@@ -116,6 +124,354 @@ class VCard implements \Iterator
     private static $Spec_SingleElements
         = array('fn', 'kind', 'bday', 'anniversary', 'prodid', 'rev', 'uid');
 
+    private static function initSpecifications()
+    {
+        if (null !== self::$specifications) return;
+        
+        // https://tools.ietf.org/html/rfc6350#section-6.1.3
+        self::registerSpecification(
+            new PropertySpecification(
+                'source',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        //https://tools.ietf.org/html/rfc6350#section-6.1.4
+        self::registerSpecification(
+            new PropertySpecification(
+                'kind',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.1.5
+        self::registerSpecification(
+            new PropertySpecification(
+                'xml',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.2.1
+        // FN is typed according to spec. No idea why.
+        self::registerSpecification(
+            new PropertySpecification(
+                'fn',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.2.2
+        self::registerSpecification(
+            new PropertySpecification(
+                'n',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                ['allowedFields'=>['FamilyName', 'GivenName', 'AdditionalNames',
+                    'Prefixes', 'Suffixes']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.2.3
+        self::registerSpecification(
+            new PropertySpecification(
+                'nickname',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.2.4
+        self::registerSpecification(
+            new PropertySpecification(
+                'photo',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\DataPropertyBuilder',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.2.5
+        self::registerSpecification(
+            new PropertySpecification(
+                'bday',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.2.6
+        self::registerSpecification(
+            new PropertySpecification(
+                'anniversary',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.2.7
+        self::registerSpecification(
+            new PropertySpecification(
+                'gender',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                ['allowedFields'=>['Sex', 'Text']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.3.1
+        self::registerSpecification(
+            new PropertySpecification(
+                'adr',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedStructuredPropertyBuilder',
+                ['allowedTypes'=>[ 'dom', 'intl', 'postal', 'parcel',
+                            'home', 'work'],
+                 'allowedFields'=>['POBox', 'ExtendedAddress', 'StreetAddress', 
+                            'Locality', 'Region', 'PostalCode', 'Country']
+                ]
+            )
+        );
+        //https://tools.ietf.org/html/rfc6350#section-6.4.1
+        self::registerSpecification(
+            new PropertySpecification(
+                'tel',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['home', 'msg', 'work', 'voice', 'fax', 
+                       'cell', 'video', 'pager', 'bbs', 'modem', 'car', 
+                       'isdn', 'pcs']
+                ]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.4.2
+        self::registerSpecification(
+            new PropertySpecification(
+                'email',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['internet', 'x400']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.4.3
+        self::registerSpecification(
+            new PropertySpecification(
+                'impp',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['personal', 'business', 'home', 'work',
+                    'mobile']
+                ]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.4.4
+        self::registerSpecification(
+            new PropertySpecification(
+                'language',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        //https://tools.ietf.org/html/rfc6350#section-6.5.1
+        self::registerSpecification(
+            new PropertySpecification(
+                'tz',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.5.2
+        self::registerSpecification(
+            new PropertySpecification(
+                'geo',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.6.1
+        self::registerSpecification(
+            new PropertySpecification(
+                'title',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.6.2
+        self::registerSpecification(
+            new PropertySpecification(
+                'role',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.6.3
+        self::registerSpecification(
+            new PropertySpecification(
+                'logo',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\DataPropertyBuilder',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.6.4
+        self::registerSpecification(
+            new PropertySpecification(
+                'org',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . 'TypedStructuredPropertyBuilder',
+                ['allowedTypes'=>['work', 'home'],
+                 'allowedFields'=>['Name', 'Unit1', 'Unit2']
+                ]
+            )
+        );
+        //https://tools.ietf.org/html/rfc6350#section-6.6.5
+        self::registerSpecification(
+            new PropertySpecification(
+                'member',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.6.6
+        self::registerSpecification(
+            new PropertySpecification(
+                'related',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes' => [ 'contact', 'acquaintance', 'friend', 'met',
+                           'co-worker', 'colleague', 'co-resident',
+                           'neighbor', 'child', 'parent', 'sibling',
+                           'spouse', 'kin', 'muse', 'crush', 'date',
+                           'sweetheart', 'me', 'agent', 'emergency' ]
+                ]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.1
+        self::registerSpecification(
+            new PropertySpecification(
+                'categories',
+                PropertySpecification::COMMA_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.2
+        self::registerSpecification(
+            new PropertySpecification(
+                'note',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.3
+        self::registerSpecification(
+            new PropertySpecification(
+                'prodid',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.4
+        self::registerSpecification(
+            new PropertySpecification(
+                'rev',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.5
+        self::registerSpecification(
+            New PropertySpecification(
+                'sound',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\DataPropertyBuilder',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.6
+        self::registerSpecification(
+            new PropertySpecification(
+                'uid',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.7
+        self::registerSpecification(
+            new PropertySpecification(
+                'clientpidmap',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\StructuredPropertBuilderImpl',
+                ['allowedFields'=>['Pid', 'Uri']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.8
+        self::registerSpecification(
+            new PropertySpecification(
+                'url',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.7.9
+        self::registerSpecification(
+            new PropertySpecification(
+                'version',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.8.1
+        self::registerSpecification(
+            New PropertySpecification(
+                'key',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\DataPropertyBuilder',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        //https://tools.ietf.org/html/rfc6350#section-6.9.1
+        self::registerSpecification(
+            new PropertySpecification(
+                'fburl',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.9.2
+        self::registerSpecification(
+            new PropertySpecification(
+                'caladruri',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+        // https://tools.ietf.org/html/rfc6350#section-6.9.3
+        self::registerSpecification(
+            new PropertySpecification(
+                'caluri',
+                PropertySpecification::MULTIPLE_VALUE,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                ['allowedTypes'=>['work', 'home']]
+            )
+        );
+    }
+    
+    /**
+     * Add a PropertySpecification to the the internal registry.
+     * Any existing definition for that property name is replaced.
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     */
+    private static function registerSpecification(
+                                    PropertySpecification $specification )
+    {
+        self::$specifications[$specification->getName()] = $specification;
+    }
+    
     /**
      * vCard constructor
      * @param string $Path to file, optional.
@@ -131,6 +487,8 @@ class VCard implements \Iterator
     public function __construct( $Path = false, $RawData = false,
                                      array $Options = null )
     {
+        self::initSpecifications();
+        
         // Checking preconditions for the parser. If path is given, the file 
         // should be accessible. If raw data is given, it is taken as it is.
 	if ($Path)
@@ -157,6 +515,7 @@ class VCard implements \Iterator
      */
     public static function unfold4($rawData)
     {
+        self::initSpecifications();
         \assert(null !== $rawData);
         \assert(\is_string($rawData));
         
@@ -179,6 +538,7 @@ class VCard implements \Iterator
      */
     public static function unfold21($rawData)
     {
+        self::initSpecifications();
         \assert(null !== $rawData);
         \assert(\is_string($rawData));
         
@@ -699,6 +1059,7 @@ class VCard implements \Iterator
      */
     private static function PrepareTypeStrForOutput(Array $Type)
     {
+        self::initSpecifications();
         return implode(',', array_map('strtoupper', $Type));
     }
 
@@ -713,6 +1074,7 @@ class VCard implements \Iterator
      */
     public static function unescape($Text)
     {
+        self::initSpecifications();
     	assert(null !== $Text);
     	assert(is_string($Text));
     	
@@ -730,6 +1092,7 @@ class VCard implements \Iterator
      */
     public static function escape($text)
     {
+        self::initSpecifications();
     	assert(null !== $text);
     	assert(is_string($text));
     	
@@ -748,6 +1111,8 @@ class VCard implements \Iterator
      */
     private static function ParseStructuredValue($Text, $Key)
     {
+        self::initSpecifications();
+        
     	assert(null !== $Text);
     	assert(is_string($Text));
     	assert(null !== $Key);
@@ -837,6 +1202,7 @@ class VCard implements \Iterator
      */
     public static function keyIsSingleValueElement($key)
     {
+        self::initSpecifications();
     	assert(null !== $key);
     	assert(is_string($key));
     	
@@ -851,6 +1217,7 @@ class VCard implements \Iterator
      */
     public static function keyIsMultipleValueElement($key)
     {
+        self::initSpecifications();
     	assert(null !== $key);
     	assert(is_string($key));
     	
@@ -864,6 +1231,7 @@ class VCard implements \Iterator
      */
     public static function keyIsStructuredElement($key)
     {
+        self::initSpecifications();
     	assert(null !== $key);
     	assert(is_string($key));
     	
@@ -878,6 +1246,7 @@ class VCard implements \Iterator
      */
     public static function keyIsFileElement($key)
     {
+        self::initSpecifications();
     	assert(null !== $key);
     	assert(is_string($key));
     	
@@ -893,6 +1262,7 @@ class VCard implements \Iterator
      */
     public static function keyIsTypeAble($key)
     {
+        self::initSpecifications();
         assert(null !== $key);
         assert(is_string($key));
         
@@ -908,6 +1278,7 @@ class VCard implements \Iterator
      */
     public static function keyAllowedTypes($key)
     {
+        self::initSpecifications();
         assert(null !== $key);
         assert(is_string($key));
         assert(array_key_exists($key, VCard::$Spec_ElementTypes));
@@ -923,6 +1294,7 @@ class VCard implements \Iterator
      */
     public static function keyAllowedFields($key)
     {
+        self::initSpecifications();
         assert(null !== $key);
         assert(is_string($key));
         assert(array_key_exists($key, VCard::$Spec_StructuredElements));
