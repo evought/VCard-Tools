@@ -25,18 +25,9 @@ use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
  * @author evought
  *
  */
-class VCard implements \Countable, \Iterator
+class VCard implements \Iterator
 {
-    const MODE_SINGLE = 'single';
-    const MODE_MULTIPLE = 'multiple';
-
     const endl = "\n";
-
-    /**
-     * @var string Current object mode - single or multiple
-     * (for a single vCard within a file and multiple combined vCards)
-     */
-    private $Mode = self::MODE_SINGLE;  //single, multiple
 
     /**
      * @var array Internal options container. Options:
@@ -365,8 +356,6 @@ class VCard implements \Countable, \Iterator
                 return $this -> Data[$Key][0];
             }
             return $this -> Data[$Key];
-	} elseif ($Key == 'Mode') {
-            return $this -> Mode;
 	}
 	return ($this->keyIsSingleValueElement($Key)) ? null : [];
     } // __get()
@@ -795,30 +784,6 @@ class VCard implements \Countable, \Iterator
     }
     
     // !Interface methods
-
-    /**
-     * Returns the number of internal vCard records created from the same
-     * import. vCard records embedded inside of other vCard records is
-     * deprecated in the vCard 4.0 specification. Ability to load multiple
-     * records in one go in this class is therefore deprecated. Access to
-     * embedded records in older vCards will eventually be provided through
-     * a different facility.
-     * @deprecated
-     * @return integer
-     */
-    public function count()
-    {
-        switch ($this -> Mode)
-	{
-            case self::MODE_SINGLE:
-                return 1;
-		break;
-            case self::MODE_MULTIPLE:
-                return count($this -> Data);
-		break;
-        }
-            return 0;
-    }
 
     /**
      * Reset the interator.
