@@ -375,7 +375,7 @@ class VCardLine
                  || $this->getVersion() === '2.1' )
             {
                 if (!($this->hasParameter('pref')))
-                    $this->setParameter('pref', '1');
+                    $this->setParameter('pref', ['1']);
                 $this->clearParamValues('type', ['pref']);
             } else {
                 throw new \DomainException(

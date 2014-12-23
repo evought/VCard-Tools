@@ -205,6 +205,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group default
+     * @group vcard21
      * @depends testParseParametersEmpty
      */
     public function testParseParametersNoValue21()
@@ -381,6 +382,35 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                                    'label'=>["Mr. John Q. Public, Esq.\nMail Drop: TNE QB\n123 Main Street\nAny Town, CA  91921-1234\nU.S.A."]],
                                 'value'         =>';;123 Main Street;Any Town;CA;91921-1234;U.S.A.'
                             ]
+                        ],
+                    'GEO' =>
+                        ['GEO:geo:37.386013\,-122.082932',
+                            [
+                                'group'         =>'',
+                                'name'          =>'geo',
+                                'parameters'    =>[],
+                                'value'         =>'geo:37.386013,-122.082932'
+                            ]
+                        ],
+                    'LOGO data uri' =>
+                        ['LOGO:data:image/jpeg;base64,MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0',
+                            [
+                                'group'         =>'',
+                                'name'          =>'logo',
+                                'parameters'    =>[],
+                                'value'         =>'data:image/jpeg;base64,MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0'
+                            ]
+                        ],
+                    'PHOTO X-ABCROP-RECTANGLE' =>
+                        ['PHOTO;X-ABCROP-RECTANGLE=ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g==;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA',
+                            [
+                                'group'         =>'',
+                                'name'          =>'photo',
+                                'parameters'    =>['x-abcrop-rectangle'=>['ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g=='],
+                                                   'encoding'=>['b'],
+                                                   'type'=>['jpeg']],
+                                'value'         =>'/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA'
+                            ]
                         ]
         ];
     }
@@ -430,6 +460,40 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     public function testFromLineTextOpenIssues($rawLine, array $components)
     {
         $vcardLine = VCardLine::fromLineText($rawLine, '4.0');
+        
+        $this->assertEquals($components['group'], $vcardLine->getGroup());
+        $this->assertEquals($components['name'], $vcardLine->getName());
+        $this->assertEquals( $components['parameters'],
+                                $vcardLine->getParameters() );
+        $this->assertEquals($components['value'], $vcardLine->getValue());
+    }
+    
+    public function lineProvider21()
+    {
+        return [
+            'TEL bare TYPEs and PREF' =>
+                ['TEL;WORK;VOICE;PREF:+1-999-555-1212',
+                    [
+                        'group'         =>'',
+                        'name'          =>'tel',
+                        'parameters'    =>['pref'=>['1'],
+                                           'type'=>['work','voice'] ],
+                        'value'         =>'+1-999-555-1212'
+                    ]
+                ]
+            ];
+    }
+    
+    /**
+     * @depends testFromLineText
+     * @param string $rawLine Line to parse.
+     * @param array $components Components of expected value.
+     * @dataProvider lineProvider21
+     * @group vcard21
+     */
+    public function testFromLineText21($rawLine, array $components)
+    {
+        $vcardLine = VCardLine::fromLineText($rawLine, '2.1');
         
         $this->assertEquals($components['group'], $vcardLine->getGroup());
         $this->assertEquals($components['name'], $vcardLine->getName());
