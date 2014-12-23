@@ -1421,6 +1421,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     
     /**
      * @group default
+     * @group vcard21
      * @depends testImportVCardFN
      */
     public function testImportVCardAdrWBareType21()
@@ -1800,6 +1801,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    
    /**
     * @group default
+    * @group vcard21
     * @dataProvider unfold21Provider
     */
    public function testUnfold21($folded, $unfolded)
