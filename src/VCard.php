@@ -328,7 +328,7 @@ class VCard implements \Iterator
             new PropertySpecification(
                 'clientpidmap',
                 PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\StructuredPropertBuilderImpl',
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
                 ['allowedFields'=>['Pid', 'Uri']]
             )
         );
@@ -399,6 +399,38 @@ class VCard implements \Iterator
     }
     
     /**
+     * Returns the static registry of property specifications.
+     * @return array An array of PropertySpecifications indexed by property
+     * name.
+     */
+    public static function getSpecifications()
+    {
+        self::initSpecifications();
+        return self::$specifications;
+    }
+    
+    /**
+     * Returns true if-and-only-if a definition exists for the named property.
+     * @param type $name The name of the property to test.
+     * @return bool
+     */
+    public static function isSpecified($name)
+    {
+        \assert(null !== $name);
+        \assert(\is_string($name));
+        return (\array_key_exists($name, self::getSpecifications()));
+    }
+    
+    public static function getSpecification($name)
+    {
+        self::initSpecifications();
+        \assert(null !== $name);
+        \assert(\is_string($name));
+        return \array_key_exists($name, self::$specifications)
+                ? self::$specifications[$name] : null;
+    }
+    
+    /**
      * vCard constructor
      * @param string $Path to file, optional.
      * @param string $RawData Raw vCard data as a string to import.
@@ -412,9 +444,7 @@ class VCard implements \Iterator
      */
     public function __construct( $Path = false, $RawData = false,
                                      array $Options = null )
-    {
-        self::initSpecifications();
-        
+    {        
         // Checking preconditions for the parser. If path is given, the file 
         // should be accessible. If raw data is given, it is taken as it is.
 	if ($Path)
@@ -441,7 +471,6 @@ class VCard implements \Iterator
      */
     public static function unfold4($rawData)
     {
-        self::initSpecifications();
         \assert(null !== $rawData);
         \assert(\is_string($rawData));
         
@@ -464,7 +493,6 @@ class VCard implements \Iterator
      */
     public static function unfold21($rawData)
     {
-        self::initSpecifications();
         \assert(null !== $rawData);
         \assert(\is_string($rawData));
         
@@ -985,7 +1013,6 @@ class VCard implements \Iterator
      */
     private static function PrepareTypeStrForOutput(Array $Type)
     {
-        self::initSpecifications();
         return implode(',', array_map('strtoupper', $Type));
     }
 
@@ -1018,7 +1045,6 @@ class VCard implements \Iterator
      */
     public static function escape($text)
     {
-        self::initSpecifications();
     	assert(null !== $text);
     	assert(is_string($text));
     	
@@ -1036,9 +1062,7 @@ class VCard implements \Iterator
      * @return array Parts in an associative array.
      */
     private static function ParseStructuredValue($Text, $Key)
-    {
-        self::initSpecifications();
-        
+    {        
     	assert(null !== $Text);
     	assert(is_string($Text));
     	assert(null !== $Key);
@@ -1126,6 +1150,7 @@ class VCard implements \Iterator
      * @return bool True if the specified key is a single value VCard element,
      * false otherwise.
      * @throws \DomainException If the property is not defined.
+     * @deprecated Call VCard::getSpecification($key)->requiresSingleValue().
      */
     public static function keyIsSingleValueElement($key)
     {
@@ -1133,10 +1158,9 @@ class VCard implements \Iterator
     	assert(null !== $key);
     	assert(is_string($key));
     	
-        if (!array_key_exists($key, self::$specifications))
+        if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        $specification = self::$specifications[$key];
-        return $specification->requiresSingleValue();
+        return self::getSpecification($key)->requiresSingleValue();
     }
 
     /**
@@ -1145,17 +1169,16 @@ class VCard implements \Iterator
      * (is able to contain multiple values on the same line separated by commas) 
      * false otherwise.
      * @throws \DomainException If the property is not defined.
+     * @deprecated Call VCard::getSpecification($key)->allowsCommaValues.
      */
     public static function keyIsMultipleValueElement($key)
     {
-        self::initSpecifications();
     	assert(null !== $key);
     	assert(is_string($key));
     	
-        if (!array_key_exists($key, self::$specifications))
+        if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        $specification = self::$specifications[$key];
-        return $specification->allowsCommaValues();
+        return self::getSpecification($key)->allowsCommaValues();
     }
 
     /**
@@ -1163,17 +1186,16 @@ class VCard implements \Iterator
      * @return bool True if the specified key is a structured VCard element,
      * false otherwise.
      * @throws \DomainException If the property is not defined.
+     * @deprecated Check the type of a Property or PropertyBuilder.
      */
     public static function keyIsStructuredElement($key)
     {
-        self::initSpecifications();
     	assert(null !== $key);
     	assert(is_string($key));
     	
-        if (!array_key_exists($key, self::$specifications))
+        if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        $specification = self::$specifications[$key];
-        $constraints = $specification->getConstraints();
+        $constraints = self::getSpecification($key)->getConstraints();
         
         return array_key_exists('allowedFields', $constraints);
     }
@@ -1184,17 +1206,17 @@ class VCard implements \Iterator
      * @param string $key The name of the property to test. Not null.
      * @throws \DomainException If the property is not defined.
      * @return boolean
+     * @deprecated check the type of the Property or PropertyBuilder.
+
      */
     public static function keyIsFileElement($key)
     {
-        self::initSpecifications();
     	assert(null !== $key);
     	assert(is_string($key));
     	
-        if (!array_key_exists($key, self::$specifications))
+        if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        $specification = self::$specifications[$key];
-        return $specification->getBuilder() instanceof DataPropertyBuilder;
+        return self::getSpecification($key)->getBuilder() instanceof DataPropertyBuilder;
     }
     
     /**
@@ -1204,17 +1226,16 @@ class VCard implements \Iterator
      * @param string $key The name of the property to test.
      * @throws \DomainException If the property is not defined.
      * @return bool
+     * @deprecated Check the type of a Property or PropertyBuilder.
      */
     public static function keyIsTypeAble($key)
     {
-        self::initSpecifications();
         assert(null !== $key);
         assert(is_string($key));
         
-        if (!array_key_exists($key, self::$specifications))
+        if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        $specification = self::$specifications[$key];
-        $constraints = $specification->getConstraints();
+        $constraints = self::getSpecification($key)->getConstraints();
         
         return array_key_exists('allowedTypes', $constraints);
     }
@@ -1227,16 +1248,16 @@ class VCard implements \Iterator
      * @return array An array of allowed type names.
      * @throws \DomainException If the property is not defined or is not a
      * type-able property.
+     * @deprecated Query the PropertySpecification via Property or
+     * PropertyBuilder.
      */
     public static function keyAllowedTypes($key)
     {
-        self::initSpecifications();
         assert(null !== $key);
         assert(is_string($key));
-        if (!array_key_exists($key, self::$specifications))
+        if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        $specification = self::$specifications[$key];
-        $constraints = $specification->getConstraints();
+        $constraints = self::getSpecification($key)->getConstraints();
         
         if (!array_key_exists('allowedTypes', $constraints))
             throw new \DomainException($key . ' is not a typed property.');
@@ -1251,17 +1272,17 @@ class VCard implements \Iterator
      * @return array An array of allowed field names.
      * @throws \DomainException If the requested key is not defined or does not
      * represent a structured property.
+     * @deprecated Query the PropertySpecification via Property or
+     * PropertyBuilder.
      */
     public static function keyAllowedFields($key)
     {
-        self::initSpecifications();
         assert(null !== $key);
         assert(is_string($key));
         
-        if (!array_key_exists($key, self::$specifications))
+        if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        $specification = self::$specifications[$key];
-        $constraints = $specification->getConstraints();
+        $constraints = self::getSpecification($key)->getConstraints();
         
         if (!array_key_exists('allowedFields', $constraints))
             throw new \DomainException($key . ' is not a structured property.');

@@ -243,6 +243,40 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @group default
+     */
+    public function testGetSpecifications()
+    {
+        foreach (VCard::getSpecifications() as $name=>$specification)
+        {
+            $this->assertEquals($name, $specification->getName());
+            $builder = $specification->getBuilder();
+            $this->assertInstanceOf( 'EVought\vCardTools\PropertyBuilder',
+                                        $builder, $name );
+        }
+    }
+    
+    /**
+     * @depends testGetSpecifications
+     * @group default
+     */
+    public function testGetSpecification()
+    {
+        $specification = VCard::getSpecification('adr');
+        $this->assertNotEmpty($specification);
+        $this->assertEquals('adr', $specification->getName());
+    }
+    
+    /**
+     * @depends testGetSpecifications
+     * @group default
+     */
+    public function testIsSpecified()
+    {
+        $this->assertTrue(VCard::isSpecified('fn'));
+    }
+    
+    /**
+     * @group default
      * @depends testConstructEmptyVCard
      */
     public function testKeyIsStructuredElement()
