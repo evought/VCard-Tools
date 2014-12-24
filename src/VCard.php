@@ -385,6 +385,17 @@ class VCard implements \Iterator
                 ['allowedTypes'=>['work', 'home']]
             )
         );
+        // from VCard 3.0, deprecated.
+        // https://www.ietf.org/rfc/rfc2426.txt , sec 3.5.4
+        // Just store the value; let the caller figure out what they want
+        // to do with it.
+        self::registerSpecification(
+            new PropertySpecification(
+                'agent',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            )
+        );
     }
     
     /**
