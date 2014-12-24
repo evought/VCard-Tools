@@ -50,80 +50,6 @@ class VCard implements \Iterator
      */
     private $Data = array();
 
-    /**
-     * Parts of structured properties according to the spec.
-     * @var array
-     */
-    private static $Spec_StructuredElements
-        = array(
-            'n' => array(
-                    'FamilyName', 'GivenName', 'AdditionalNames',
-                    'Prefixes', 'Suffixes' ),
-
-	    'adr' => array( 'POBox', 'ExtendedAddress', 'StreetAddress', 
-                            'Locality', 'Region', 'PostalCode', 'Country' ),
-
-	    'org' => array('Name', 'Unit1', 'Unit2')
-		);
-
-    /**
-     * Properties which may have multiple values *within a single raw vCard
-     * line* separated by commas, according to spec.
-     * @var array
-     */
-    private static $Spec_MultipleValueElements = array('nickname', 'categories');
-
-    /**
-     * Type parameter values allowed for given properties according to spec.
-     * @var array
-     */
-    private static $Spec_ElementTypes
-        = [
-	    'email' => ['internet', 'x400', 'pref'],
-
-	    'adr' => [ 'dom', 'intl', 'postal', 'parcel',
-                            'home', 'work', 'pref' ],
-
-	    'label' => [ 'dom', 'intl', 'postal', 'parcel',
-			 'home', 'work', 'pref' ],
-
-	    'tel' => [ 'home', 'msg', 'work', 'pref', 'voice', 'fax', 
-                       'cell', 'video', 'pager', 'bbs', 'modem', 'car', 
-                       'isdn', 'pcs' ],
-
-	    'impp' => [ 'personal', 'business', 'home', 'work', 'mobile', 
-                             'pref' ],
-
-	    'note' => ['home', 'work'],
-
-            'url'  => ['home', 'work'],
-            
-            'org'  => ['home', 'work'],
-            
-            'geo'  => ['home', 'work'],
-            
-            'key'  => ['home', 'work'],
-            
-            'related' => [ 'contact', 'acquaintance', 'friend', 'met',
-                           'co-worker', 'colleague', 'co-resident',
-                           'neighbor', 'child', 'parent', 'sibling',
-                           'spouse', 'kin', 'muse', 'crush', 'date',
-                           'sweetheart', 'me', 'agent', 'emergency' ]
-            ];
-    
-    /**
-     * Properties which may contain a BLOB or associated external data.
-     * @var array
-     */
-    private static $Spec_FileElements = array('photo', 'logo', 'sound', 'key');
-
-    /**
-     * Properties with only (zero or) one value according to spec
-     * @var array
-     */
-    private static $Spec_SingleElements
-        = array('fn', 'kind', 'bday', 'anniversary', 'prodid', 'rev', 'uid');
-
     private static function initSpecifications()
     {
         if (null !== self::$specifications) return;
@@ -920,7 +846,7 @@ class VCard implements \Iterator
 	    $Types = array_values(array_slice($Arguments, 1));
 
 	    if ( $this->keyIsStructuredElement($Key)
-                 && ( in_array($Arguments[1], self::$Spec_StructuredElements[$Key])
+                 && ( in_array($Arguments[1], self::keyAllowedFields($Key))
                         || 'Type' === $Arguments[1] )
 	       )
 	    {
@@ -1028,7 +954,7 @@ class VCard implements \Iterator
 		if ($this->keyIsStructuredElement($Key))
 		{
 		    $PartArray = array();
-                    foreach (self::$Spec_StructuredElements[$Key] as $Part)
+                    foreach (self::keyAllowedFields($Key) as $Part)
                     {
                         $PartArray[] = isset($Value[$Part])
                                        ? self::Escape($Value[$Part]) : '';
@@ -1123,7 +1049,7 @@ class VCard implements \Iterator
 	$Result = array();
 	$Ctr = 0;
 
-	foreach (self::$Spec_StructuredElements[$Key] as $Index => $StructurePart)
+	foreach (self::keyAllowedFields($Key) as $Index => $StructurePart)
 	{
 	    if (!empty($Text[$Index]))
 	        $Result[$StructurePart] = self::unescape($Text[$Index]);
