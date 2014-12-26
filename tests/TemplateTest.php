@@ -631,10 +631,10 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$vcard = $this->getRaithSeinar();
     	//preconditions
     	$this->assertNotEmpty($vcard->n, print_r($vcard, true));
-    	$this->assertNotEmpty($vcard->n[0]['FamilyName'], print_r($vcard, true));
+    	$this->assertNotEmpty($vcard->n[0]->getField('FamilyName'), print_r($vcard, true));
     	 
     	$output = $template->output($vcard);
-    	$this->assertEquals($vcard->n[0]['FamilyName'], $output);
+    	$this->assertEquals($vcard->n[0]->getField('FamilyName'), $output);
     }
     
     /**
@@ -644,14 +644,14 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
      */
     public function testQuestFNNo()
     {
-    	$fragments = ['vcard' => '{{output,?fn}}', 'output' => 'Output'];
+    	$fragments = ['vcard' => '{{output,?url}}', 'output' => 'Output'];
     	$template = new Template($fragments);
     	
     	$vcard = new vCard();
-    	$this->assertEmpty($vcard->fn); // precondition
+    	$this->assertEmpty($vcard->url); // precondition
     	
     	$output = $template->output($vcard);
-    	$this->assertEmpty($output, $output);
+    	$this->assertEmpty($output);
     }
     
     /**

@@ -387,13 +387,14 @@ class Template
      * Not null.
      * @arg string $iter_over The current vcard field being iterated over,
      * if any.
-     * @arg mixed $iter_item The current element of the vcard field being iterated over,
-     *   if any.
+     * @arg Property $iter_item The current Property of the vcard field being
+     *   iterated over, if any.
      * @return string The portion of the HTML tree output.
      */
     private function i_processSubstitution( VCard $vcard,
     		                            Substitution $substitution,
-    		                            $iterOver="", $iterItem=null )
+    		                            $iterOver="",
+                                            Property $iterItem=null )
     {
 	assert(null !== $vcard);
 	assert(null !== $this->fragments);
@@ -459,7 +460,7 @@ class Template
     	// handle them all.
     	if (is_array($vcard->$iterOver))
     	{
-    		$iterStrings = array();
+    		$iterStrings = [];
     		foreach($vcard->$iterOver as $iterItem)
     			array_push( $iterStrings,
     					$this->i_processFragment( $vcard,
@@ -482,12 +483,12 @@ class Template
      * @param string $lookUp The name of the property or magic value. Not null.
      * @param string $iterOver The name of a property being iterated over, or
      * null.
-     * @param unknown $iterItem The current value of the property being
+     * @param Property $iterItem The current value of the property being
      * iterated over, or null.
      * @return string
      */
     private function i_processLookUp( VCard $vcard, Substitution $substitution,
-    		                      $iterOver, $iterItem )
+    		                      $iterOver, Property $iterItem = null )
     {
 	assert(null !== $vcard);
 	assert(null !== $substitution);
@@ -512,16 +513,20 @@ class Template
     	    // if we are already processing a list of #items...
     	    if ($lookUpProperty == $iterOver)
     	    {
-    		$value = $iterItem[$lookUpField];
+                \assert($iterItem instanceof StructuredProperty);
+    		$value = $iterItem->getField($lookUpField);
     	    } else {
     		// otherwise look it up and *take first one found*
-    		// NOTE: vcard->__get can be fragile.
+                // FIXME: #64
     		$items = $vcard->$lookUpProperty;
     		if (!empty($items))
+                {
+                    \assert($items[0] instanceof StructuredProperty);
     		    $value = htmlspecialchars(
-    		        array_key_exists($lookUpField, $items[0])
-    			? $items[0][$lookUpField] : ''
+    		        ($items[0]->getField($lookUpField) !== null)
+    			? $items[0]->getField($lookUpField) : ''
     			);
+                }
     	    }
     	} else if ($iterOver == $lookUpProperty) {
     	    $value = htmlspecialchars($iterItem);
