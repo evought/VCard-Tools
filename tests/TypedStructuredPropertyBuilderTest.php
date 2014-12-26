@@ -85,7 +85,7 @@ class TypedStructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToString(PropertySpecification $specification)
+    public function testOutput(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue(['Locality'=>'value1', 'Region'=>'value2'])
@@ -93,7 +93,21 @@ class TypedStructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $property = $builder->build();
         
         $this->assertEquals( 'ADR;TYPE=HOME:value1;value2'."\n",
-                                (string) $property );
+                                $property->output() );
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
+    public function testToString(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setValue(['Locality'=>'value1', 'Region'=>'value2'])
+                ->addType('home');
+        $property = $builder->build();
+        
+        $this->assertEquals( 'value1 value2', (string) $property );
     }
     
     /**

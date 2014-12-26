@@ -64,4 +64,15 @@ trait StructuredPropertyTrait
         }
         return \implode(';', $fieldStrings);
     }
+    
+    public function __toString()
+    {
+        $fieldStrings = [];
+        foreach ($this->getAllowedFields() as $field)
+        {
+            $fieldStrings[] = array_key_exists($field, $this->value)
+                              ? $this->value[$field] : '';
+        }
+        return \implode(' ', $fieldStrings);
+    }
 }

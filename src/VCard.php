@@ -846,10 +846,19 @@ class VCard implements \Iterator
      * Magic method for getting vCard content out
      *
      * @return string Raw vCard content
-     * @todo #63 : Differentiate between string conversion and output.
-     * @todo #65 : Output folding as per RFC6350
+     * @deprecated Use output() instead.
      */
     public function __toString()
+    {
+        return $this->output();
+    }
+
+    /**
+     * Format VCard as the raw VCard (.vcf) text format.
+     * @todo #65 : Output folding as per RFC6350
+     * @return string
+     */
+    public function output()
     {
         $this->setFNAppropriately();
 
@@ -862,22 +871,21 @@ class VCard implements \Iterator
         // FIXME: Remove the newlines in Property::__toString and add them here.
 	foreach ($this->Data as $key=>$values)
 	{
-            // FIXME: #63 : Property __toString() v. output
 	    if (!\is_array($values))
  	    {
-		$text .= (string) $values;
+		$text .= $values->output();
 		continue;
 	    }
  
 	    foreach ($values as $value)
 	    {
-		$text .= (string) $value;
+		$text .= $value->output();
             }
         }
 
 	$text .= 'END:VCARD'.self::endl;
 	return $text;
-    } // __toString()
+    }
 
     // !Helper methods
 

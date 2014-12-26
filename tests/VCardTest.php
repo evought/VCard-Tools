@@ -855,7 +855,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
      * FN appears because RFC6350 may not be omitted (and is not
      * supposed to be empty).
      */
-    public function testToStringEmptyVCard()
+    public function testOutputEmptyVCard()
     {
 	$vcard = new vCard();
 
@@ -875,16 +875,16 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      * @depends testSetFN
      * @dataProvider stringEscapeProvider
      */
-    public function testToStringFN($unescaped, $escaped)
+    public function testOutputFN($unescaped, $escaped)
     {
 	$vcard = new vCard();
 	$vcard->push(VCard::builder('fn')->setValue($unescaped)->build());
         
-	$output = (string) $vcard;
+	$output = $vcard->output();
 	$this->assertNotEmpty($output);
 
         $expected = 	[
@@ -898,18 +898,17 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      * @depends testSetSingleCategory
      * @dataProvider stringEscapeProvider
      */
-    public function testToStringOneCategory($unescaped, $escaped)
+    public function testOutputOneCategory($unescaped, $escaped)
     {
 	$vcard = new vCard();
 	$vcard->push(
                 VCard::builder('categories')->setValue($unescaped)->build() );
 
-	$output = "";
-	$output .= $vcard;
+	$output = $vcard->output();
 
         $expected = [
                         self::$vcard_empty_fn,
@@ -925,12 +924,12 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testToStringOneCategory
+     * @depends testOutputOneCategory
      * @depends testSetTwoCategories
      * We assume it will output multiple categories one per line
      * rather than separated by commas as also allowed in the spec.
      */
-    public function testToStringTwoCategories()
+    public function testOutputTwoCategories()
     {
         $builder = VCard::builder('categories');
 	$category1 = $builder->setValue('sporting goods')->build();
@@ -939,7 +938,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 	$vcard = new vCard();
 	$vcard->push($category1)->push($category2);
 
-	$output = (string) $vcard;
+	$output = $vcard->output();
         
 	$expected = [
 			self::$vcard_empty_fn,
@@ -956,16 +955,16 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      * @depends testSetSingleURL
      * @dataProvider stringEscapeProvider
      */
-    public function testToStringOneURL($unescaped, $escaped)
+    public function testOutputOneURL($unescaped, $escaped)
     {
 	$vcard = new vCard();
 	$vcard->push(VCard::builder('url')->setValue($unescaped)->build());
 
-	$output = (string) $vcard;
+	$output = $vcard->output();
         
 	$expected = [
                         self::$vcard_empty_fn,
@@ -982,10 +981,10 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testToStringOneURL
+     * @depends testOutputOneURL
      * @depends testSetSingleURL
      */
-    public function testToStringTwoURLs()
+    public function testOutputTwoURLs()
     {
         $builder = VCard::builder('url');
 	$url1 = $builder->setValue('something')->build();
@@ -994,7 +993,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 	$vcard = new vCard();
 	$vcard->push($url1)->push($url2);
 
-	$output = (string) $vcard;
+	$output = $vcard->output();
         
         $expected = [
                         self::$vcard_empty_fn,
@@ -1011,11 +1010,11 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      * @depends testSetAdr
      * RFC 6350 Sec 6.3.1
      */
-    public function testToStringOneAdr()
+    public function testOutputOneAdr()
     {
 	$address = [
 			'StreetAddress' => '123 Sesame Street',
@@ -1028,7 +1027,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 	$vcard = new vCard();
         $vcard->push(VCard::builder('adr')->setValue($address)->build());
 
-	$output = (string) $vcard;
+	$output = $vcard->output();
         
 	$expected = [ self::$vcard_empty_fn,
 			"ADR:" . ';;'  // POBox & ExtendedAddress
@@ -1049,9 +1048,9 @@ class VCardTest extends PHPUnit_Framework_TestCase
     
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      */
-    public function testToStringWithOneN()
+    public function testOutputWithOneN()
     {
     	$name = [
     	          'GivenName'       => 'Luna',
@@ -1067,7 +1066,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
     	$vcard->push(VCard::builder('fn')->setValue($fn)->build())
               ->push(VCard::builder('n')->setValue($name)->build());
     	
-    	$output = (string) $vcard;
+    	$output = $vcard->output();
 
     	$expected = [
     	              'N:' . $name['FamilyName'] . ';' . $name['GivenName']
@@ -1086,15 +1085,15 @@ class VCardTest extends PHPUnit_Framework_TestCase
     
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      */
-    public function testToStringRaithSeinar()
+    public function testOutputRaithSeinar()
     {
     	$inputs = $this->getRaithSeinarInputs();
  	
     	$vcard = $this->getRaithSeinar();
     	
-    	$output = (string) $vcard;
+    	$output = $vcard->output();
     	$lines = $this->checkAndRemoveSkeleton($output);
 
         $expected = [
@@ -1114,15 +1113,15 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      */
-    public function testToStringDDBinks()
+    public function testOutputDDBinks()
     {
     	$inputs = $this->getDDBinksInputs();
     	
     	$vcard = $this->getDDBinks();
     	
-    	$output = (string) $vcard;
+    	$output = $vcard->output();
     	$lines = $this->checkAndRemoveSkeleton($output);
 
         $expected = [
@@ -1139,15 +1138,15 @@ class VCardTest extends PHPUnit_Framework_TestCase
     
     /**
      * @group default
-     * @depends testToStringEmptyVCard
+     * @depends testOutputEmptyVCard
      */
-    public function testToStringSeinarAPL()
+    public function testOutputSeinarAPL()
     {
     	$inputs = $this->getSeinarAPLInputs();
     	 
     	$vcard = $this->getSeinarAPL();
     	 
-    	$output = (string) $vcard;
+    	$output = $vcard->output();
     	$lines = $this->checkAndRemoveSkeleton($output);
 
     	$expected = [
@@ -1568,12 +1567,12 @@ class VCardTest extends PHPUnit_Framework_TestCase
    /**
     * @group default
     * @depends testImportVCardFN
-    * @depends testToStringDDBinks
+    * @depends testOutputDDBinks
     */
    public function testImportVCardDDBinks()
    {
        $vcard = $this->getDDBinks();
-       $vcard_string = (string) $vcard;
+       $vcard_string = $vcard->output();
        
        $vcard2 = new vCard(null, $vcard_string);
        $this->assertEquals($vcard, $vcard2);
@@ -1582,12 +1581,12 @@ class VCardTest extends PHPUnit_Framework_TestCase
    /**
     * @group default
     * @depends testImportVCardFN
-    * @depends testToStringRaithSeinar
+    * @depends testOutputRaithSeinar
     */
    public function testImportVCardRaithSeinar()
    {
    	$vcard = $this->getRaithSeinar();
-   	$vcard_string = (string) $vcard;
+   	$vcard_string = $vcard->output();
    	 
    	$vcard2 = new vCard(null, $vcard_string);
    	unset($vcard2->version);
@@ -1597,12 +1596,12 @@ class VCardTest extends PHPUnit_Framework_TestCase
    /**
     * @group default
     * @depends testImportVCardFN
-    * @depends testToStringSeinarAPL
+    * @depends testOutputSeinarAPL
     */
    public function testImportVCardSeinarAPL()
    {
    	$vcard = $this->getSeinarAPL();
-   	$vcard_string = (string) $vcard;
+   	$vcard_string = $vcard->output();
    	 
    	$vcard2 = new vCard(null, $vcard_string);
    	unset($vcard2->version);
@@ -1612,7 +1611,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
    /**
     * @group default
     * @depends testImportVCardDDBinks
-    * @depends testToStringDDBinks
+    * @depends testOutputDDBinks
     */
    public function testImportVCardDDBinksFromFile()
    {
@@ -1628,7 +1627,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
    /**
     * @group default
     * @depends testImportVCardRaithSeinar
-    * @depends testToStringRaithSeinar
+    * @depends testOutputRaithSeinar
     */
    public function testImportVCardRaithSeinarFromFile()
    {
@@ -1645,7 +1644,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
    /**
     * @group default
     * @depends testImportVCardSeinarAPL
-    * @depends testToStringSeinarAPL
+    * @depends testOutputSeinarAPL
     */
    public function testImportVCardSeinarAPLFromFile()
    {

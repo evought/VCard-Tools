@@ -133,7 +133,7 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testConstruct
      */
-    public function testToString(PropertySpecification $specification)
+    public function testOutput(PropertySpecification $specification)
     {
         /* @var $builder StructuredPropertyBuilder */
         $builder = $specification->getBuilder();
@@ -143,7 +143,7 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $property = $builder->build();
         
         $this->assertEquals( 'ADR:value1;value2;value3'."\n",
-                                (string) $property );
+                                $property->output() );
         return $specification;
     }
     
@@ -151,13 +151,30 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testConstruct
      */
-    public function testToStringNoFields(PropertySpecification $specification)
+    public function testOutputNoFields(PropertySpecification $specification)
     {
         /* @var $builder StructuredPropertyBuilder */
         $builder = $specification->getBuilder();
         $property = $builder->build();
         
-        $this->assertEquals('ADR:;;'."\n", (string) $property);
+        $this->assertEquals('ADR:;;'."\n", $property->output());
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testConstruct
+     */
+    public function testToString(PropertySpecification $specification)
+    {
+        /* @var $builder StructuredPropertyBuilder */
+        $builder = $specification->getBuilder();
+        $builder->setField('StreetAddress', 'value1')
+                ->setField('Locality', 'value2')
+                ->setField('Region', 'value3');
+        $property = $builder->build();
+        
+        $this->assertEquals( 'value1 value2 value3', (string) $property );
         return $specification;
     }
     

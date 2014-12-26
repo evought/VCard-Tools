@@ -66,5 +66,21 @@ interface Property
      */
     public function getValue();
     
+    /**
+     * Convert the value of this property to a string. This will produce
+     * a *human-readable* representation of the value, taking advantage of
+     * any appropriate parameter hints for the presentation of that value
+     * (e.g. LABEL) but will not include the parameters themselves.
+     * Contrast output(), which produces a *machine-readable* representation.
+     * @see output()
+     * @return string
+     */
     public function __toString();
+    
+    /**
+     * Format this property appropriately for inclusion as a line in a raw
+     * VCard file. The output will not have a trailing line-break.
+     * @return string
+     */
+    public function output();
 }

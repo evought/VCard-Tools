@@ -88,7 +88,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToString()
+    public function testOutput()
     {
         $specification = new PropertySpecification(
                 'fn',
@@ -99,7 +99,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder->setValue('Mr. Toad');
         $property = $builder->build();
         
-        $this->assertEquals('FN:Mr. Toad'."\n", (string) $property);
+        $this->assertEquals('FN:Mr. Toad'."\n", $property->output());
         
         return $specification;
     }
@@ -108,13 +108,33 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testToString
      */
-    public function testToStringWithGroup(PropertySpecification $specification)
+    public function testOutputWithGroup(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('Mr. Toad')->setGroup('agroup');
         $property = $builder->build();
         
-        $this->assertEquals('AGROUP.FN:Mr. Toad'."\n", (string) $property);
+        $this->assertEquals('AGROUP.FN:Mr. Toad'."\n", $property->output());
+    }
+    
+    /**
+     * @group default
+     * @depends testToString
+     */
+    public function testToString(PropertySpecification $specification)
+    {
+        $specification = new PropertySpecification(
+                'fn',
+                PropertySpecification::SINGLE_VALUE,
+                __NAMESPACE__ . '\SimplePropertyBuilder'
+            );
+        $builder = $specification->getBuilder();
+        $builder->setValue('Mr. Toad');
+        $property = $builder->build();
+        
+        $this->assertEquals('Mr. Toad', (string) $property);
+        
+        return $specification;
     }
     
     /**

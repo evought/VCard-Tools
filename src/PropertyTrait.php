@@ -77,6 +77,11 @@ trait PropertyTrait
     
     public function __toString()
     {
+        return $this->getValue();
+    }
+    
+    public function output()
+    {
         $output = $this->outputName();
         if ($this->hasParameters())
             $output .= ';' . $this->outputParameters();
