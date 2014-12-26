@@ -106,7 +106,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
-     * @depends testToString
+     * @depends testOutput
      */
     public function testOutputWithGroup(PropertySpecification $specification)
     {
@@ -119,7 +119,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
-     * @depends testToString
+     * @depends testSetAndBuild
      */
     public function testToString(PropertySpecification $specification)
     {
