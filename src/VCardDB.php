@@ -151,19 +151,20 @@ class VCardDB
 
         foreach ( ['n', 'adr', 'org'] as $propertyName)
         {
-            foreach ($vcard->$propertyName as $value)
+            if (empty($vcard->$propertyName)) continue;
+            foreach ($vcard->$propertyName as $property)
             {
-            	$this->i_storeStructuredProperty( $propertyName, $value,
-            			                  $uid );
+            	$this->i_storeStructuredProperty($property, $uid);
             }
         }
         
         foreach ( ['photo', 'logo', 'sound', 'key', 'note', 'tel', 'geo',
         		'email', 'categories', 'related'] as $propertyName )
         {
-	    foreach ($vcard->$propertyName as $value)
+            if (empty($vcard->$propertyName)) continue;
+	    foreach ($vcard->$propertyName as $property)
     	    {
-    	    	$this->i_storeBasicProperty($propertyName, $value, $uid);
+    	    	$this->i_storeBasicProperty($property, $uid);
     	    }
         }
 
@@ -193,25 +194,28 @@ class VCardDB
         foreach ( [ 'kind', 'fn', 'bday', 'anniversary', 'rev' ]
                   as $simpleProperty )
         {
-            assert( $vcard->keyIsSingleValueElement($simpleProperty),
+            assert( $vcard->getSpecification($simpleProperty)->requiresSingleValue(),
                     $simpleProperty . ' must be a single value element' );
-            $stmt->bindValue( ':'.$simpleProperty, empty($vcard->$simpleProperty)
-                                ? null : $vcard->$simpleProperty, \PDO::PARAM_STR );
+            $stmt->bindValue( ':'.$simpleProperty,
+                                empty($vcard->$simpleProperty)
+                                ? null : $vcard->$simpleProperty->getValue(),
+                                \PDO::PARAM_STR );
         }
 
-        // HACK #51, #52, #53, #54, #55: VCard and the spec think URL,
+        // HACK: #51, #52, #53, #54, #55: VCard and the spec think URL,
         // NICKNAME, etc. are multiple.
         // Database doesn't. Arbitrarily take the first value.
         foreach (['url', 'nickname', 'role', 'title', 'tz'] as $hackMultiple)
         {
-            assert(!($vcard->keyIsSingleValueElement($hackMultiple)),
+            assert(!($vcard->getSpecification($hackMultiple)->requiresSingleValue()),
                     $simpleProperty . ' must NOT be a single value element');
             $hackMultipleValue = $vcard->$hackMultiple;
             if (empty($hackMultipleValue))
             {
                 $stmt->bindValue(':'.$hackMultiple, null, \PDO::PARAM_NULL);
             } else {
-                $stmt->bindValue(':'.$hackMultiple, $hackMultipleValue[0]);
+                $stmt->bindValue( ':'.$hackMultiple,
+                                    $hackMultipleValue[0]->getValue());
             }        
         }
     
@@ -223,73 +227,55 @@ class VCardDB
     /**
      * Store a structured property (multiple complex values) which requires a
      * subsidiary table/link table and return the ID of the new record.
-     * @param string $propertyName
-     * @param array $propertyValue
+     * @param StructuredProperty $property The property to store.
      * @param string uid The uid of the Contact record the property will be
      * stored under.
      * @return integer The new property record id.
      */
-    private function i_storeStructuredProperty( $propertyName,
-    		                                Array $propertyValue,
+    private function i_storeStructuredProperty( StructuredProperty $property,
     		                                $uid )
     {
     	assert($this->connection !== null);
-    	assert($propertyName !== null);
-    	assert(is_string($propertyName));
-    	assert(!empty($propertyValue));
     	assert(!empty($uid));
     	assert(is_string($uid));
-        assert(VCard::keyIsStructuredElement($propertyName));
     	    	
     	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('store', $propertyName) );
+                    $this->getQueryInfo('store', $property->getName()) );
         
         $stmt->bindValue(':uid', $uid);
-    	foreach(VCard::keyAllowedFields($propertyName) as $key)
+    	foreach($property->getAllowedFields() as $key)
     	{
-            $value = empty($propertyValue[$key])
-                    ? null : $propertyValue[$key];
-            $stmt->bindValue(':'.$key, $value, \PDO::PARAM_STR);
+            $stmt->bindValue(':'.$key, $property->getField($key), \PDO::PARAM_STR);
     	}
     	
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
     	
-        if ( VCard::keyIsTypeAble($propertyName)
-                && (!empty($propertyValue['Type'])) )
-            $this->i_associateTypes( $propertyName, $propertyID,
-                                   $propertyValue['Type'] );
-
+        if ($property instanceof TypedProperty)
+            $this->i_associateTypes($property, $propertyID);
         return $propertyID;
     } // i_storeStructuredProperty()
         
     /**
      * Create an association between the given types and the property/id
      * combination in the database.
-     * @staticvar array $typesSQL SQL statments keyed by property for creating
-     * type records in the appropriate property-specific type table.
-     * @param type $propertyName The name of the property to associate the types
+     * @param TypedProperty $property The property from which to store types.
      * with.
      * @param type $propertyID The id of the property within the appropriate
      * property specific table to associate types with.
-     * @param array $types An array of string types. May be empty.
      */
-    private function i_associateTypes($propertyName, $propertyID, Array $types)
+    private function i_associateTypes(TypedProperty $property, $propertyID)
     {
     	assert($this->connection !== null);
-    	assert($propertyName !== null);
-    	assert(is_string($propertyName));
     	assert($propertyID !== null);
     	assert(is_numeric($propertyID));
-        assert( VCard::keyIsTypeAble($propertyName),
-                $propertyName . ' must be a type-able property.');
-    	assert($types !== null);
-        if (empty($types)) {return;}
+
+        if (empty($property->getTypes())) {return;}
         
         $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('associateTypes', $propertyName) );
+                    $this->getQueryInfo('associateTypes', $property->getName()) );
         
-        foreach ($types as $type)
+        foreach ($property->getTypes() as $type)
         {
             $stmt->bindValue(':id', $propertyID);
             $stmt->bindValue(':type', $type);
@@ -302,27 +288,22 @@ class VCardDB
     /**
      * Store a basic property (multiple simple values) which requires a
      * subsidiary table and return the ID of the new record.
-     * @param string $propertyName The name of the property to store. String,
-     * not null.
-     * @param mixed $value The value of the property to store. Not empty.
+     * @param Property $property The property to store.
      * @param string $uid The uid of the CONTACT to associate the new
      * record with.
      * @return integer The ID of the newly created record.
      */
-    private function i_storeBasicProperty($propertyName, $value, $uid)
+    private function i_storeBasicProperty(Property $property, $uid)
     {
     	assert($this->connection !== null);
-    	assert($propertyName !== null);
-    	assert(is_string($propertyName));
-    	assert(!empty($value));
     	assert(!empty($uid));
     	assert(is_string($uid));
     	
     	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('store', $propertyName) );
+                    $this->getQueryInfo('store', $property->getName()) );
     	
         $stmt->bindValue(':uid', $uid);
-    	$stmt->bindValue(":value", $value);
+    	$stmt->bindValue(":value", $property->getValue());
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
 
@@ -496,20 +477,26 @@ class VCardDB
         $vcard = new VCard();
         $vcard->setUID($row["UID"]);
 
+        // FIXME: fetch columns explicitly instead of "SELECT *" and map
         $simpleCols = [ 'KIND', 'FN', 'NICKNAME', 'BDAY', 'ANNIVERSARY',
                         'TITLE', 'ROLE', 'REV', 'URL', 'VERSION' ];
         foreach ($simpleCols as $col)
         {
-            if (!empty($row[$col])) $vcard->$col($row[$col]);
+            if (!empty($row[$col]))
+                $vcard->push(
+                    VCard::builder(\strtolower($col))
+                        ->setValue($row[$col])->build() );
         }
         
-	$vcard->prodid(self::VCARD_PRODUCT_ID);
+        $vcard->push(
+            VCard::builder('prodid')
+                ->setValue(self::VCARD_PRODUCT_ID)->build() );
         
         foreach (['org', 'adr', 'n'] as $structuredProperty)
         {
             $vcard->$structuredProperty
                 = $this->i_fetchStructuredProperty( $structuredProperty,
-                                                    $vcard->uid );
+                                                    $vcard->getUID() );
         }
         
         // Basic Properties
@@ -517,7 +504,7 @@ class VCardDB
         		'photo', 'sound', 'key', 'related'] as $property )
         {
             $vcard->$property
-                = $this->i_fetchBasicProperty($property, $vcard->uid);
+                = $this->i_fetchBasicProperty($property, $vcard->getUID());
         }
 
         return $vcard;
@@ -525,42 +512,39 @@ class VCardDB
     
     /**
      * Retrieve all types associated with a given property/id in the db.
-     * @staticvar array $fetchTypesSQL SQL statements keyed by property name
-     * for fetching types.
-     * @param type $propertyName The name of the property to fetch types for.
+     * @param TypedPropertyBuilder $property The builder to add types to.
      * @param type $propertyID The ID of the property to fetch types for within
      * the property-specific sub-table.
-     * @return type An array of string types.
+     * @return bool true if-and-only-if types were fetched.
      */
-    private function i_fetchTypesForPropertyID($propertyName, $propertyID)
+    private function i_fetchTypesForPropertyID( TypedPropertyBuilder $builder,
+                                                $propertyID )
     {
-        assert(null !== $propertyName);
-        assert(is_string($propertyName));
         assert(null !== $propertyID);
         assert(is_numeric($propertyID));
-        assert( VCard::keyIsTypeAble($propertyName),
-                $propertyName . ' must be a type-able property.' );
         
         $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('fetchTypes', $propertyName) );
+                    $this->getQueryInfo('fetchTypes', $builder->getName()) );
     	$stmt->bindValue(":id", $propertyID);
     	$stmt->execute();
     	
     	$results = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
     	$stmt->closeCursor();
+        
+        $builder->setTypes($results);
 
-    	return $results ? $results : null;
+    	return empty($results);
     }
     
     /**
-     * Fetch all records for the named structured property (e.g. ADR) and
+     * Fetch all records for the named structured property (e.g. adr) and
      * return them in an array.
-     * @param string $propertyName The name of the associate records to
+     * @param string $propertyName The name of the associated records to
      * retrieve. String, not null.
      * @param integer $uid The uid of the CONTACT the records are
      * associated with. String, not null.
-     * @return NULL|array An array of the structured properties or null if none
-     * available.
+     * @return NULL|StructuredProperty[] An array of the properties or null if
+     * none available.
      */
     private function i_fetchStructuredProperty($propertyName, $uid)
     {
@@ -571,7 +555,7 @@ class VCardDB
     	assert(is_string($uid));
     	    	    	 
     	// Fetch each $propertyName record in turn    	
-    	$propList = array();
+    	$propList = [];
 
     	$stmt = $this->connection->prepare(
                     $this->getQueryInfo('fetch', $propertyName) );
@@ -582,14 +566,15 @@ class VCardDB
     	{
             $propertyID = $result['PropID'];
             unset($result['PropID']);
-            $record = \array_filter($result, '\strlen');
-            if (VCard::keyIsTypeAble($propertyName))
-            {
-                $types = $this->i_fetchTypesForPropertyID($propertyName, $propertyID);
-                if (!empty($types)) {$record['Type'] = $types;}
-            }
             
-            $propList[] = $record;
+            $builder = VCard::builder($propertyName);
+            \assert($builder instanceof StructuredPropertyBuilder);            
+            $builder->setValue(\array_filter($result, '\strlen'));
+            
+            if ($builder instanceof TypedPropertyBuilder)
+                $this->i_fetchTypesForPropertyID($builder, $propertyID);
+            
+            $propList[] = $builder->build();
     	}
         $stmt->closeCursor();
     	return empty($propList) ? null : $propList;    	 
@@ -602,8 +587,8 @@ class VCardDB
      * records for (e.g. email). String, not null.
      * @param string $uid The contact uid records are associated with.
      * Numeric, not null.
-     * @return NULL|array Returns an array of associated records, or null if
-     * none found.
+     * @return NULL|Property[] Returns an array of associated records, or null
+     * if none found.
      */
     private function i_fetchBasicProperty($propertyName, $uid)
     {
@@ -618,9 +603,16 @@ class VCardDB
                     $this->getQueryInfo('fetch', $propertyName) );
         $stmt->bindValue(':id', $uid);
         $stmt->execute();
-        $propList = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $values = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         $stmt->closeCursor();
-    	return empty($propList) ? null : $propList;
+        
+        $properties = [];
+        foreach ($values as $value)
+        {
+            $properties[]
+                    = VCard::builder($propertyName)->setValue($value)->build();
+        }
+    	return empty($properties) ? null : $properties;
     } // i_fetchBasicProperty()    
     
     /**

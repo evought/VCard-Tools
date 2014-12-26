@@ -77,7 +77,8 @@ trait PropertyBuilderTrait
     protected function setBuilderFromLine(VCardLine $vcardLine)
     {
         \assert($this->getName() === $vcardLine->getName());
-        $this->group = $vcardLine->getGroup();
+        $this->group = empty($vcardLine->getGroup())
+                        ? null : $vcardLine->getGroup();
         return $this;
     }
 }

@@ -8,11 +8,16 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-use EVought\vCardTools\VCard as vCard;
+use EVought\vCardTools\VCard as VCard;
 use Rhumsaa\Uuid\Uuid;
 use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
-class VCardTest extends PHPUnit_Framework_TestCase {
+class VCardTest extends PHPUnit_Framework_TestCase
+{
+    // TODO: Test pushProperty(..)
+    // TODO: Test getUID() and uid property magic.
+    // TODO: Test setFNAppropriately()
+    // TODO: Test assignment error conditions
 
     // some components of expected values
     static $vcard_begin = "BEGIN:VCARD";
@@ -22,8 +27,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 
     /**
      * Check the format of the VCARD skeleton (begin, end, version),
-     * remove those lines, and return the remaining lines. Utility for use
-     * in __toString() tests.
+     * remove those lines, and return the remaining lines (sorted).
+     * Utility for use in __toString() tests.
      * @arg $vcard_string The vcard output to check
      * @return An array of the remaining lines (no newlines).
      */
@@ -41,6 +46,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertEquals(self::$vcard_begin, $line);
 	$line = array_shift($lines);
 	$this->assertEquals(self::$vcard_version, $line);
+        
+        sort($lines);
 
 	return $lines;
     }
@@ -66,17 +73,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	    array ( 'http://foobar.baz?yut=boo', 'http\://foobar.baz?yut=boo'),
 	    array ( 'BEGIN:VCARD',		'BEGIN\:VCARD' )
 	);
-    }
-    
-    /**
-     * escape value text in the manner required by the vcard text
-     * @param string $text, not null
-     * @return string
-     */
-    public function escape($text)
-    {
-        assert(null !== $text);
-        return addcslashes($text, "\\\n,:;");
     }
     
     /**
@@ -179,13 +175,20 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
     	$inputs = $this->getDDBinksInputs();
     	
-    	$dDBinks = new vCard();
-    	$dDBinks -> n($inputs['n_GivenName'], 'GivenName')
-            -> n($inputs['n_FamilyName'], 'FamilyName')
-            -> n($inputs['n_AdditionalNames'], 'AdditionalNames')
-            -> org($inputs['org'], 'Name')
-            -> fn($inputs['fn'])
-            -> kind($inputs['kind']);
+    	$dDBinks = new VCard();
+        $dDBinks->push(
+                VCard::builder('n')
+                    ->setField('GivenName', $inputs['n_GivenName'])
+                    ->setField('FamilyName', $inputs['n_FamilyName'])
+                    ->setField('AdditionalNames', $inputs['n_AdditionalNames'])
+                    ->build()
+            );
+        $dDBinks->push(
+                VCard::builder('org')->setField('Name', $inputs['org'])->build()
+            );
+        $dDBinks->push(VCard::builder('fn')->setValue($inputs['fn'])->build());
+        $dDBinks->push(VCard::builder('kind')->setValue($inputs['kind'])
+                ->build());
 
     	return $dDBinks; 
     }
@@ -199,16 +202,37 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	$inputs = $this->getSeinarAPLInputs();
     
     	$seinarAPL = new VCard();
-    	$seinarAPL -> org($inputs['org_Name'], 'Name')
-            -> org($inputs['org_Unit1'], 'Unit1')
-            -> org($inputs['org_Unit2'], 'Unit2')
-            -> fn($inputs['fn'])
-            -> logo($inputs['logo'])
-            -> categories($inputs['category1'])
-            -> categories($inputs['category2'])
-            -> categories($inputs['category3'])
-            -> kind($inputs['kind']);
-    	return $seinarAPL;
+    	$seinarAPL->push(
+                VCard::builder('org')
+                    ->setField('Name', $inputs['org_Name'])
+                    ->setField('Unit1', $inputs['org_Unit1'])
+                    ->setField('Unit2', $inputs['org_Unit2'])
+                    ->build()
+            );
+        $seinarAPL->push(
+                VCard::builder('fn')->setValue($inputs['fn'])->build() );
+        $seinarAPL->push(
+                VCard::builder('logo')->setValue($inputs['logo'])->build()
+            );
+        $seinarAPL->push(
+                VCard::builder('categories')
+                    ->setValue($inputs['category1'])
+                    ->build()
+            );
+        $seinarAPL->push(
+                VCard::builder('categories')
+                    ->setValue($inputs['category2'])
+                    ->build()
+            );
+        $seinarAPL->push(
+                VCard::builder('categories')
+                    ->setValue($inputs['category3'])
+                    ->build()
+            );
+        $seinarAPL->push(
+                VCard::builder('kind')->setValue($inputs['kind'])->build() );
+
+        return $seinarAPL;
     }
     	
     /**
@@ -220,14 +244,32 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	$raithSeinar = new VCard();
     	$inputs = $this->getRaithSeinarInputs();
     	
-    	$raithSeinar -> n($inputs['n_GivenName'], 'GivenName')
-            -> n($inputs['n_FamilyName'], 'FamilyName')
-            -> org($inputs['org'], 'Name')
-            -> title($inputs['title'])
-            -> fn($inputs['fn'])
-            -> categories($inputs['category1'])
-            -> categories($inputs['category2'])
-            -> kind($inputs['kind']);
+    	$raithSeinar->push(
+                VCard::builder('n')
+                    ->setField('GivenName', $inputs['n_GivenName'])
+                    ->setField('FamilyName', $inputs['n_FamilyName'])
+                    ->build()
+            );
+        $raithSeinar->push(
+                VCard::builder('org')->setField('Name', $inputs['org'])->build()
+            );
+        $raithSeinar->push(
+                VCard::builder('title')->setValue($inputs['title'])->build()
+            );
+        $raithSeinar->push(
+                VCard::builder('fn')->setValue($inputs['fn'])->build()
+            );
+        $raithSeinar->push(
+                VCard::builder('categories')->setValue($inputs['category1'])
+                    ->build()
+            );
+        $raithSeinar->push(
+                VCard::builder('categories')->setValue($inputs['category2'])
+                    ->build()
+            );
+        $raithSeinar->push(
+                VCard::builder('kind')->setValue($inputs['kind'])->build()
+            );
     	return $raithSeinar;
     }
     
@@ -361,30 +403,13 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testSetFN(VCard $vcard)
     {
 	$expected = "Test FN";
-	$vcard->fn($expected);
+	$vcard->push(VCard::builder('fn')->setValue($expected)->build());
 	$this->assertNotEmpty($vcard->fn);
-	$this->assertEquals($expected, $vcard->fn);
+	$this->assertEquals($expected, $vcard->fn->getValue());
 
 	unset($vcard->fn);
 	$this->assertEmpty($vcard->fn);
 	return $vcard;
-    }
-    
-    /**
-     * @group default
-     * Test that the __call magic function is case-insenstive with keys.
-     * @depends testSetFN
-     */
-    public function testSetFNUpperCase(vCard $vcard)
-    {
-    	$expected = "Test FN";
-    	$vcard->FN($expected);
-    	$this->assertNotEmpty($vcard->fn);
-    	$this->assertEquals($expected, $vcard->fn);
-    
-    	unset($vcard->fn);
-    	$this->assertEmpty($vcard->fn);
-    	return $vcard;
     }
 
     /**
@@ -394,7 +419,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testIsSet(vCard $vcard)
     {
         $this->assertFalse(isset($vcard->fn), print_r($vcard, true));
-	$vcard->fn("foo");
+	$vcard->push(VCard::builder('fn')->setValue('foo')->build());
 	$this->assertTrue(isset($vcard->fn));
         unset($vcard->fn);
         $this->assertFalse(isset($vcard->fn));
@@ -407,15 +432,16 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testAssignSingleValueElement(vCard $vcard)
     {
     	$properties = [ 'fn', 'kind', 'bday', 'anniversary',
-    	                'prodid', 'rev', 'uid' ];
+    	                'prodid', 'rev'];
         $expected = 'foo';
         
         foreach ($properties as $property)
         {
             $this->assertEmpty($vcard->$property);
-            $vcard->$property = $expected;
+            $vcard->push(
+                VCard::builder($property)->setValue($expected)->build()) ;
 	    $this->assertNotEmpty($vcard->$property);
-	    $this->assertEquals($expected, $vcard->$property);
+	    $this->assertEquals($expected, $vcard->$property->getValue());
 	
 	    unset($vcard->$property);
 	    $this->assertEmpty($vcard->$property);
@@ -431,10 +457,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     {
         $expected = 'foo';
         $this->assertEmpty($vcard->fn);
-        $vcard->fn = $expected;
+        $vcard->fn = VCard::builder('fn')->setValue($expected)->build();
 	$this->assertNotEmpty($vcard->fn);
 
-	$vcard->fn = "";
+	$vcard->fn = null;
 	$this->assertEmpty($vcard->fn);
 	return $vcard;
     }
@@ -445,8 +471,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testAssignElement(vCard $vcard)
     {
-        $expected = array('foo');
-        $this->assertEmpty($vcard->fn);
+        $expected = [VCard::builder('url')->setValue('foo')->build()];
+        $this->assertEmpty($vcard->url);
         $vcard->url = $expected;
 	$this->assertNotEmpty($vcard->url);
 	$this->assertEquals($expected, $vcard->url);
@@ -455,32 +481,17 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertEmpty($vcard->url);
 	return $vcard;
     }
-
-    /**
-     * @group default
-     * @depends testNoFN
-     */
-    public function testAssignStructuredElement(vCard $vcard)
-    {
-        $expected = array(array("StreetAddress" => 'foo'));
-        $this->assertEmpty($vcard->adr);
-        $vcard->adr = $expected;
-	$this->assertNotEmpty($vcard->adr);
-	$this->assertEquals($expected, $vcard->adr);
-
-	unset($vcard->adr);
-	$this->assertEmpty($vcard->adr);
-	return $vcard;
-    }
     
     /**
      * @group default
-     * @depends testAssignStructuredElement
+     * @depends testAssignElement
      */
-    public function testAssignStructuredElementMultiple(vCard $vcard)
+    public function testAssignMultiple(vCard $vcard)
     {
-        $adr1 = ['StreetAddress' => 'foo'];
-        $adr2 = ['StreetAddress' => 'bar'];
+        /* @var $builder TypedStructuredPropertyBuilder */
+        $builder = VCard::builder('adr');
+        $adr1 = $builder->setValue(['StreetAddress' => 'foo'])->build();
+        $adr2 = $builder->setValue(['StreetAddress' => 'bar'])->build();
         
         $this->assertEmpty($vcard->adr);
         $vcard->adr = [$adr1, $adr2];
@@ -499,9 +510,9 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadSingleValueElement(vCard $vcard)
+    public function testAssignBadSingleValue(vCard $vcard)
     {
-        $vcard->fn = array("foo");
+        $vcard->fn = ["foo"];
 	return $vcard;
     }
 
@@ -510,7 +521,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadElement(vCard $vcard)
+    public function testAssignBadProperty(vCard $vcard)
     {
         $vcard->url = "foo";
 	return $vcard;
@@ -521,9 +532,9 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadStructuredElement1(vCard $vcard)
+    public function testAssignWrongProperty(vCard $vcard)
     {
-        $vcard->adr = "foo";
+        $vcard->adr = [VCard::builder('fn')->setValue('foo')->build()];
 	return $vcard;
     }
 
@@ -532,9 +543,10 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @depends testNoFN
      * @expectedException DomainException
      */
-    public function testAssignBadStructuredElement2(vCard $vcard)
+    public function testAssignSingleToMultiple(vCard $vcard)
     {
-        $vcard->adr = array("foo");
+        $vcard->adr = VCard::builder('adr')
+                ->setValue(['Locality'=>'Cheesequake'])->build();
 	return $vcard;
     }
 
@@ -546,14 +558,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testResetFN(vCard $vcard)
     {
-	$fn1 = "First FN";
-	$fn2 = "New FN";
+	$fn1 = VCard::builder('fn')->setValue('First FN')->build();
+	$fn2 = VCard::builder('fn')->setValue('New FN')->build();
 
-	$vcard->fn($fn1);
-	$vcard->fn($fn2);
+	$vcard->push($fn1);
+	$vcard->push($fn2);
 	$this->assertNotEmpty($vcard->fn);
 	$this->assertNotInternalType("array", $vcard->fn);
-	$this->assertEquals($fn2, $vcard->fn);
+	$this->assertSame($fn2, $vcard->fn);
 
 	unset($vcard->fn);
 	return $vcard;
@@ -576,10 +588,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testSetSingleCategory(vCard $vcard)
     {
-	$category_expected = "computers";
-	$vcard->categories($category_expected);
+	$category_expected = VCard::builder('categories')
+                ->setValue('computers')->build();
+	$vcard->push($category_expected);
 	$this->assertNotEmpty($vcard->categories);
-	$this->assertInternalType("array", $vcard->categories);
+	$this->assertInternalType('array', $vcard->categories);
 	$this->assertCount(1, $vcard->categories);
 	$this->assertContains($category_expected, $vcard->categories);
 
@@ -594,13 +607,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testSetTwoCategories(vCard $vcard)
     {
-	$category1 = "computers";
-	$category2 = "electronics";
+        $builder = VCard::builder('categories');
+	$category1 = $builder->setValue('computers')->build();
+	$category2 = $builder->setValue('electronics')->build();
 
-	$vcard->categories($category1);
-	$vcard->categories($category2);
+	$vcard->push($category1);
+	$vcard->push($category2);
 	$this->assertNotEmpty($vcard->categories);
-	$this->assertInternalType("array", $vcard->categories);
+	$this->assertInternalType('array', $vcard->categories);
 	$this->assertCount( 2, $vcard->categories,
 		print_r($vcard->categories, true) );
 	$this->assertContains($category1, $vcard->categories);
@@ -628,10 +642,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testSetSingleURL(vCard $vcard)
     {
-	$url_expected = "http://golf.com";
-	$vcard->url($url_expected);
+	$url_expected = VCard::builder('url')->setValue('http://golf.com')
+                ->build();
+	$vcard->push($url_expected);
 	$this->assertNotEmpty($vcard->url);
-	$this->assertInternalType("array", $vcard->url);
+	$this->assertInternalType('array', $vcard->url);
 	$this->assertCount(1, $vcard->url);
 	$this->assertContains($url_expected, $vcard->url);
 
@@ -646,14 +661,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testSetTwoURLs(vCard $vcard)
     {
-	$url1 = "http://golf.com";
-	$url2 = "http://espn.com";
+        $builder = VCard::builder('url');
+	$url1 = $builder->setValue('http://golf.com')->build();
+	$url2 = $builder->setValue('http://espn.com')->build();
 
-	$vcard->url($url1);
-	$vcard->url($url2);
+	$vcard->push($url1)->push($url2);
 
 	$this->assertNotEmpty($vcard->url);
-	$this->assertInternalType("array", $vcard->url);
+	$this->assertInternalType('array', $vcard->url);
 	$this->assertCount(2, $vcard->url);
 	$this->assertContains($url1, $vcard->url);
 	$this->assertContains($url2, $vcard->url);
@@ -670,10 +685,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testSetSingleGeo(vCard $vcard)
     {
         $this->assertEmpty($vcard->geo); // precondition
-	$geo = "geo:48.2010,16.3695,183";
-	$vcard->geo($geo);
+	$geo = VCard::builder('geo')->setValue('geo:48.2010,16.3695,183')
+                ->build();
+	$vcard->push($geo);
 	$this->assertNotEmpty($vcard->geo);
-	$this->assertInternalType("array", $vcard->geo);
+	$this->assertInternalType('array', $vcard->geo);
 	$this->assertCount(1, $vcard->geo);
 	$this->assertEquals([$geo], $vcard->geo);
 
@@ -689,10 +705,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testSetTwoGeos(vCard $vcard)
     {
         $this->assertEmpty($vcard->geo); // precondition
-	$geo1 = 'geo:48.2010,16.3695,183';
-        $geo2 = 'geo:48.198634,16.371648;crs=wgs84;u=40';
-	$vcard->geo($geo1);
-        $vcard->geo($geo2);
+        $builder = VCard::builder('geo');
+	$geo1 = $builder->setValue('geo:48.2010,16.3695,183')->build();
+        $geo2 = $builder->setValue('geo:48.198634,16.371648;crs=wgs84;u=40')
+                ->build();
+	$vcard->push($geo1)->push($geo2);
 	$this->assertNotEmpty($vcard->geo);
 	$this->assertInternalType("array", $vcard->geo);
 	$this->assertCount(2, $vcard->geo);
@@ -719,18 +736,16 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @group default
      * @depends testNoAdr
      */
-    public function testSetAdrStreetAddress(vCard $vcard)
+    public function testSetAdr(vCard $vcard)
     {
-	$adr_street = "Some Street";
-	$expected = [
-			"StreetAddress" => $adr_street
-		    ];
-	$vcard->adr($adr_street, "StreetAddress");
+	$adr = VCard::builder('adr')
+                ->setValue(['StreetAddress' => 'Some Street'])->build();
+	$vcard->push($adr);
 	$this->assertNotEmpty($vcard->adr);
-	$this->assertInternalType("array", $vcard->adr);
+	$this->assertInternalType('array', $vcard->adr);
 	$this->assertCount(1, $vcard->adr);
 
-	$this->assertContains($expected, $vcard->adr, print_r($vcard->adr, true));
+	$this->assertContains($adr, $vcard->adr, print_r($vcard->adr, true));
 
 	unset($vcard->adr);
 	$this->assertEmpty($vcard->adr);
@@ -741,145 +756,19 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      * @group default
      * @depends testNoAdr
      */
-    public function testSetMultipleAdrViaCall(vCard $vcard)
+    public function testPushMultipleAdr(vCard $vcard)
     {
-	$adr_street = "Some Street";
-	$expected = [
-			"StreetAddress" => $adr_street
-		    ];
-	$vcard->adr($adr_street, "StreetAddress");
-	$vcard->adr($adr_street, "StreetAddress");
+        $builder = VCard::builder('adr');
+        $adr1 = $builder->setValue(['StreetAddress' => 'Some Street'])->build();
+        $adr2 = $builder->build();
+	$vcard->push($adr1)->push($adr2);
         
 	$this->assertNotEmpty($vcard->adr);
 	$this->assertInternalType("array", $vcard->adr);
 	$this->assertCount(2, $vcard->adr);
 
-	$this->assertEquals($expected, $vcard->adr[0],
-                \print_r($vcard->adr[0], true) );
-        $this->assertEquals($expected, $vcard->adr[0],
-                \print_r($vcard->adr[1], true) );
-
-	unset($vcard->adr);
-	$this->assertEmpty($vcard->adr);
-	return $vcard;
-    }
-
-    /**
-     * @group default
-     * @depends testNoAdr
-     */
-    public function testSetAdrFields(vCard $vcard)
-    {
-	$address = [
-			'StreetAddress' => '123 Sesame Street',
-			'Locality' => 'Hooville',
-			'Region' => 'Bear-ever',
-			'PostalCode' => '31337',
-			'Country' => 'Elbonia'
-		    ];
-
-	foreach ($address as $key => $value)
-	{
-	    $vcard->adr($value, $key);
-	}
-	$this->assertNotEmpty($vcard->adr);
-	$this->assertInternalType("array", $vcard->adr);
-	$this->assertCount(1, $vcard->adr);
-
-	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
-
-	unset($vcard->adr);
-	$this->assertEmpty($vcard->adr);
-	return $vcard;
-    }
-
-    /**
-     * @group default
-     * @depends testSetAdrFields
-     */
-    public function testSetAdrTypeViaCall(vCard $vcard)
-    {
-	$address = [
-			'StreetAddress' => '123 Sesame Street',
-			'Locality' => 'Hooville',
-			'Region' => 'Bear-ever',
-			'PostalCode' => '31337',
-			'Country' => 'Elbonia',
-                        'Type' => 'work'
-		    ];
-        
-        $this->assertEmpty($vcard->adr); // precondition
-        
-        foreach ($address as $field => $value)
-        {
-            $vcard->adr($value, $field);
-        }
-	$this->assertNotEmpty($vcard->adr);
-	$this->assertInternalType("array", $vcard->adr);
-	$this->assertCount(1, $vcard->adr, print_r($vcard->adr, true));
-	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
-
-        unset($vcard->adr);
-	$this->assertEmpty($vcard->adr);
-	return $vcard;
-    }
-    
-    /**
-     * @group default
-     * @depends testSetAdrFields
-     */
-    public function testSetAdrTypeViaAssign(vCard $vcard)
-    {
-	$address = [
-			'StreetAddress' => '123 Sesame Street',
-			'Locality' => 'Hooville',
-			'Region' => 'Bear-ever',
-			'PostalCode' => '31337',
-			'Country' => 'Elbonia',
-                        'Type' => 'work'
-		    ];
-        
-        $this->assertEmpty($vcard->adr); // precondition
-        
-        $vcard->adr = [$address];
-            
-	$this->assertNotEmpty($vcard->adr);
-	$this->assertInternalType("array", $vcard->adr);
-	$this->assertCount(1, $vcard->adr, print_r($vcard->adr, true));
-	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
-
-        unset($vcard->adr);
-	$this->assertEmpty($vcard->adr);
-	return $vcard;
-    }
-    
-    /**
-     * @group default
-     * Test ADR fields deprecated by RFC 6350. Should still be supported for the
-     * moment.
-     * @depends testNoAdr
-     */
-    public function testSetAdrDeprecatedFields(vCard $vcard)
-    {
-	$address = [
-			'POBox' => '41218',
-			'ExtendedAddress' => 'Suite Dreams',
-			'StreetAddress' => '123 Sesame Street',
-			'Locality' => 'Hooville',
-			'Region' => 'Bear-ever',
-			'PostalCode' => '31337',
-			'Country' => 'Elbonia'
-		    ];
-
-	foreach ($address as $key => $value)
-	{
-	    $vcard->adr($value, $key);
-	}
-	$this->assertNotEmpty($vcard->adr);
-	$this->assertInternalType("array", $vcard->adr);
-	$this->assertCount(1, $vcard->adr);
-
-	$this->assertContains($address, $vcard->adr, print_r($vcard->adr, true));
+	$this->assertContains($adr1, $vcard->adr, \print_r($vcard->adr, true));
+        $this->assertContains($adr2, $vcard->adr, \print_r($vcard->adr, true));
 
 	unset($vcard->adr);
 	$this->assertEmpty($vcard->adr);
@@ -907,11 +796,12 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testSetKey(vCard $vcard)
     {
         $this->assertEmpty($vcard->key);
-	$expected = 'http://www.example.com/keys/jdoe.cer';
-	$vcard->key = [$expected];
+	$key = VCard::builder('key')
+                ->setValue('http://www.example.com/keys/jdoe.cer')->build();
+	$vcard->push($key);
 	$this->assertNotEmpty($vcard->key, print_r($vcard, true));
         $this->assertCount(1, $vcard->key);
-	$this->assertContains($expected, $vcard->key);
+	$this->assertContains($key, $vcard->key);
 
 	unset($vcard->key);
 	$this->assertEmpty($vcard->key);
@@ -924,8 +814,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testSetKind(vCard $vcard)
     {
-	$expected = "Individual";
-	$vcard->kind($expected);
+	$expected = VCard::builder('kind')->setValue('Individual')->build();
+	$vcard->push($expected);
 	$this->assertNotEmpty($vcard->kind);
 	$this->assertEquals($expected, $vcard->kind);
 
@@ -943,20 +833,20 @@ class VCardTest extends PHPUnit_Framework_TestCase {
         $vcard1 = new VCard();
         $this->assertEmpty($vcard1->uid);
         $vcard1->setUID('Globally Unique');
-        $this->assertEquals('Globally Unique', $vcard1->uid);
+        $this->assertEquals('Globally Unique', $vcard1->getUID());
         
         $vcard2 = new VCard();
         $vcard2->setUID();
-        $this->assertTrue(Uuid::isValid($vcard2->uid));
+        $this->assertTrue(Uuid::isValid($vcard2->getUID()));
         
         $vcard3 = new VCard();
         $vcard3->checkSetUID();
-        $this->assertTrue(Uuid::isValid($vcard3->uid));
+        $this->assertTrue(Uuid::isValid($vcard3->getUID()));
         
         $vcard1->checkSetUID();
-        $this->assertEquals('Globally Unique', $vcard1->uid);
+        $this->assertEquals('Globally Unique', $vcard1->getUID());
         
-        $this->assertNotEquals($vcard2->uid, $vcard3->uid);
+        $this->assertNotEquals($vcard2->getUID(), $vcard3->getUID());
     }
 
     /**
@@ -967,16 +857,20 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testToStringEmptyVCard()
     {
-	$expected = 	[ self::$vcard_empty_fn ];
 	$vcard = new vCard();
 
-	$output = "";
+	$output = '';
 	$output .= $vcard;
 	$this->assertNotEmpty($output);
 
 	$lines = $this->checkAndRemoveSkeleton($output);
-
-	$this->assertEquals($expected, $lines);
+        
+        $expected = 	[
+                            self::$vcard_empty_fn,
+                            'UID:' . $vcard->getUID()
+                        ];
+        
+	$this->assertEquals($expected, $lines, $output);
     }
 
     /**
@@ -987,14 +881,16 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testToStringFN($unescaped, $escaped)
     {
-	$expected = 	[ "FN:" . $escaped ];
 	$vcard = new vCard();
-	$vcard->fn($unescaped);
-
-	$output = "";
-	$output .= $vcard;
+	$vcard->push(VCard::builder('fn')->setValue($unescaped)->build());
+        
+	$output = (string) $vcard;
 	$this->assertNotEmpty($output);
 
+        $expected = 	[
+                            'FN:' . $escaped,
+                            'UID:' . $vcard->getUID()
+                        ];
 	$lines = $this->checkAndRemoveSkeleton($output);
 
 	$this->assertEquals($expected, $lines);
@@ -1008,19 +904,22 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testToStringOneCategory($unescaped, $escaped)
     {
-	$expected = [ self::$vcard_empty_fn, "CATEGORIES:" . $escaped ];
-	sort($expected);
-
 	$vcard = new vCard();
-	$vcard->categories($unescaped);
+	$vcard->push(
+                VCard::builder('categories')->setValue($unescaped)->build() );
 
 	$output = "";
 	$output .= $vcard;
 
+        $expected = [
+                        self::$vcard_empty_fn,
+                        'CATEGORIES:' . $escaped,
+                        'UID:' . $vcard->getUID()
+                    ];
+	sort($expected);
+
 	$lines = $this->checkAndRemoveSkeleton($output);
 
-	// These can appear in any order
-	sort($lines);
 	$this->assertEquals($expected, $lines);
     }
 
@@ -1033,26 +932,25 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testToStringTwoCategories()
     {
-	$category1 = "sporting goods";
-	$category2 = "telephone sanitizing";
+        $builder = VCard::builder('categories');
+	$category1 = $builder->setValue('sporting goods')->build();
+	$category2 = $builder->setValue('telephone sanitizing')->build();
+        
+	$vcard = new vCard();
+	$vcard->push($category1)->push($category2);
+
+	$output = (string) $vcard;
+        
 	$expected = [
 			self::$vcard_empty_fn,
-			"CATEGORIES:" . $category1,
-			"CATEGORIES:" . $category2
+			'CATEGORIES:' . 'sporting goods',
+			'CATEGORIES:' . 'telephone sanitizing',
+                        'UID:' . $vcard->getUID()
 	 ];
 	sort($expected);
 
-	$vcard = new vCard();
-	$vcard->categories($category1);
-	$vcard->categories($category2);
-
-	$output = "";
-	$output .= $vcard;
-
 	$lines = $this->checkAndRemoveSkeleton($output);
 
-	// These can appear in any order
-	sort($lines);
 	$this->assertEquals($expected, $lines);
     }
 
@@ -1064,19 +962,20 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testToStringOneURL($unescaped, $escaped)
     {
-	$expected = [ self::$vcard_empty_fn, "URL:" . $escaped ];
-	sort($expected);
-
 	$vcard = new vCard();
-	$vcard->url($unescaped);
+	$vcard->push(VCard::builder('url')->setValue($unescaped)->build());
 
-	$output = "";
-	$output .= $vcard;
+	$output = (string) $vcard;
+        
+	$expected = [
+                        self::$vcard_empty_fn,
+                        'URL:' . $escaped,
+                        'UID:' . $vcard->getUID()
+                    ];
+	sort($expected);
 
 	$lines = $this->checkAndRemoveSkeleton($output);
 
-	// These can appear in any order
-	sort($lines);
 	$this->assertEquals($expected, $lines);
     }
 
@@ -1088,33 +987,32 @@ class VCardTest extends PHPUnit_Framework_TestCase {
      */
     public function testToStringTwoURLs()
     {
-	$url1 = "something";
-	$url2 = "somethingElse";
-	$expected = [
-			self::$vcard_empty_fn,
-			"URL:" . $url1,
-			"URL:" . $url2
+        $builder = VCard::builder('url');
+	$url1 = $builder->setValue('something')->build();
+	$url2 = $builder->setValue('somethingElse')->build();
+
+	$vcard = new vCard();
+	$vcard->push($url1)->push($url2);
+
+	$output = (string) $vcard;
+        
+        $expected = [
+                        self::$vcard_empty_fn,
+			'URL:something',
+			'URL:somethingElse',
+                        'UID:' . $vcard->getUID()
 		];
 	sort($expected);
 
-	$vcard = new vCard();
-	$vcard->url($url1);
-	$vcard->url($url2);
-
-	$output = "";
-	$output .= $vcard;
-
 	$lines = $this->checkAndRemoveSkeleton($output);
 
-	// These can appear in any order
-	sort($lines);
-	$this->assertEquals($expected, $lines);
+	$this->assertEquals($expected, $lines, $output);
     }
 
     /**
      * @group default
      * @depends testToStringEmptyVCard
-     * @depends testSetAdrFields
+     * @depends testSetAdr
      * RFC 6350 Sec 6.3.1
      */
     public function testToStringOneAdr()
@@ -1127,31 +1025,25 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			'Country' => 'Elbonia'
 		    ];
 
+	$vcard = new vCard();
+        $vcard->push(VCard::builder('adr')->setValue($address)->build());
+
+	$output = (string) $vcard;
+        
 	$expected = [ self::$vcard_empty_fn,
 			"ADR:" . ';;'  // POBox & ExtendedAddress
 			. $address['StreetAddress'] . ';'
 			. $address['Locality'] . ';'
 			. $address['Region'] . ';'
 			. $address['PostalCode'] . ';'
-			. $address['Country']
+			. $address['Country'],
+                        'UID:' . $vcard->getUID()
 			];
 	sort($expected);
 
-	$vcard = new vCard();
-
-	foreach ($address as $key => $value)
-	{
-	    $vcard->adr($value, $key);
-	}
-
-
-	$output = "";
-	$output .= $vcard;
 
 	$lines = $this->checkAndRemoveSkeleton($output);
 
-	// These can appear in any order
-	sort($lines);
 	$this->assertEquals($expected, $lines);
     }
     
@@ -1168,32 +1060,27 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	          'Prefixes'        => 'Ms.',
     	          'Suffixes'        => 'PhD'
     		];
-    	$fn = 'Ms. Luna C. Begtrup PhD';
+    	$fn = 'Ms. Luna C. Begtrup, PhD';
+        $fnEsc = VCard::escape($fn);
+    	    	
+    	$vcard = new vCard();
+    	$vcard->push(VCard::builder('fn')->setValue($fn)->build())
+              ->push(VCard::builder('n')->setValue($name)->build());
     	
+    	$output = (string) $vcard;
+
     	$expected = [
     	              'N:' . $name['FamilyName'] . ';' . $name['GivenName']
     	                   . ';' . $name['AdditionalNames'] . ';'
     	                   . $name['Prefixes'] . ';' . $name['Suffixes'],
-    	              'FN:' . $fn
+    	              'FN:' . $fnEsc,
+                      'UID:' . $vcard->getUID()
     	            ];
 
     	sort($expected);
-    	
-    	$vcard = new vCard();
-    	
-    	foreach ($name as $key => $value)
-    	{
-    		$vcard->n($value, $key);
-    	}
-    	$vcard->fn($fn);
-    	
-    	$output = "";
-    	$output .= $vcard;
-    	
+        
     	$lines = $this->checkAndRemoveSkeleton($output);
     	
-    	// These can appear in any order
-    	sort($lines);
     	$this->assertEquals($expected, $lines);
     }
     
@@ -1204,25 +1091,24 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testToStringRaithSeinar()
     {
     	$inputs = $this->getRaithSeinarInputs();
-    	$expected = [
+ 	
+    	$vcard = $this->getRaithSeinar();
+    	
+    	$output = (string) $vcard;
+    	$lines = $this->checkAndRemoveSkeleton($output);
+
+        $expected = [
     	'N:'.$inputs['n_FamilyName'].';'.$inputs['n_GivenName'].';;;',
         'ORG:'.$inputs['org'].';;',
         'TITLE:'.$inputs['title'],
         'FN:'.$inputs['fn'],
         'CATEGORIES:'.$inputs['category1'],
         'CATEGORIES:'.$inputs['category2'],
-        'KIND:'.$inputs['kind']   
+        'KIND:'.$inputs['kind'],
+        'UID:' . $vcard->getUID()
     	];
     	sort($expected);
-    	
-    	$vcard = $this->getRaithSeinar();
-    	
-    	$output = "";
-    	$output .= $vcard;
-    	$lines = $this->checkAndRemoveSkeleton($output);
-    	
-	// These can appear in any order
-	sort($lines);
+       	
 	$this->assertEquals($expected, $lines);
     }
 
@@ -1233,23 +1119,21 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testToStringDDBinks()
     {
     	$inputs = $this->getDDBinksInputs();
-    	$expected = [
+    	
+    	$vcard = $this->getDDBinks();
+    	
+    	$output = (string) $vcard;
+    	$lines = $this->checkAndRemoveSkeleton($output);
+
+        $expected = [
     	    'N:' . $inputs['n_FamilyName'] . ';' . $inputs['n_GivenName']
     	         . ';' . $inputs['n_AdditionalNames'] . ';;',
             'ORG:'.$inputs['org'].';;',
             'FN:'.$inputs['fn'],
-            'KIND:'.$inputs['kind']   
+            'KIND:'.$inputs['kind'],
+            'UID:' . $vcard->getUID()
     	];
     	sort($expected);
-    	
-    	$vcard = $this->getDDBinks();
-    	
-    	$output = "";
-    	$output .= $vcard;
-    	$lines = $this->checkAndRemoveSkeleton($output);
-    	
-	// These can appear in any order
-	sort($lines);
 	$this->assertEquals($expected, $lines);
     }
     
@@ -1260,6 +1144,12 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     public function testToStringSeinarAPL()
     {
     	$inputs = $this->getSeinarAPLInputs();
+    	 
+    	$vcard = $this->getSeinarAPL();
+    	 
+    	$output = (string) $vcard;
+    	$lines = $this->checkAndRemoveSkeleton($output);
+
     	$expected = [
     	'ORG:'.$inputs['org_Name'].';'.$inputs['org_Unit1'].';'.$inputs['org_Unit2'],
     	'FN:'.$inputs['fn'],
@@ -1267,18 +1157,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
     	'CATEGORIES:'.$inputs['category1'],
     	'CATEGORIES:'.$inputs['category2'],
     	'CATEGORIES:'.$inputs['category3'],
-    	'KIND:'.$inputs['kind']
+    	'KIND:'.$inputs['kind'],
+        'UID:' . $vcard->getUID()
     	];
     	sort($expected);
-    	 
-    	$vcard = $this->getSeinarAPL();
-    	 
-    	$output = "";
-    	$output .= $vcard;
-    	$lines = $this->checkAndRemoveSkeleton($output);
-    	 
-    	// These can appear in any order
-    	sort($lines);
+        
     	$this->assertEquals($expected, $lines);
     }
     
@@ -1293,7 +1176,6 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-        $this->assertEquals('4.0', $vcard->version);
     }
     
     /**
@@ -1355,7 +1237,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertEquals($unescaped, $vcard->fn, print_r($vcard, true));
+	$this->assertEquals($unescaped, $vcard->fn->getValue());
     }
     
     /**
@@ -1372,7 +1254,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\n";
 
 	$vcard = new vCard(false, $input);
-	$this->assertEquals($unescaped, $vcard->fn, print_r($vcard, true));
+	$this->assertEquals($unescaped, $vcard->fn->getValue());
     }
     
     /**
@@ -1389,8 +1271,8 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. "FN:" . $escaped . "\r"
 			. self::$vcard_end . "\r";
 
-	$vcard = new vCard(false, $input);
-	$this->assertEquals($unescaped, $vcard->fn, print_r($vcard, true));
+	$vcard = new VCard(false, $input);
+	$this->assertEquals($unescaped, $vcard->fn->getValue());
     }
     
     /**
@@ -1411,15 +1293,18 @@ class VCardTest extends PHPUnit_Framework_TestCase {
                             . ';' . $jDoeInputs['adr_Country'] . "\r\n"
 			. self::$vcard_end . "\r\n";
 
-        $expectedAdr = [
-            'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
-            'Locality'=>$jDoeInputs['adr_Locality'],
-            'Region'=>$jDoeInputs['adr_Region'],
-            'PostalCode'=>$jDoeInputs['adr_Postal'],
-            'Country'=>$jDoeInputs['adr_Country']
-        ];
+        $expectedAdr = VCard::builder('adr')
+            ->setValue(
+                [
+                    'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
+                    'Locality'=>$jDoeInputs['adr_Locality'],
+                    'Region'=>$jDoeInputs['adr_Region'],
+                    'PostalCode'=>$jDoeInputs['adr_Postal'],
+                    'Country'=>$jDoeInputs['adr_Country']
+                ])
+            ->build();
 
-	$vcard = new vCard(false, $input);
+	$vcard = new VCard(false, $input);
 	$this->assertNotEmpty($vcard->adr);
         $this->assertCount(1, $vcard->adr);
         $this->assertEquals($expectedAdr, $vcard->adr[0]);
@@ -1438,14 +1323,17 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 		. 'ADR;TYPE=HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America' . "\r\n"
 		. self::$vcard_end . "\r\n";
 
-        $expectedAdr = [
-            'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
-            'Locality'=>$jDoeInputs['adr_Locality'],
-            'Region'=>$jDoeInputs['adr_Region'],
-            'PostalCode'=>$jDoeInputs['adr_Postal'],
-            'Country'=>$jDoeInputs['adr_Country'],
-            'Type'=>[strtolower($jDoeInputs['adr_type'])]
-        ];
+        $expectedAdr = VCard::builder('adr')
+            ->setValue(
+                [
+                    'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
+                    'Locality'=>$jDoeInputs['adr_Locality'],
+                    'Region'=>$jDoeInputs['adr_Region'],
+                    'PostalCode'=>$jDoeInputs['adr_Postal'],
+                    'Country'=>$jDoeInputs['adr_Country']
+                ])
+            ->addType(strtolower($jDoeInputs['adr_type']))
+            ->build();
 
 	$vcard = new vCard(false, $input);
 	$this->assertNotEmpty($vcard->adr);
@@ -1467,14 +1355,17 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 		. 'ADR;HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America' . "\r\n"
 		. self::$vcard_end . "\r\n";
 
-        $expectedAdr = [
-            'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
-            'Locality'=>$jDoeInputs['adr_Locality'],
-            'Region'=>$jDoeInputs['adr_Region'],
-            'PostalCode'=>$jDoeInputs['adr_Postal'],
-            'Country'=>$jDoeInputs['adr_Country'],
-            'Type'=>[strtolower($jDoeInputs['adr_type'])]
-        ];
+        $expectedAdr = VCard::builder('adr')
+            ->setValue(
+                [
+                    'StreetAddress'=>$jDoeInputs['adr_StreetAddress'],
+                    'Locality'=>$jDoeInputs['adr_Locality'],
+                    'Region'=>$jDoeInputs['adr_Region'],
+                    'PostalCode'=>$jDoeInputs['adr_Postal'],
+                    'Country'=>$jDoeInputs['adr_Country']
+                ])
+            ->addType(strtolower($jDoeInputs['adr_type']))
+            ->build();
 
 	$vcard = new vCard(false, $input);
 	$this->assertNotEmpty($vcard->adr);
@@ -1541,11 +1432,11 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
-
+        
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
 	$this->assertCount(1, $vcard->categories);
-	$this->assertContains( $unescaped, $vcard->categories,
+	$this->assertEquals( $unescaped, $vcard->categories[0]->getValue(),
 				print_r($vcard->categories, true) );
    }
 
@@ -1564,15 +1455,16 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
+        
+        $builder = VCard::builder('categories');
+        $catProp1 = $builder->setValue($category1)->build();
+        $catProp2 = $builder->setValue($category2)->build();
 
 	$this->assertNotEmpty($vcard->categories);
 	$this->assertInternalType("array", $vcard->categories);
 	$this->assertCount(2, $vcard->categories,
 		print_r($vcard->categories, true) );
-	$this->assertContains( $category1, $vcard->categories,
-				print_r($vcard->categories, true) );
-	$this->assertContains( $category2, $vcard->categories,
-				print_r($vcard->categories, true) );
+	$this->assertEquals([$catProp1, $catProp2], $vcard->categories);
     }
 
     /**
@@ -1621,7 +1513,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
 	$this->assertCount(1, $vcard->url);
-	$this->assertContains( $unescaped, $vcard->url,
+	$this->assertEquals( $unescaped, $vcard->url[0]->getValue(),
 				print_r($vcard->url, true) );
    }
 
@@ -1644,7 +1536,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
 	$this->assertCount(1, $vcard->url);
-	$this->assertContains( $unescaped, $vcard->url,
+	$this->assertEquals( $unescaped, $vcard->url[0]->getValue(),
 				print_r($vcard->url, true) );
    }
 
@@ -1663,15 +1555,14 @@ class VCardTest extends PHPUnit_Framework_TestCase {
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
+        $builder = VCard::builder('url');
+        $urlProp1 = $builder->setValue($url1)->build();
+        $urlProp2 = $builder->setValue($url2)->build();
 
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType("array", $vcard->url);
 	$this->assertCount(2, $vcard->url);
-	$this->assertContains( $url1, $vcard->url,
-				print_r($vcard->url, true) );
-	$this->assertContains( $url2, $vcard->url,
-				print_r($vcard->url, true) );
-
+	$this->assertEquals([$urlProp1, $urlProp2], $vcard->url);
    }
    
    /**
@@ -1682,10 +1573,9 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    public function testImportVCardDDBinks()
    {
        $vcard = $this->getDDBinks();
-       $vcard_string = '' . $vcard;
+       $vcard_string = (string) $vcard;
        
        $vcard2 = new vCard(null, $vcard_string);
-       unset($vcard2->version);
        $this->assertEquals($vcard, $vcard2);
    }
    
@@ -1697,7 +1587,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    public function testImportVCardRaithSeinar()
    {
    	$vcard = $this->getRaithSeinar();
-   	$vcard_string = '' . $vcard;
+   	$vcard_string = (string) $vcard;
    	 
    	$vcard2 = new vCard(null, $vcard_string);
    	unset($vcard2->version);
@@ -1712,7 +1602,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    public function testImportVCardSeinarAPL()
    {
    	$vcard = $this->getSeinarAPL();
-   	$vcard_string = '' . $vcard;
+   	$vcard_string = (string) $vcard;
    	 
    	$vcard2 = new vCard(null, $vcard_string);
    	unset($vcard2->version);
@@ -1767,38 +1657,7 @@ class VCardTest extends PHPUnit_Framework_TestCase {
    	
    	$this->assertEquals($vcard, $vcard2);
    }
-   
-   /**
-    * Make sure the magic __call method works correctly for call chaining.
-    * @group default
-    * @depends testSetTwoURLs
-    */
-   public function testSetChaining(vCard $vcard)
-   {
-   	$url1 = "foo";
-   	$url2 = "baz";
-   	$tel  = "999-454-3212";
-   	
-   	$vcard  ->url($url1)
-   	        ->url($url2)
-   	        ->tel($tel);
-   	
-   	$this->assertNotEmpty($vcard->url);
-   	$this->assertInternalType("array", $vcard->url);
-   	$this->assertCount(2, $vcard->url);
-   	$this->assertContains( $url1, $vcard->url,
-   			print_r($vcard->url, true) );
-   	$this->assertContains( $url2, $vcard->url,
-   			print_r($vcard->url, true) );
-   	
-   	$this->assertNotEmpty($vcard->tel);
-   	$this->assertInternalType("array", $vcard->tel);
-   	$this->assertCount(1, $vcard->tel);
-   	$this->assertContains( $tel, $vcard->tel,
-   			print_r($vcard->tel, true) );
-   	
-   }
-   
+      
     public function unfold4Provider()
     {
         // folded, unfolded

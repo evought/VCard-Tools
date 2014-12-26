@@ -62,7 +62,8 @@ trait StructuredPropertyBuilderTrait
                 . $this->getName() . " : " . $line->getValue() );
         foreach($fieldStrs as $index=>$value)
         {
-            $this->setField($fields[$index], \stripcslashes(\trim($value)));
+            if (0 !== \strlen($value))
+                $this->setField($fields[$index], \stripcslashes(\trim($value)));
         }
     }
 

@@ -28,12 +28,17 @@ use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 class VCard implements \Iterator
 {
     const endl = "\n";
+    
+    /**
+     * The target version of VCards produced.
+     */
+    const VERSION = '4.0';
 
     /**
      * An array of PropertySpecifications, name=>specification, which define
      * the properties and their constraints as well as return PropertyBuilders
      * on request.
-     * @var array
+     * @var PropertySpecification[]
      */
     private static $specifications;
     
@@ -45,10 +50,15 @@ class VCard implements \Iterator
     private $Options = array( 'Collapse' => false );
 
     /**
-     * @var array Internal data container. Contains vCard objects for
-     * multiple vCards and just the data for single vCards.
+     * @var Properties[] The collection of Properties.
      */
-    private $Data = array();
+    private $Data = [];
+    
+    /**
+     * The unique ID for this contact.
+     * @var string
+     */
+    private $uid;
 
     private static function initSpecifications()
     {
@@ -432,6 +442,12 @@ class VCard implements \Iterator
         return (\array_key_exists($name, self::getSpecifications()));
     }
     
+    /**
+     * Return a PropertySpecification for the given property name, or null
+     * if no specification is defined.
+     * @param string $name
+     * @return PropertySpecification
+     */
     public static function getSpecification($name)
     {
         self::initSpecifications();
@@ -515,13 +531,42 @@ class VCard implements \Iterator
     }
     
     /**
-     * Extracts the body of the VCard from the given raw text string,
-     * determining and storing the version at the same time.
-     * The BEGIN, VERSION, and END properties are discarded, the body returned.
+     * Add the proferred $property to this VCard.
+     * If the property is defined as requiring a single value, then the
+     * passed property will replace any existing property by the same name,
+     * otherwise, it is added to the list of values for that property.
+     * The uid property is handled specially, resulting in a call to setUID(..)
+     * and being discarded.
+     * @param \EVought\vCardTools\Property $property
+     * @return \EVought\vCardTools\VCard $this
+     */
+    public function push(Property $property)
+    {
+        if ('uid' === $property->getName())
+            $this->setUID($property->getValue());
+        if ($property->getSpecification()->requiresSingleValue())
+            $this->Data[$property->getName()] = $property;
+        else
+            $this->Data[$property->getName()][] = $property;
+        
+        return $this;
+    }
+    
+    public static function builder($propName)
+    {
+        $specification = self::getSpecification($propName);
+        if (null === $specification)
+            throw new \DomainException(
+                    $propName . ' is not a defined property.' );
+        return $specification->getBuilder();
+    }
+    /**
+     * Extracts the version and body of the VCard from the given raw text
+     * string, returning the components.
      * This must be done before unfolding occurs because the vcard version may
      * determine other parsing steps (including unfolding rules).
      * @param string $text The raw VCard text
-     * @return string The body of the VCard
+     * @return array Keys will be set for at least 'version' and 'body'.
      * @throws \DomainException If the VCard is not well-formed.
      */
     private function getCardBody($text)
@@ -532,8 +577,7 @@ class VCard implements \Iterator
                     $text, $fragments );
         if (1 !== $matches)
             throw new \DomainException('Malformed VCard');
-        $this->Data['version'] = $fragments['version'];
-        return $fragments['body'];
+        return $fragments;
     }
     
     /**
@@ -570,173 +614,129 @@ class VCard implements \Iterator
         // carriage returns before data gets to us, so we can't depend on it.
         $fixNewlines = \str_replace(["\r\n", "\r"], "\n", $rawData);
     	
-        $body = $this->getCardBody($fixNewlines);
+        $components = $this->getCardBody($fixNewlines);
         
-        if ('2.1' === $this->Data['version'])
-            $unfoldedData = self::unfold21($body);
+        if ('2.1' === $this->version)
+            $unfoldedData = self::unfold21($components['body']);
         else
-            $unfoldedData = self::unfold4($body);
-        \assert(\is_string($unfoldedData));
+            $unfoldedData = self::unfold4($components['body']);
                 
         $lines = \explode("\n", $unfoldedData);
 
         foreach ($lines as $line)
         {
-            $vcardLine = VCardLine::fromLineText($line, $this->version);
+            // FIXME: Make sure that TYPE, ENCODING, CHARSET are dealt
+            // with by PropertyBuilder
+            $vcardLine = VCardLine::fromLineText($line, $components['version']);
             
             if (null === $vcardLine)
 	        continue;
 
-            unset($value);
+            // FIXME: Deal with COMMA properties
+            // FIXME: Deal gracefully with unknown and X-properties
+            if (!self::isSpecified($vcardLine->getName()))
+                throw new \DomainException(
+                    $vcardLine->getName() . ' is not a defined property.');
             
-            // FIXME: Make sure that TYPE, ENCODING, CHARSET and group are dealt
-            // with by PropertyBuilder
+            $builder = self::getSpecification($vcardLine->getName())
+                        ->getBuilder();
+            $builder->setFromVCardLine($vcardLine);
             
-	    // Values are parsed according to their type
-            if ($this->keyIsStructuredElement($vcardLine->getName()))
-	    {
-	        $value = self::ParseStructuredValue(
-                        $vcardLine->getValue(), $vcardLine->getName() );
-                if ($vcardLine->hasParameter('type'))
-                    $value['Type'] = $vcardLine->getParameter('type');
-            } else {
-		if ($this->keyIsMultipleValueElement($vcardLine->getName()))
-                    $value = self::ParseMultipleTextValue(
-                        $vcardLine->getValue(), $vcardLine->getName());
-
-	        if ($vcardLine->hasParameter('type'))
-		    $value = [ 'Value' => $vcardLine->getValue(),
-                               'Type' => $vcardLine->getParameter('type')
-                             ];
-                
-                if (!isset($value)) {$value = self::unescape($vcardLine->getValue());}
-	    }
-
-	    if (is_array($value) && $vcardLine->hasParameter('encoding'))
-	        $value['Encoding'] = $vcardLine->getParameter('encoding');
-            
-            if (is_array($value) && !empty($vcardLine->getGroup()))
-	        $value['Group'] = $vcardLine->getGroup();
-
-	    if ($this->keyIsSingleValueElement($vcardLine->getName()))
-            {
-	        $this -> Data[$vcardLine->getName()] = $value;
-	    } else {
-	        if (!isset($this->Data[$vcardLine->getName()]))
-                {
-		    $this -> Data[$vcardLine->getName()] = [];
-	        }
-
-                if ($this->keyIsMultipleValueElement($vcardLine->getName()))
-                    $this->Data[$vcardLine->getName()]
-                        = array_merge($this->Data[$vcardLine->getName()], $value);
-		else
-                        $this->Data[$vcardLine->getName()][] = $value;
-            }
-        } // foreach $Lines
+            $property = $builder->build();
+            $this->push($property);
+        }
         
-        $this->Data['version'] = '4.0';
+        if (\array_key_exists('uid', $this->Data))
+        {
+            $this->uid = $this->Data['uid']->getValue();
+            unset($this->Data['uid']);
+        }
     } // processSingleRawCard()
 
     /**
-     * Magic method to get the various vCard values as object members, e.g.
-     *	a call to $vCard -> N gets the "N" value
+     * Magic method to get the various vCard properties as object members, e.g.
+     *	a call to $vCard -> N gets the "N" property
      *
-     * @param string $Key The name of the property to get. Not null.
+     * @param string $key The name of the property to get. Not null.
      *
-     * @return mixed $Value All values of the named property (may return
-     * scalar or array).
+     * @return Properties[]|Property|null If no property by that name is set, return
+     * null. If a single value is required for the given
+     * property name, return the Property, otherwise return an array of
+     * Properties.
      */
-    public function __get($Key)
-    {
-    	assert(null !== $Key);
-    	
-        $Key = strtolower($Key);
-        if (isset($this -> Data[$Key]))
-        {
-            if ($Key == 'agent' || $this->keyIsSingleValueElement($Key))
-	    {
-	        return $this -> Data[$Key];
-	    } elseif ($this->keyIsFileElement($Key)) {
-	        $Value = $this -> Data[$Key];
-
-		foreach ($Value as $K => $V)
-		{
-		    if (is_array($V))
-                    {
-			if (stripos($V['Value'], 'uri:') === 0)
-			{
-                            $Value[$K]['Value'] = substr($V, 4);
-                            $Value[$K]['Encoding'] = 'uri';
-			}
-                    }
-		}
-		return $Value;
-            }
-
-            if ( $this -> Options['Collapse']
-                 && is_array($this -> Data[$Key])
-                 && (count($this -> Data[$Key]) == 1))
-            {
-                return $this -> Data[$Key][0];
-            }
-            return $this -> Data[$Key];
-	}
-	return ($this->keyIsSingleValueElement($Key)) ? null : [];
-    } // __get()
-
-    /**
-     * Magic assignment function.
-     * Sets the named element to the requested value, replacing any
-     * current value. Note that the nature of
-     * the element will determine what needs to be passed as an argument: in
-     * the case of a single value element, it will need to be a string
-     * and other elements (allowing multiple values), an array.
-     * Attempting to (e.g.) add a string to an element
-     * accepting multiple values will do Bad Things(tm). This is provided
-     * for completeness and because the __call syntax makes it very difficult
-     * to construct and add a set of values in a batch (say, loading VCards
-     * from a database or POST form) and can have unprectable results.
-     * @param string $key The name of the property to set.
-     * @param string $value An appropriate value/values for the property.
-     * @throws \DomainException if the $value is not appropriately a string,
-     * an array, or an array of arrays.
-     */
-    public function __set($key, $value)
+    public function __get($key)
     {
     	assert(null !== $key);
-    	assert(is_string($key));
     	
-	if (empty($value))
+        $keyLower = strtolower($key);
+        if (!array_key_exists($keyLower, $this->Data))
+            return null;
+        if ('uid' === $keyLower)
         {
-            unset($this->Data[$key]);
+            return $this->getSpecification($keyLower)
+                ->getBuilder()->setValue($this->checkSetUID())->build();
+        }
+        return $this->Data[$keyLower];
+    } // __get()
+    
+    public function __set($name, $value)
+    {
+        \assert(null !== $name);
+        $specification = $this->getSpecification($name);
+        if (null === $specification)
+            throw new \DomainException($name . ' is not a defined property.');
+        if ('uid' === $name)
+        {
+            if ($value === null)
+            {
+                $this->uid = null;
+            } else {
+                \assert($value instanceof Property);
+                $this->uid = $value->getValue();
+            }
             return;
         }
-
-	if ($this->keyIsSingleValueElement($key))
+        if (null === $value)
         {
-            if (!is_string($value))
-                throw new \DomainException( "Elements constraint violation: "
-                                           . $key
-                                           . " requires a single value." );
-        } else {
-
-	    if (!is_array($value))
-                throw new \DomainException( "Elements constraint violation: "
-                                           . $key
-                                           . " requires an array of values." );
-            if ($this->keyIsStructuredElement($key))
-            {
-                $result = \array_filter($value, '\is_array');
-                if (\count($result) != \count($value))
-                    throw new \DomainException( "Elements constraint violation: "
-                                                . $key
-                                           . " requires an array of arrays." );
-            }
+            unset($this->Data[$name]);
+            return;
         }
-        $this->Data[$key] = $value;
-    } // __set()
+        
+        if ($specification->allowsMultipleValues())
+        {
+            if (!\is_array($value))
+                throw new \DomainException($name . ' takes multiple values.');
+            foreach ($value as $property)
+            {
+                if (!($property instanceof Property))
+                    throw new \DomainException('Not a property.');
+                if (!($property->getName() === $name))
+                    throw new \DomainException(
+                        $property->getName()
+                        . ' Cannot be assigned to property ' . $name);
+            }
+        } else {
+            if (!($value instanceof Property))
+                throw new \DomainException('Not a property.');
+            if (!($value->getName() === $name))
+                throw new \DomainException(
+                    $value->getName() . ' Cannot be assigned to property '
+                    . $name);
+        }
+        $this->Data[$name] = $value;
+    }
 
+    /**
+     * Return the unique ID of this contact, if one has been set.
+     * @return string|null Description
+     * @see setUID()
+     * @see checkSetUID()
+     */
+    public function getUID()
+    {
+        return $this->uid;
+    }
+    
     /**
      * Sets the Unique ID for this VCard. If no UID is provided, a new
      * RFC 4122-compliant UUID will be generated.
@@ -768,62 +768,12 @@ class VCard implements \Iterator
      */
     public function checkSetUID($uid = null)
     {
-        if (array_key_exists('uid', $this->Data))
-                return $this->Data['uid'];
+        if (!empty($this->uid))
+            return $this->uid;
         else
-                return $this->setUID($uid);
+            return $this->setUID($uid);
     }
     
-    /**
-     * Saves an embedded file
-     *
-     * @param string $Key Not null.
-     * @param int $Index of the file, defaults to 0
-     * @param string $TargetPath where the file should be saved, including
-     * the filename.
-     *
-     * @return bool Operation status
-     */
-    public function SaveFile($Key, $Index = 0, $TargetPath = '')
-    {
-    	assert(null !== $Key);
-    	assert(is_string($Key));
-    	
-	if (!isset($this -> Data[$Key]))
-	{
-	    return false;
-	}
-        if (!isset($this -> Data[$Key][$Index]))
-        {
-	    return false;
-        }
-
-	// Returing false if it is an image URL
-	if (stripos($this -> Data[$Key][$Index]['Value'], 'uri:') === 0)
-	{
-	    return false;
-	}
-
-	if ( is_writable($TargetPath)
-	     || ( !file_exists($TargetPath)
-                  && is_writable(dirname($TargetPath)) ) )
-	{
-	    $RawContent = $this -> Data[$Key][$Index]['Value'];
-	    if ( isset($this -> Data[$Key][$Index]['Encoding'])
-                 && $this -> Data[$Key][$Index]['Encoding'] == 'b' )
-	    {
-	        $RawContent = base64_decode($RawContent);
-	    }
-	    $Status = file_put_contents($TargetPath, $RawContent);
-	    return (bool)$Status;
-        } else {
-	    throw new Exception( 'vCard: Cannot save file ('
-                                 . $Key . '), target path not writable ('
-                                 . $TargetPath.')' );
-	}
-	return false;
-    }
-
     /**
      * Clear all values of the named element.
      * @param string $key The property to unset. Not null.
@@ -834,7 +784,7 @@ class VCard implements \Iterator
     	assert(is_string($key));
     	
         if (array_key_exists($key, $this->Data))
-	    unset($this->Data["$key"]);
+	    unset($this->Data[$key]);
 	    return $this;
     } // __unset()
 
@@ -853,79 +803,6 @@ class VCard implements \Iterator
     } // __isset()
 
     /**
-     * Magic method for adding data to the vCard
-     *
-     * @param string $Key The name of the property to set values on.
-     * @param array $Arguments Method call arguments. First element is value.
-     *
-     * @return VCard Current object for method chaining
-     */
-    public function __call($Key, Array $Arguments)
-    {
-    	assert(null !== $Key);
-    	assert(is_string($Key));
-    	
-	$Key = strtolower($Key);
-
-	$Value = isset($Arguments[0]) ? $Arguments[0] : false;
-
-	if ($this->keyIsSingleValueElement($Key))
-	{
-	    $this -> Data[$Key] = $Value;
-	    return $this;
-	}
-
-	if (!isset($this -> Data[$Key]))
-	{
-	    $this -> Data[$Key] = array();
-	}
-
-	if (count($Arguments) > 1)
-	{
-	    $Types = array_values(array_slice($Arguments, 1));
-
-	    if ( $this->keyIsStructuredElement($Key)
-                 && ( in_array($Arguments[1], self::keyAllowedFields($Key))
-                        || 'Type' === $Arguments[1] )
-	       )
-	    {
-		$LastElementIndex = 0;
-
-		if (count($this -> Data[$Key]))
-		{
-		    $LastElementIndex = count($this -> Data[$Key]) - 1;
-		}
-
-		if (isset($this -> Data[$Key][$LastElementIndex]))
-		{
-		    if (empty($this -> Data[$Key][$LastElementIndex][$Types[0]]))
-		    {
-			$this->Data[$Key][$LastElementIndex][$Types[0]] = $Value;
-		    } else {
-			$LastElementIndex++;
-		    }
-		}
-
-		if (!isset($this -> Data[$Key][$LastElementIndex]))
-		{
-		    $this->Data[$Key][$LastElementIndex] = array(
-							$Types[0] => $Value
-						);
-		}
-            } elseif (isset(self::$Spec_ElementTypes[$Key])) {
-                $this -> Data[$Key][] = array(
-					'Value' => $Value,
-					'Type' => $Types
-					);
-            }
-	} elseif ($Value) {
-	    $this -> Data[$Key][] = $Value;
-	}
-
-	return $this;
-    } // __call()
-
-    /**
      * If FN is not set, set it appropriately from either the
      * individual or organization name (RFC says FN should not
      * be empty).
@@ -935,18 +812,32 @@ class VCard implements \Iterator
      */
     public function setFNAppropriately()
     {
-        if (!array_key_exists("fn", $this->Data) || empty($this->Data["fn"]))
+        // FIXME: #63 : Property __toString() v. output
+        // FIXME: #64 : Get PREFerred Property
+        if ( (!(\array_key_exists('fn', $this->Data)))
+             || empty($this->Data["fn"]->getValue()) )
         {
-	    if ( array_key_exists("kind", $this->Data)
-		 && $this->Data["kind"] == "organization" )
+            $fullname = '';
+	    if ( \array_key_exists("kind", $this->Data)
+		 && $this->Data["kind"]->getValue() === "organization" )
 	    {
-	        $fullname = (isset($this->Data["org"]))
-			? implode(" ", $this->Data["org"][0]) : "";
-            } else {
-                $fullname = (isset($this->Data["n"])) ?
-		    implode(" ", $this->Data["n"][0]) : "";
+                if (\array_key_exists('org', $this->Data))
+                {
+                    $org = $this->Data['org'][0];
+                    $fullname = \implode(' ', $org->getValue());
+                }
             }
-            $this->Data["fn"] = trim($fullname);
+	    if ( \array_key_exists("kind", $this->Data)
+		 && $this->Data["kind"]->getValue() === "organization" )
+	    {
+                if (\array_key_exists('n', $this->Data))
+                {
+                    $org = $this->Data['n'];
+                    $fullname = \implode(' ', $n->getValue());
+                }
+            }
+            $this->Data["fn"] = $this->getSpecification('fn')->getBuilder()
+                    ->setValue(trim($fullname))->build();
         }
         return $this;
     } // setFNAppropriately()
@@ -955,77 +846,40 @@ class VCard implements \Iterator
      * Magic method for getting vCard content out
      *
      * @return string Raw vCard content
+     * @todo #63 : Differentiate between string conversion and output.
+     * @todo #65 : Output folding as per RFC6350
      */
     public function __toString()
     {
         $this->setFNAppropriately();
 
-	$Text = 'BEGIN:VCARD'.self::endl;
-	$Text .= 'VERSION:4.0'.self::endl;
+	$text = 'BEGIN:VCARD'. self::endl;
+	$text .= 'VERSION:'.self::VERSION . self::endl;
+        
+        $this->checkSetUID();
+        $text .= 'UID:' . $this->uid . self::endl;
 
-	foreach ($this -> Data as $Key => $Values)
+        // FIXME: Remove the newlines in Property::__toString and add them here.
+	foreach ($this->Data as $key=>$values)
 	{
-	    $KeyUC = strtoupper($Key);
-	    $Key = strtolower($Key);
-
-	    if ($KeyUC === 'VERSION')
-	    {
-                continue;
-	    }
-
-	    if ($this->keyIsSingleValueElement($Key))
+            // FIXME: #63 : Property __toString() v. output
+	    if (!\is_array($values))
  	    {
-                $Text .= $KeyUC . ":" . self::Escape($Values);
-		$Text .= self::endl;
+		$text .= (string) $values;
 		continue;
 	    }
  
-	    foreach ($Values as $Index => $Value)
+	    foreach ($values as $value)
 	    {
-		$Text .= $KeyUC;
-		if (is_array($Value) && isset($Value['Type']))
-                {
-                    $Text .= ';TYPE='
-                             . self::PrepareTypeStrForOutput($Value['Type']);
-		}
-		$Text .= ':';
-
-		if ($this->keyIsStructuredElement($Key))
-		{
-		    $PartArray = array();
-                    foreach (self::keyAllowedFields($Key) as $Part)
-                    {
-                        $PartArray[] = isset($Value[$Part])
-                                       ? self::Escape($Value[$Part]) : '';
-                    }
-						$Text .= implode(';', $PartArray);
-		} elseif ( is_array($Value)
-                           && isset(self::$Spec_ElementTypes[$Key]) ) {
-		    $Text .= self::Escape($Value['Value']);
-		} else {
-                    $Text .= self::Escape($Value);
-		}
-
-		$Text .= self::endl;
-            } // foreach
+		$text .= (string) $value;
+            }
         }
 
-	$Text .= 'END:VCARD'.self::endl;
-	return $Text;
+	$text .= 'END:VCARD'.self::endl;
+	return $text;
     } // __toString()
 
     // !Helper methods
-
-    /**
-     * Takes an array of types and turns them into a single string for
-     * inclusion in a raw vCard line.
-     * @param array $Type The array of type values to prepare. Not null.
-     * @return string
-     */
-    private static function PrepareTypeStrForOutput(Array $Type)
-    {
-        return implode(',', array_map('strtoupper', $Type));
-    }
 
     /**
      * Removes the escaping slashes from the text.
@@ -1060,53 +914,6 @@ class VCard implements \Iterator
     	assert(is_string($text));
     	
         return addcslashes($text, "\\\n,:;");
-    }
-
-    /**
-     * Separates the various parts of a structured value according to the spec.
-     *
-     * @access private
-     *
-     * @param string Raw text string
-     * @param string Key (e.g., N, ADR, ORG, etc.)
-     *
-     * @return array Parts in an associative array.
-     */
-    private static function ParseStructuredValue($Text, $Key)
-    {        
-    	assert(null !== $Text);
-    	assert(is_string($Text));
-    	assert(null !== $Key);
-    	assert(is_string($Key));
-    	
-        $Text = array_map('trim', explode(';', $Text));
-
-	$Result = array();
-	$Ctr = 0;
-
-	foreach (self::keyAllowedFields($Key) as $Index => $StructurePart)
-	{
-	    if (!empty($Text[$Index]))
-	        $Result[$StructurePart] = self::unescape($Text[$Index]);
-	}
-	return $Result;
-    } // ParseStructuredValue(
-
-    /**
-     * Split multiple element values by commas, except that RFC6350
-     * allowed escaping is handled (comma and backslash).
-     * @param string $Text The value text removed from the vCard line.
-     * @return array An array of elements retrieved from this line.
-     */
-    private static function ParseMultipleTextValue($Text)
-    {
-    	assert(null !== $Text);
-    	assert(is_string($Text));
-	// split by commas, except that a comma escaped by
-	// a backslash does not count except that a backslash
-	// escaped by a backslash does not count...
-	return \array_map( ['static', 'unescape'],
-                           preg_split(preg_quote('/(?<![^\\]\\),/'), $Text) );
     }
     
     // !Interface methods
