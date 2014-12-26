@@ -122,34 +122,35 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToStringNoTypes(PropertySpecification $specification)
+    public function testOutputNoTypes(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('1-800-PHP-KING');
         $property = $builder->build();
         
-        $this->assertEquals('TEL:1-800-PHP-KING'."\n", (string) $property);
+        $this->assertEquals('TEL:1-800-PHP-KING'."\n", $property->output());
     }
     
     /**
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToStringOneType(PropertySpecification $specification)
+    public function testOutputOneType(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('1-800-PHP-KING')
                 ->addType('work');
         $property = $builder->build();
         
-        $this->assertEquals('TEL;TYPE=WORK:1-800-PHP-KING'."\n", (string) $property);
+        $this->assertEquals( 'TEL;TYPE=WORK:1-800-PHP-KING'."\n",
+                $property->output() );
     }
     
     /**
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToStringTwoTypes(PropertySpecification $specification)
+    public function testOutputTwoTypes(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('1-800-PHP-KING')
@@ -157,7 +158,20 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $property = $builder->build();
         
         $this->assertEquals( 'TEL;TYPE=WORK,VOICE:1-800-PHP-KING'."\n",
-                             (string) $property );
+                             $property->output() );
+    }
+
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
+    public function testToString(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setValue('1-800-PHP-KING');
+        $property = $builder->build();
+        
+        $this->assertEquals('1-800-PHP-KING', (string) $property);
     }
     
     /**
