@@ -113,7 +113,7 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToStringJustValue(PropertySpecification $specification)
+    public function testOutputJustValue(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg');
@@ -121,14 +121,14 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals( 'LOGO:'
                              . VCard::escape('http://example.com/logo.jpg')
-                             . "\n", (string) $property );
+                             . "\n", $property->output() );
     }
     
     /**
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToStringOneType(PropertySpecification $specification)
+    public function testOutputOneType(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg')
@@ -137,14 +137,14 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals( 'LOGO;TYPE=WORK:'
                              . VCard::escape('http://example.com/logo.jpg')
-                             . "\n", (string) $property );
+                             . "\n", $property->output() );
     }
     
     /**
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToStringMediaType(PropertySpecification $specification)
+    public function testOutputMediaType(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg')
@@ -153,14 +153,14 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals( 'LOGO;MEDIATYPE=image/png:'
                              . VCard::escape('http://example.com/logo.jpg')
-                             . "\n", (string) $property );
+                             . "\n", $property->output() );
     }
     
     /**
      * @group default
      * @depends testSetAndBuild
      */
-    public function testToStringMediaTypeAndType(PropertySpecification $specification)
+    public function testOutputMediaTypeAndType(PropertySpecification $specification)
     {
         $builder = $specification->getBuilder();
         $builder->setValue('http://example.com/logo.jpg')
@@ -171,7 +171,20 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         // NOTE: Sensitive to output order.
         $this->assertEquals( 'LOGO;TYPE=HOME;MEDIATYPE=image/png:'
                              . VCard::escape('http://example.com/logo.jpg')
-                             . "\n", (string) $property );
+                             . "\n", $property->output() );
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
+    public function testToString(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setValue('http://example.com/logo.jpg');
+        $property = $builder->build();
+        
+        $this->assertEquals('http://example.com/logo.jpg', (string) $property);
     }
     
     /**
