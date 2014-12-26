@@ -88,6 +88,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @group default
      * @depends testConstruct
      */
     public function testUnsetParameter()
@@ -489,6 +490,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
      * @param string $rawLine Line to parse.
      * @param array $components Components of expected value.
      * @dataProvider lineProvider21
+     * @group default
      * @group vcard21
      */
     public function testFromLineText21($rawLine, array $components)
