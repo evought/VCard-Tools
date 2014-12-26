@@ -673,8 +673,7 @@ class VCard implements \Iterator
             return null;
         if ('uid' === $keyLower)
         {
-            return $this->getSpecification($keyLower)
-                ->getBuilder()->setValue($this->checkSetUID())->build();
+            return $this->getUIDAsProperty();
         }
         return $this->Data[$keyLower];
     } // __get()
@@ -740,9 +739,16 @@ class VCard implements \Iterator
     /**
      * Sets the Unique ID for this VCard. If no UID is provided, a new
      * RFC 4122-compliant UUID will be generated.
+     * Note that it is not recommended or possible to set the uid to null
+     * using this method (since passing null here will cause a new uid to
+     * be automatically generated). It is possible to temporarily clear the uid,
+     * but it has to be done explicitly by calling clearUID() to ensure that the
+     * caller really intends to set it to no value.
      * @param string $uid The UID to set. Defaults to a newly-generated
      * version 1 UUID as a urn. UIDs must uniquely identify
      * the object the card represents.
+     * @see clearUID()
+     * @see checkSetUID()
      * @see https://tools.ietf.org/html/rfc6350#section-6.7.6
      * @return string The new uid value.
      */
@@ -754,6 +760,21 @@ class VCard implements \Iterator
         }
         $this->uid = $uid;
         return $uid;
+    }
+    
+    /**
+     * Explicitly unset uid.
+     * This should simply cause the uid to be regenerated on next output, but
+     * it may be useful to temporarily clear it in testcases, to do
+     * uid-independent comparisons, or when needing to explicitly change the
+     * identity of the VCard (so that a new card will not be seen as an
+     * update of an older card).
+     * @return VCard $this
+     */
+    public function clearUID()
+    {
+        $this->uid = null;
+        return $this;
     }
     
     /**
@@ -772,6 +793,22 @@ class VCard implements \Iterator
             return $this->uid;
         else
             return $this->setUID($uid);
+    }
+    
+    /**
+     * Present the internal UID value as a property which can then be used
+     * for formatting or export. This method is used to fake a UID property
+     * in some public methods.
+     * It has two potential side-effects:
+     * 1) checkSetUID is called, so if no uid has been set, a new one will be
+     * generated.
+     * 2) Identity comparisons between multiple magic uid properties will fail.
+     * @return Property
+     */
+    protected function getUIDAsProperty()
+    {
+        return $this->getSpecification('uid')
+                ->getBuilder()->setValue($this->checkSetUID())->build();
     }
     
     /**
@@ -864,8 +901,7 @@ class VCard implements \Iterator
 	$text = 'BEGIN:VCARD'. self::endl;
 	$text .= 'VERSION:'.self::VERSION . self::endl;
         
-        $this->checkSetUID();
-        $text .= 'UID:' . $this->uid . self::endl;
+        $text .= $this->getUIDAsProperty()->output();
 
         // FIXME: Remove the newlines in Property::__toString and add them here.
 	foreach ($this->Data as $key=>$values)

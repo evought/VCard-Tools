@@ -8,14 +8,13 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-use EVought\vCardTools\VCard as VCard;
+namespace EVought\vCardTools;
+
 use Rhumsaa\Uuid\Uuid;
 use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
-class VCardTest extends PHPUnit_Framework_TestCase
+class VCardTest extends \PHPUnit_Framework_TestCase
 {
-    // TODO: Test pushProperty(..)
-    // TODO: Test getUID() and uid property magic.
     // TODO: Test setFNAppropriately()
     // TODO: Test assignment error conditions
 
@@ -278,8 +277,8 @@ class VCardTest extends PHPUnit_Framework_TestCase
      */
     public function testConstructEmptyVCard()
     {
-	$vcard = new vCard();
-	$this->assertInstanceOf('EVought\vCardTools\vCard', $vcard);
+	$vcard = new VCard();
+	$this->assertInstanceOf(__NAMESPACE__ . '\VCard', $vcard);
 	return $vcard;
     }
 
@@ -397,12 +396,14 @@ class VCardTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Push a property required to have zero or one value. Get should return
+     * the bare property, not an array.
      * @group default
      * @depends testNoFN
      */
-    public function testSetFN(VCard $vcard)
+    public function testPushSpeccedSingle(VCard $vcard)
     {
-	$expected = "Test FN";
+	$expected = 'Test FN';
 	$vcard->push(VCard::builder('fn')->setValue($expected)->build());
 	$this->assertNotEmpty($vcard->fn);
 	$this->assertEquals($expected, $vcard->fn->getValue());
@@ -414,7 +415,38 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testSetFN
+     * @depends testNoFN
+     */
+    public function testPushSpeccedMultiple(VCard $vcard)
+    {
+	$expected = '555-1212';
+	$vcard->push(VCard::builder('tel')->setValue($expected)->build());
+	$this->assertNotEmpty($vcard->tel);
+        $this->assertInternalType('array', $vcard->tel);
+        $this->assertCount(1, $vcard->tel);
+	$this->assertEquals($expected, $vcard->tel[0]->getValue());
+
+	unset($vcard->tel);
+	$this->assertEmpty($vcard->tel);
+	return $vcard;
+    }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     */
+    public function testPushUIDMagic(VCard $vcard)
+    {
+        $uid = VCard::builder('uid')->setValue('Fake UID')->build();
+        $vcard->push($uid);
+        $this->assertEquals('Fake UID', $vcard->getUID());
+        $vcard->clearUID();
+    }
+
+    
+    /**
+     * @group default
+     * @depends testPushSpeccedSingle
      */
     public function testIsSet(vCard $vcard)
     {
@@ -552,7 +584,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
     /**
      * @group default
-     * @depends testSetFN
+     * @depends testPushSpeccedSingle
      * Because FN is a single value element, setting twice should
      * overwrite the first value rather than adding a new value.
      */
@@ -828,12 +860,10 @@ class VCardTest extends PHPUnit_Framework_TestCase
      * @depends testConstructEmptyVCard
      * @group default
      */
-    public function testUID()
+    public function testUID(VCard $vcard)
     {
-        $vcard1 = new VCard();
-        $this->assertEmpty($vcard1->uid);
-        $vcard1->setUID('Globally Unique');
-        $this->assertEquals('Globally Unique', $vcard1->getUID());
+        $vcard->setUID('Globally Unique');
+        $this->assertEquals('Globally Unique', $vcard->getUID());
         
         $vcard2 = new VCard();
         $vcard2->setUID();
@@ -843,10 +873,42 @@ class VCardTest extends PHPUnit_Framework_TestCase
         $vcard3->checkSetUID();
         $this->assertTrue(Uuid::isValid($vcard3->getUID()));
         
-        $vcard1->checkSetUID();
-        $this->assertEquals('Globally Unique', $vcard1->getUID());
+        $vcard->checkSetUID();
+        $this->assertEquals('Globally Unique', $vcard->getUID());
         
         $this->assertNotEquals($vcard2->getUID(), $vcard3->getUID());
+        
+        $vcard->clearUID();
+        return $vcard;
+    }
+    
+    /**
+     * @depends testUID
+     * @group default
+     */
+    public function testGetUIDMagic(vCard $vcard)
+    {
+        // UID, when presented as a property, *always has a value* so that the
+        // VCard will always have a primary key when output.
+        $this->assertNull($vcard->getUID());
+        
+        /* @var $property1 Property */
+        $property1 = $vcard->uid;
+        $this->assertNotEmpty($property1);
+        $this->assertInstanceOf(__NAMESPACE__ . '\Property', $property1);
+        $this->assertEquals('uid', $property1->getName());
+        
+        $vcard->setUID('Some UID');
+        
+        /* @var $property2 Property */
+        $property2 = $vcard->uid;
+        $this->assertNotEmpty($property2);
+        $this->assertInstanceOf(__NAMESPACE__ . '\Property', $property2);
+        $this->assertEquals('uid', $property2->getName());
+        $this->assertEquals('Some UID', $property2->getValue());
+        
+        $vcard->clearUID();
+        return $vcard;
     }
 
     /**
@@ -867,7 +929,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
         
         $expected = 	[
                             self::$vcard_empty_fn,
-                            'UID:' . $vcard->getUID()
+                            'UID:' . VCard::escape($vcard->getUID())
                         ];
         
 	$this->assertEquals($expected, $lines, $output);
@@ -876,7 +938,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testOutputEmptyVCard
-     * @depends testSetFN
+     * @depends testPushSpeccedSingle
      * @dataProvider stringEscapeProvider
      */
     public function testOutputFN($unescaped, $escaped)
@@ -889,7 +951,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
         $expected = 	[
                             'FN:' . $escaped,
-                            'UID:' . $vcard->getUID()
+                            'UID:' . VCard::escape($vcard->getUID())
                         ];
 	$lines = $this->checkAndRemoveSkeleton($output);
 
@@ -913,7 +975,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
         $expected = [
                         self::$vcard_empty_fn,
                         'CATEGORIES:' . $escaped,
-                        'UID:' . $vcard->getUID()
+                        'UID:' . VCard::escape($vcard->getUID())
                     ];
 	sort($expected);
 
@@ -944,7 +1006,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 			self::$vcard_empty_fn,
 			'CATEGORIES:' . 'sporting goods',
 			'CATEGORIES:' . 'telephone sanitizing',
-                        'UID:' . $vcard->getUID()
+                        'UID:' . VCard::escape($vcard->getUID())
 	 ];
 	sort($expected);
 
@@ -969,7 +1031,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 	$expected = [
                         self::$vcard_empty_fn,
                         'URL:' . $escaped,
-                        'UID:' . $vcard->getUID()
+                        'UID:' . VCard::escape($vcard->getUID())
                     ];
 	sort($expected);
 
@@ -999,7 +1061,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
                         self::$vcard_empty_fn,
 			'URL:something',
 			'URL:somethingElse',
-                        'UID:' . $vcard->getUID()
+                        'UID:' . VCard::escape($vcard->getUID())
 		];
 	sort($expected);
 
@@ -1036,7 +1098,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
 			. $address['Region'] . ';'
 			. $address['PostalCode'] . ';'
 			. $address['Country'],
-                        'UID:' . $vcard->getUID()
+                        'UID:' . VCard::escape($vcard->getUID())
 			];
 	sort($expected);
 
@@ -1073,7 +1135,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
     	                   . ';' . $name['AdditionalNames'] . ';'
     	                   . $name['Prefixes'] . ';' . $name['Suffixes'],
     	              'FN:' . $fnEsc,
-                      'UID:' . $vcard->getUID()
+                      'UID:' . VCard::escape($vcard->getUID())
     	            ];
 
     	sort($expected);
@@ -1104,7 +1166,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
         'CATEGORIES:'.$inputs['category1'],
         'CATEGORIES:'.$inputs['category2'],
         'KIND:'.$inputs['kind'],
-        'UID:' . $vcard->getUID()
+        'UID:' . VCard::escape($vcard->getUID())
     	];
     	sort($expected);
        	
@@ -1130,7 +1192,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
             'ORG:'.$inputs['org'].';;',
             'FN:'.$inputs['fn'],
             'KIND:'.$inputs['kind'],
-            'UID:' . $vcard->getUID()
+            'UID:' . VCard::escape($vcard->getUID())
     	];
     	sort($expected);
 	$this->assertEquals($expected, $lines);
@@ -1157,7 +1219,7 @@ class VCardTest extends PHPUnit_Framework_TestCase
     	'CATEGORIES:'.$inputs['category2'],
     	'CATEGORIES:'.$inputs['category3'],
     	'KIND:'.$inputs['kind'],
-        'UID:' . $vcard->getUID()
+        'UID:' . VCard::escape($vcard->getUID())
     	];
     	sort($expected);
         
@@ -1237,6 +1299,22 @@ class VCardTest extends PHPUnit_Framework_TestCase
 
 	$vcard = new vCard(false, $input);
 	$this->assertEquals($unescaped, $vcard->fn->getValue());
+    }
+    
+    /**
+     * @group default
+     * @depends testImportEmptyVCard
+     */
+    public function testImportVCardUID()
+    {
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. "FN:Foo\r\n"
+                        . "UID:123\r\n"
+			. self::$vcard_end . "\r\n";
+
+	$vcard = new vCard(false, $input);
+	$this->assertEquals('123', $vcard->getUID());
     }
     
     /**
