@@ -812,7 +812,6 @@ class VCard implements \Iterator
      */
     public function setFNAppropriately()
     {
-        // FIXME: #63 : Property __toString() v. output
         // FIXME: #64 : Get PREFerred Property
         if ( (!(\array_key_exists('fn', $this->Data)))
              || empty($this->Data["fn"]->getValue()) )
@@ -824,7 +823,7 @@ class VCard implements \Iterator
                 if (\array_key_exists('org', $this->Data))
                 {
                     $org = $this->Data['org'][0];
-                    $fullname = \implode(' ', $org->getValue());
+                    $fullname = (string) $org;
                 }
             }
 	    if ( \array_key_exists("kind", $this->Data)
@@ -833,7 +832,7 @@ class VCard implements \Iterator
                 if (\array_key_exists('n', $this->Data))
                 {
                     $org = $this->Data['n'];
-                    $fullname = \implode(' ', $n->getValue());
+                    $fullname = (string) $n;
                 }
             }
             $this->Data["fn"] = $this->getSpecification('fn')->getBuilder()
