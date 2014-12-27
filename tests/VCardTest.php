@@ -15,8 +15,6 @@ use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
 class VCardTest extends \PHPUnit_Framework_TestCase
 {
-    // TODO: Test assignment error conditions
-
     // some components of expected values
     static $vcard_begin = "BEGIN:VCARD";
     static $vcard_end = "END:VCARD";
