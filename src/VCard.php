@@ -25,7 +25,7 @@ use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
  * @author evought
  *
  */
-class VCard implements \Iterator
+class VCard implements \Iterator, \Countable
 {
     const endl = "\n";
     
@@ -544,7 +544,7 @@ class VCard implements \Iterator
     {
         if ('uid' === $property->getName())
             $this->setUID($property->getValue());
-        if ($property->getSpecification()->requiresSingleValue())
+        elseif ($property->getSpecification()->requiresSingleValue())
             $this->Data[$property->getName()] = $property;
         else
             $this->Data[$property->getName()][] = $property;
@@ -669,12 +669,12 @@ class VCard implements \Iterator
     	assert(null !== $key);
     	
         $keyLower = strtolower($key);
-        if (!array_key_exists($keyLower, $this->Data))
-            return null;
         if ('uid' === $keyLower)
         {
             return $this->getUIDAsProperty();
         }
+        if (!array_key_exists($keyLower, $this->Data))
+            return null;
         return $this->Data[$keyLower];
     } // __get()
     
@@ -1004,6 +1004,30 @@ class VCard implements \Iterator
     public function key()
     {
         return key($this -> Data);
+    }
+    
+    /**
+     * Get the total count of Properties in this VCard.
+     * This method counts all Property instances, not just the number of
+     * property types defined.
+     * In other words, if this card contains two ADR properties,
+     * $this->adr will return a single array value containing two Property
+     * instances and this method will count both of them in the total.
+     * @return int
+     */
+    public function count()
+    {
+        // NOTE: Cannot use \COUNT_RECURSIVE because that counts the arrays
+        // as well as their contents. We want a count only of Properties.
+        $count = 0;
+        foreach ($this->Data as $key=>$values)
+        {
+            if ($this->getSpecification($key)->allowsMultipleValues())
+                $count += count($values);
+            else
+                $count += 1;
+        }
+        return $count;
     }
 
     /**

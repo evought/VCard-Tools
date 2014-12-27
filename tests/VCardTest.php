@@ -276,6 +276,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
 	$vcard = new VCard();
 	$this->assertInstanceOf(__NAMESPACE__ . '\VCard', $vcard);
+        $this->assertCount(0, $vcard);
 	return $vcard;
     }
 
@@ -402,6 +403,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
 	$expected = 'Test FN';
 	$vcard->push(VCard::builder('fn')->setValue($expected)->build());
+        $this->assertCount(1, $vcard);
 	$this->assertNotEmpty($vcard->fn);
 	$this->assertEquals($expected, $vcard->fn->getValue());
 
@@ -418,6 +420,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
 	$expected = '555-1212';
 	$vcard->push(VCard::builder('tel')->setValue($expected)->build());
+        $this->assertCount(1, $vcard, print_r($vcard, true));
 	$this->assertNotEmpty($vcard->tel);
         $this->assertInternalType('array', $vcard->tel);
         $this->assertCount(1, $vcard->tel);
@@ -469,6 +472,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
             $this->assertEmpty($vcard->$property);
             $vcard->push(
                 VCard::builder($property)->setValue($expected)->build()) ;
+            $this->assertCount(1, $vcard, print_r($vcard, true));
 	    $this->assertNotEmpty($vcard->$property);
 	    $this->assertEquals($expected, $vcard->$property->getValue());
 	
@@ -487,9 +491,11 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $expected = 'foo';
         $this->assertEmpty($vcard->fn);
         $vcard->fn = VCard::builder('fn')->setValue($expected)->build();
+        $this->assertCount(1, $vcard);
 	$this->assertNotEmpty($vcard->fn);
 
 	$vcard->fn = null;
+        $this->assertCount(0, $vcard);
 	$this->assertEmpty($vcard->fn);
 	return $vcard;
     }
@@ -757,9 +763,12 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $builder = VCard::builder('url');
 	$url1 = $builder->setValue('http://golf.com')->build();
 	$url2 = $builder->setValue('http://espn.com')->build();
+        
+        $this->assertCount(0, $vcard);
 
 	$vcard->push($url1)->push($url2);
 
+        $this->assertCount(2, $vcard);
 	$this->assertNotEmpty($vcard->url);
 	$this->assertInternalType('array', $vcard->url);
 	$this->assertCount(2, $vcard->url);
