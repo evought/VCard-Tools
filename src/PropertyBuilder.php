@@ -51,6 +51,14 @@ interface PropertyBuilder
     public function build();
     
     /**
+     * Builds the Property and adds it to $container.
+     * @param \EVought\vCardTools\PropertyContainer $container The container
+     * to add the Property to.
+     * @return self $this
+     */
+    public function push(PropertyContainer $container);
+    
+    /**
      * @return string The name of the property being built.
      */
     public function getName();

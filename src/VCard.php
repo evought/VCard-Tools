@@ -25,7 +25,7 @@ use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
  * @author evought
  *
  */
-class VCard implements \Iterator, \Countable
+class VCard implements PropertyContainer
 {
     const endl = "\n";
     
@@ -544,18 +544,41 @@ class VCard implements \Iterator, \Countable
      * otherwise, it is added to the list of values for that property.
      * The uid property is handled specially, resulting in a call to setUID(..)
      * and being discarded.
-     * @param \EVought\vCardTools\Property $property
-     * @return \EVought\vCardTools\VCard $this
+     * @param Property|PropertyContainer $properties,...
+     * @return VCard $this
      */
-    public function push(Property $property)
+    public function push($properties)
     {
-        if ('uid' === $property->getName())
-            $this->setUID($property->getValue());
-        elseif ($property->getSpecification()->requiresSingleValue())
-            $this->data[$property->getName()] = $property;
-        else
-            $this->data[$property->getName()][] = $property;
-        
+        $items = func_get_args();
+        foreach ($items as $item)
+        {
+            if ($item instanceof PropertyContainer)
+            {
+                foreach ($item as $property)
+                {
+                    $this->push($property);
+                }
+            } else {
+                \assert($item instanceof Property);
+                if ('uid' === $item->getName())
+                    $this->setUID($item->getValue());
+                elseif ($item->getSpecification()->requiresSingleValue())
+                    $this->data[$item->getName()] = $item;
+                else
+                    $this->data[$item->getName()][] = $item;
+            }
+        }
+        return $this;
+    }
+    
+    /**
+     * Empty this container of all properties.
+     * @return self $this
+     */
+    public function clear()
+    {
+        $this->data = [];
+        $this->clearUID();
         return $this;
     }
     
@@ -983,6 +1006,7 @@ class VCard implements \Iterator, \Countable
     /**
      * Return the value at the current iterator position.
      * @see Iterator::current()
+     * @return Property
      */
     public function current()
     {

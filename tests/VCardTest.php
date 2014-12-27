@@ -443,6 +443,23 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $vcard->clearUID();
     }
 
+    /**
+     * @group default
+     * @depends testPushSpeccedMultiple
+     * @param \EVought\vCardTools\VCard $vcard
+     */
+    public function testClear(VCard $vcard)
+    {
+        $this->assertCount(0, $vcard);
+        $vcard->push(
+            VCard::builder('tel')->setValue('$expected','555-1212')->build() );
+        $vcard->checkSetUID();
+        $this->assertCount(1, $vcard);
+        
+        $vcard->clear();
+        $this->assertCount(0, $vcard);
+        $this->assertEmpty($vcard->getUID());
+    }
     
     /**
      * @group default
@@ -596,8 +613,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
 	$fn1 = VCard::builder('fn')->setValue('First FN')->build();
 	$fn2 = VCard::builder('fn')->setValue('New FN')->build();
 
-	$vcard->push($fn1);
-	$vcard->push($fn2);
+	$vcard->push($fn1, $fn2);
 	$this->assertNotEmpty($vcard->fn);
 	$this->assertNotInternalType("array", $vcard->fn);
 	$this->assertSame($fn2, $vcard->fn);
@@ -659,7 +675,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
             ->setValue(['Name'=>'State University of North Carolina'])
             ->build();
 
-        $vcard->push($org1)->push($org2);
+        $vcard->push($org1, $org2);
         
         $this->assertNotEmpty($vcard->org);
         $this->assertInternalType('array', $vcard->org);
@@ -766,7 +782,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         
         $this->assertCount(0, $vcard);
 
-	$vcard->push($url1)->push($url2);
+	$vcard->push($url1, $url2);
 
         $this->assertCount(2, $vcard);
 	$this->assertNotEmpty($vcard->url);
@@ -811,7 +827,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
 	$geo1 = $builder->setValue('geo:48.2010,16.3695,183')->build();
         $geo2 = $builder->setValue('geo:48.198634,16.371648;crs=wgs84;u=40')
                 ->build();
-	$vcard->push($geo1)->push($geo2);
+	$vcard->push($geo1, $geo2);
 	$this->assertNotEmpty($vcard->geo);
 	$this->assertInternalType("array", $vcard->geo);
 	$this->assertCount(2, $vcard->geo);
@@ -863,7 +879,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $builder = VCard::builder('adr');
         $adr1 = $builder->setValue(['StreetAddress' => 'Some Street'])->build();
         $adr2 = $builder->build();
-	$vcard->push($adr1)->push($adr2);
+	$vcard->push($adr1, $adr2);
         
 	$this->assertNotEmpty($vcard->adr);
 	$this->assertInternalType("array", $vcard->adr);
@@ -976,7 +992,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $org  = VCard::builder('org')->setField('Name', 'FooCorp')->build();
         $properties = [$fn, $adr1, $adr2, $org];
         
-        $vcard->push($fn)->push($adr1)->push($adr2)->push($org);
+        $vcard->push($fn, $adr1, $adr2, $org);
         
         $this->assertCount(4, $vcard);
         

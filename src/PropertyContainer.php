@@ -1,6 +1,6 @@
 <?php
 /**
- * A trait for a PropertyBuilder.
+ * Interface for a container of Properties.
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -8,7 +8,7 @@
  * @license MIT http://opensource.org/licenses/MIT
  */
 
-/* 
+/*
  * The MIT License
  *
  * Copyright 2014 evought.
@@ -34,58 +34,35 @@
 
 namespace EVought\vCardTools;
 
-trait PropertyBuilderTrait
+/**
+ * Interface for a basic container to which Properties may be stored to,
+ * retrieved from, and iterated over.
+ * @author evought
+ */
+interface PropertyContainer extends \Iterator, \Countable
 {
     /**
-     * The PropertySpecification defining the property being built.
-     * @var PropertySpecification
+     * Add one or more properties to this container.
+     * If this container defines a property as requiring at most one value,
+     * then the new value will overwrite any previous value, otherwise, it will
+     * be added to the existing values.
+     * For any argument which is a PropertyContainer, unpack and push its
+     * Properties.
+     * @param Property|PropertyContainer $items,...
+     * @return self $this
      */
-    private $specification;
+    public function push($items);
     
     /**
-     * The property group associated with this property.
-     * @var string
+     * Get the Property at the current iterator position.
+     * @return Property
+     * @see Iterator::current()
      */
-    private $group;
+    public function current();
     
-    public function push(PropertyContainer $container)
-    {
-        $property = $this->build();
-        $container->push($property);
-        return $this;
-    }
-    
-    public function getSpecification() {return $this->specification;}
-    
-    public function getName()
-    {
-        return $this->specification->getName();
-    }
-    
-    public function setGroup($group)
-    {
-        \assert(\is_string($group));
-        $this->group = $group;
-        return $this;
-    }
-    
-    public function getGroup()
-    {
-        return $this->group;
-    }
-    
-    protected function initBuilder($specification)
-    {
-        \assert(null !== $specification);
-        
-        $this->specification = $specification;
-    }
-    
-    protected function setBuilderFromLine(VCardLine $vcardLine)
-    {
-        \assert($this->getName() === $vcardLine->getName());
-        $this->group = empty($vcardLine->getGroup())
-                        ? null : $vcardLine->getGroup();
-        return $this;
-    }
+    /**
+     * Empty this container.
+     * @return self $this
+     */
+    public function clear();
 }

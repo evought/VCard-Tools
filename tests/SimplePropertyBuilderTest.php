@@ -169,4 +169,21 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($builder->getGroup());
         $this->assertEquals('http://abc.es', $builder->getValue());
     }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     */
+    public function testPush(PropertySpecification $specification)
+    {
+        $container = new PropertyContainerImpl();
+        
+        $builder = $specification->getBuilder();
+        $builder->setValue('http://liquor.cabi.net');
+        $property = $builder->push($container);
+        
+        $this->assertEquals( 'http://liquor.cabi.net',
+                                $container->current()->getValue() );
+    }
 }
