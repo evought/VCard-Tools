@@ -969,7 +969,9 @@ class VCard implements \Iterator, \Countable
     // !Interface methods
 
     /**
-     * Reset the interator.
+     * Reset the interator. Iterator will loop over all Property instances
+     * set for this VCard, with current() returning the current such instance
+     * until valid() returns false.
      * @see Iterator::rewind()
      */
     public function rewind()
@@ -1021,7 +1023,8 @@ class VCard implements \Iterator, \Countable
     }
 
     /**
-     * Return the key at the current iterator position.
+     * Return the key at the current iterator position. Currently always
+     * returns false. May change once PIDs are implemented.
      * @see Iterator::key()
      */
     public function key()
