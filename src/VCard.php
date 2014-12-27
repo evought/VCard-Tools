@@ -52,7 +52,7 @@ class VCard implements \Iterator, \Countable
     /**
      * @var Properties[] The collection of Properties.
      */
-    private $Data = [];
+    private $data = [];
     
     /**
      * The unique ID for this contact.
@@ -552,9 +552,9 @@ class VCard implements \Iterator, \Countable
         if ('uid' === $property->getName())
             $this->setUID($property->getValue());
         elseif ($property->getSpecification()->requiresSingleValue())
-            $this->Data[$property->getName()] = $property;
+            $this->data[$property->getName()] = $property;
         else
-            $this->Data[$property->getName()][] = $property;
+            $this->data[$property->getName()][] = $property;
         
         return $this;
     }
@@ -601,11 +601,11 @@ class VCard implements \Iterator, \Countable
         $unescaped = self::unescape($agentText);
         
         $agent = new $ClassName(false, $unescaped);
-        if (!isset($this -> Data['agent']))
+        if (!isset($this -> data['agent']))
         {
-            $this -> Data['agent'] = [];
+            $this -> data['agent'] = [];
         }
-	$this -> Data['agent'][] = $agent;
+	$this -> data['agent'][] = $agent;
     }
 
     /**
@@ -653,10 +653,10 @@ class VCard implements \Iterator, \Countable
             $this->push($property);
         }
         
-        if (\array_key_exists('uid', $this->Data))
+        if (\array_key_exists('uid', $this->data))
         {
-            $this->uid = $this->Data['uid']->getValue();
-            unset($this->Data['uid']);
+            $this->uid = $this->data['uid']->getValue();
+            unset($this->data['uid']);
         }
     } // processSingleRawCard()
 
@@ -680,9 +680,9 @@ class VCard implements \Iterator, \Countable
         {
             return $this->getUIDAsProperty();
         }
-        if (!array_key_exists($keyLower, $this->Data))
+        if (!array_key_exists($keyLower, $this->data))
             return null;
-        return $this->Data[$keyLower];
+        return $this->data[$keyLower];
     } // __get()
     
     public function __set($name, $value)
@@ -704,7 +704,7 @@ class VCard implements \Iterator, \Countable
         }
         if (null === $value)
         {
-            unset($this->Data[$name]);
+            unset($this->data[$name]);
             return;
         }
         
@@ -729,7 +729,7 @@ class VCard implements \Iterator, \Countable
                     $value->getName() . ' Cannot be assigned to property '
                     . $name);
         }
-        $this->Data[$name] = $value;
+        $this->data[$name] = $value;
     }
 
     /**
@@ -827,8 +827,8 @@ class VCard implements \Iterator, \Countable
     	assert(null !== $key);
     	assert(is_string($key));
     	
-        if (array_key_exists($key, $this->Data))
-	    unset($this->Data[$key]);
+        if (array_key_exists($key, $this->data))
+	    unset($this->data[$key]);
 	    return $this;
     } // __unset()
 
@@ -843,7 +843,7 @@ class VCard implements \Iterator, \Countable
     	assert(null !== $key);
     	assert(is_string($key));
     	
-        return isset($this->Data[$key]);
+        return isset($this->data[$key]);
     } // __isset()
 
     /**
@@ -857,29 +857,29 @@ class VCard implements \Iterator, \Countable
     public function setFNAppropriately()
     {
         // FIXME: #64 : Get PREFerred Property
-        if ( (!(\array_key_exists('fn', $this->Data)))
-             || empty($this->Data["fn"]->getValue()) )
+        if ( (!(\array_key_exists('fn', $this->data)))
+             || empty($this->data["fn"]->getValue()) )
         {
             $fullname = '';
-	    if ( \array_key_exists("kind", $this->Data)
-		 && $this->Data["kind"]->getValue() === "organization" )
+	    if ( \array_key_exists("kind", $this->data)
+		 && $this->data["kind"]->getValue() === "organization" )
 	    {
-                if (\array_key_exists('org', $this->Data))
+                if (\array_key_exists('org', $this->data))
                 {
-                    $org = $this->Data['org'][0];
+                    $org = $this->data['org'][0];
                     $fullname = (string) $org;
                 }
             }
-	    if ( \array_key_exists("kind", $this->Data)
-		 && $this->Data["kind"]->getValue() === "individual" )
+	    if ( \array_key_exists("kind", $this->data)
+		 && $this->data["kind"]->getValue() === "individual" )
 	    {
-                if (\array_key_exists('n', $this->Data))
+                if (\array_key_exists('n', $this->data))
                 {
-                    $n = $this->Data['n'][0];
+                    $n = $this->data['n'][0];
                     $fullname = (string) $n;
                 }
             }
-            $this->Data["fn"] = $this->getSpecification('fn')->getBuilder()
+            $this->data["fn"] = $this->getSpecification('fn')->getBuilder()
                     ->setValue(trim($fullname))->build();
         }
         return $this;
@@ -911,7 +911,7 @@ class VCard implements \Iterator, \Countable
         $text .= $this->getUIDAsProperty()->output();
 
         // FIXME: Remove the newlines in Property::__toString and add them here.
-	foreach ($this->Data as $key=>$values)
+	foreach ($this->data as $key=>$values)
 	{
 	    if (!\is_array($values))
  	    {
@@ -976,7 +976,7 @@ class VCard implements \Iterator, \Countable
      */
     public function rewind()
     {
-        reset($this->Data);
+        reset($this->data);
         $this->current_index = 0;
     }
 
@@ -986,12 +986,12 @@ class VCard implements \Iterator, \Countable
      */
     public function current()
     {
-        if (key($this->Data) === null) return false;
+        if (key($this->data) === null) return false;
         
-        if ($this->getSpecification(key($this->Data))->allowsMultipleValues())
-            return current($this->Data)[$this->current_index];
+        if ($this->getSpecification(key($this->data))->allowsMultipleValues())
+            return current($this->data)[$this->current_index];
         else
-            return current($this->Data);
+            return current($this->data);
     }
 
     /**
@@ -1000,16 +1000,16 @@ class VCard implements \Iterator, \Countable
      */
     public function next()
     {
-        if ($this->getSpecification(key($this->Data))->allowsMultipleValues())
+        if ($this->getSpecification(key($this->data))->allowsMultipleValues())
         {
             $this->current_index += 1;
-            if ($this->current_index === count(current($this->Data)))
+            if ($this->current_index === count(current($this->data)))
             {
                 $this->current_index = 0;
-                next($this->Data);
+                next($this->data);
             }
         } else {
-            next($this->Data);
+            next($this->data);
         }
     }
 
@@ -1046,7 +1046,7 @@ class VCard implements \Iterator, \Countable
         // NOTE: Cannot use \COUNT_RECURSIVE because that counts the arrays
         // as well as their contents. We want a count only of Properties.
         $count = 0;
-        foreach ($this->Data as $key=>$values)
+        foreach ($this->data as $key=>$values)
         {
             if ($this->getSpecification($key)->allowsMultipleValues())
                 $count += count($values);
