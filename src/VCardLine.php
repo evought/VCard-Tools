@@ -87,7 +87,15 @@ class VCardLine
      * @var type 
      */
     private $value;
-    
+
+    /**
+     * A list of all parameters found for which no value was defined.
+     * In other words, in 'TEL;HOME:555-1212', HOME is a parameter with no
+     * value. These are illegal in VCard 4.0 but may have significance in
+     * earlier versions. They are stored during initial parsing and an attempt
+     * is made later to puzzle them out.
+     * @var string[] 
+     */
     private $novalue = [];
     
     /**
@@ -97,7 +105,12 @@ class VCardLine
      * @var string 
      */
     private $version;
-    
+
+    /**
+     * Construct a new, empty VCardLine with $version as the target VCard
+     * version.
+     * @param string $version A string in the form major.minor.
+     */
     public function __construct($version)
     {
         \assert(null !== $version);
@@ -121,7 +134,7 @@ class VCardLine
     /**
      * Sets the property group.
      * @param string $group It is advisable to store this in lowercase.
-     * @return \EVought\vCardTools\VCardLine
+     * @return self $this
      */
     public function setGroup($group)
     {
@@ -138,7 +151,7 @@ class VCardLine
     /**
      * Sets the property name.
      * @param string $name It is advisable to store this in lowercase.
-     * @return \EVought\vCardTools\VCardLine
+     * @return self $this
      */
     public function setName($name)
     {
@@ -176,7 +189,7 @@ class VCardLine
      * Sets the value of a single parameter by name.
      * @param string $parameter The name of the parameter to set.
      * @param mixed $value
-     * @return \EVought\vCardTools\VCardLine
+     * @return self $this
      */
     public function setParameter($parameter, $value)
     {
@@ -190,7 +203,7 @@ class VCardLine
     /**
      * Unsets any values for a single named parameter.
      * @param string $parameter
-     * @return \EVought\vCardTools\VCardLine
+     * @return self $this
      */
     public function unsetParameter($parameter)
     {
@@ -209,7 +222,7 @@ class VCardLine
      * meaningful at this stage and just store them for later processing.
      * @param string $parameter The name of the parameter. Not null.
      * @param string $value The value to add. Not null.
-     * @return \EVought\vCardTools\VCardLine
+     * @return self $this
      */
     public function pushParameter($parameter, $value)
     {
@@ -232,7 +245,7 @@ class VCardLine
      * any/all values matching 'pref' from the 'type' parameter.
      * @param string $parameter The parameter name. Not null.
      * @param array $values A list of string values to remove.
-     * @return \EVought\vCardTools\VCardLine
+     * @return self $this
      */
     public function clearParamValues($parameter, Array $values)
     {
@@ -265,8 +278,8 @@ class VCardLine
      * Transforms all values for the named parameters to lowercase.
      * Convenience method for canonicalizing chosen parameter values.
      * 
-     * @param array $paramNames The names of the parameters to transform.
-     * @return \EVought\vCardTools\VCardLine
+     * @param string[] $paramNames The names of the parameters to transform.
+     * @return self $this
      */
     public function lowercaseParameters(Array $paramNames)
     {
@@ -290,7 +303,7 @@ class VCardLine
     /**
      * Sets the property value for this line.
      * @param string $value
-     * @return \EVought\vCardTools\VCardLine
+     * @return self $this
      */
     public function setValue($value)
     {
@@ -313,9 +326,9 @@ class VCardLine
      * for 2.1 cards and the PREF TYPE is turned into a PREF parameter.
      * If we otherwise have malformed parameters (no value), then we throw
      * an exception.
-     * @param array $rawParams The array of parameter strings (delimiter
+     * @param string[] $rawParams The array of parameter strings (delimiter
      * already removed) from the VCard.
-     * @return VCardLine $this
+     * @return self $this
      * @throws \DomainException For certain malformed parameter conditions.
      */
     public function parseParameters(Array $rawParams)
@@ -392,6 +405,14 @@ class VCardLine
         return $this;
     }
     
+    /**
+     * Returns a new VCardLine initialized from the given line text, parsing
+     * it according to the specified VCard version.
+     * @param string $rawLine The raw VCard line (line break removed).
+     * @param string $version The target VCard version.
+     * @return self
+     * @throws \DomainException If the line is malformed.
+     */
     public static function fromLineText($rawLine, $version)
     {
         // Lines without colons are skipped because, most

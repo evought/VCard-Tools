@@ -34,13 +34,18 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A SimpleProperty is a Property with a simple scalar value (represented as
+ * a string).
+ */
 class SimpleProperty implements \EVought\vCardTools\Property
 {
     use SimplePropertyTrait;
 
     /**
      * Create a new SimpleProperty from the PropertyBuilder.
-     * @param \EVought\vCardTools\PropertyBuilder $builder
+     * @param \EVought\vCardTools\PropertyBuilder $builder The builder being
+     * used to initialize this property.
      */
     public function __construct(SimplePropertyBuilder $builder)
     {
@@ -48,5 +53,10 @@ class SimpleProperty implements \EVought\vCardTools\Property
         $this->setValueFromBuilder($builder);
     }
 
+    /**
+     * Format the parameters appropriate for inclusion in a VCard text line.
+     * As SimpleProperty does not take parameters, output is empty.
+     * @return string
+     */
     protected function outputParameters() {return '';}
 }

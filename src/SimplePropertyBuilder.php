@@ -34,17 +34,32 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A PropertyBuilder for a SimpleProperty. SimplePropertyBuilder provides the
+ * ability to set simple string types on its target property.
+ */
 class SimplePropertyBuilder
         implements \EVought\vCardTools\PropertyBuilder
 {
     use SimplePropertyBuilderTrait;
     
-    public function __construct($specification)
+    /**
+     * Initialize a new builder for the property specification.
+     * @param PropertySpecification $specification The definition of the
+     * target property and its constraints.
+     */
+    public function __construct(PropertySpecification $specification)
     {
         $this->initBuilder($specification);
         $this->initValue();
     }
     
+    /**
+     * Initialize this builder from the parsed components of a VCard format
+     * line, copying the value.
+     * @param VCardLine $line The pre-parsed line.
+     * @return self $this
+     */
     public function setFromVCardLine(VCardLine $line)
     {
         $this->setBuilderFromLine($line);
@@ -52,6 +67,10 @@ class SimplePropertyBuilder
         return $this;
     }
     
+    /**
+     * Construct, initialize, and return a SimpleProperty from this builder.
+     * @return SimpleProperty
+     */
     public function build()
     {
         \assert(null !== $this->value);
