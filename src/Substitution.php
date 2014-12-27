@@ -8,6 +8,15 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A structure for storing information about a substitution in a Template
+ * fragment.
+ * A Substitution is marked by the content of pairs of curly braces in
+ * fragment text. The components of a substition allow conditional inclusion,
+ * property lookup, iteration, and fragment replacement.
+ * This class parses the text marker and provides easy lookup of the components
+ * in Template processing.
+ */
 class Substitution
 {
     /**
@@ -21,7 +30,18 @@ class Substitution
      * @var string
      */
     private $fragment = null;
+    
+    /**
+     * Get the name of a fragment which should be replaced in this
+     * substitution or null if no fragment was named.
+     * @return string
+     */
     public function getFragment() {return $this->fragment;}
+    
+    /**
+     * Returns true if-and-only-if a fragment was named by this substitution.
+     * @return bool
+     */
     public function hasFragment() {return $this->fragment !== null;}
 	    
     /**
@@ -30,12 +50,27 @@ class Substitution
      * @var string
      */
     private $quest = null;
+    
+    /**
+     * The name of the vCard Property this substitution is contingent on,
+     * or null; 
+     * @return string
+     */
     public function getQuest() {return $this->quest;}
+    
+    /**
+     * Return true if-and-only-if this substitution is conditional on a
+     * property.
+     * @see getQuest() If true, will return the name of the property the
+     * substitution is conditional on.
+     * @return bool
+     */
     public function hasQuest() {return $this->quest !== null;}
     
     /**
+     * The name of a Property this substitution is to look up.
      * @see getLookUp()
-     * @var array;
+     * @var string[];
      */
     private $lookUpProperty = [];
 
@@ -108,6 +143,11 @@ class Substitution
      */
     public function iterates() {return null !== $this->iterOver;}
     
+    /**
+     * Construct a new, empty Substitution.
+     * @see fromText() Construct and return from substituion text.
+     * @see fromFragment() Construct and return from a named fragment.
+     */
     private function __construct(){}
     
     /**

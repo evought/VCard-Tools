@@ -32,6 +32,13 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A trait to organize shared code for Property implementations.
+ * Provides standard handling for the PropertySpecification, name, group,
+ * common output structure, and common properties which should be applicable
+ * to all Properties. Putting this code in a trait allows combination of
+ * sub-interfaces to simulate multiple inheritance.
+ */
 trait PropertyTrait
 {
     /**
@@ -63,23 +70,50 @@ trait PropertyTrait
         $this->hasParameters = false;
     }
     
+    /**
+     * Return the specification for this property.
+     * @see Property::getSpecification.
+     * @return PropertySpecification
+     */
     public function getSpecification() {return $this->specification;}
     
+    /**
+     * Convenience method to get the name of the property from the
+     * specification.
+     * @see Property::getName()
+     * @return string
+     */
     public function getName()
     {
         return $this->specification->getName();
     }
     
+    /**
+     * Get the property group.
+     * @see Property::getGroup()
+     * @return string
+     */
     public function getGroup()
     {
         return $this->group;
     }
     
+    /**
+     * Return a human-readable representation of the property's *value*.
+     * @see Property::toString()
+     * @return string
+     */
     public function __toString()
     {
         return $this->getValue();
     }
     
+    /**
+     * Return a machine-readable representation of the entire Property,
+     * including parameters.
+     * @see Property::output()
+     * @return string
+     */
     public function output()
     {
         $output = $this->outputName();
@@ -93,7 +127,7 @@ trait PropertyTrait
 
     /**
      * Format the property name for output as part of a raw vcard line.
-     * @return type
+     * @return string
      */
     protected function outputName()
     {
@@ -105,11 +139,13 @@ trait PropertyTrait
      * Format parameters for output as part of a raw vcard string.
      * Should only be called if hasParameters() returns true.
      * @return string The string of parameters.
+     * @see output()
      */
     protected abstract function outputParameters();
     
     /**
      * Returns true if-and-only-if there are named parameters to output.
+     * @return bool
      */
     protected function hasParameters() {return $this->hasParameters;}
 }
