@@ -139,8 +139,20 @@ class Template
      */
     private $info;
     
+    /**
+     * true if-and-only-if static initialization has occurred.
+     * @var bool
+     * @see i_init() To initialize static fields.
+     */
     static private $initialized = false;
     
+    /**
+     * Initialize static fields. In particular, load the .ini file for the
+     * default template. This method checks to see if initialization has
+     * occurred and does nothing if $initialized is true, so it is safe to
+     * call multiple times.
+     * @return void
+     */
     static private function i_init()
     {
     	if (self::$initialized === true) return;
@@ -157,6 +169,10 @@ class Template
      */
     static private $defaultTemplate = null;
     
+    /**
+     * The internal array of registered templates, indexed by Template name.
+     * @var Template[]
+     */
     static private $templateRegistry = [];
     
     /**
@@ -237,7 +253,22 @@ class Template
     	
     	return self::i_fromINI($filename, $fallback);
     }
-    
+
+    /**
+     * A utility function to load a template from an .ini file which does
+     * _not_ perform static initialization and therefore can be used during
+     * static initialization.
+     * @param string $filename The filename of the .ini file to load.
+     * @param \EVought\vCardTools\Template $fallback A Template to use as a fallback
+     * for undefined fragments. If null, this method will look for '_fallback'
+     * in the .ini file and will use it, *if* a Template by that name is
+     * registered.
+     * @return \EVought\vCardTools\Template 
+     * @throws \DomainException If the file does not exist or is not readable.
+     * @throws \DomainException If the key '_template' in the .ini file does
+     * not contain the expected components.
+     * @throws \RuntimeException If an error occurs while reading the .ini file.
+     */
     private static function i_fromINI($filename, Template $fallback = null)
     {
     	assert(!empty($filename), '$filename may not be empty');
@@ -294,6 +325,8 @@ class Template
      * @param Template $fallback Another Template instance to fall back to for
      * any keys not found in $fragments. Often, this should be set with
      * getDefaultFragment().
+     * @param TemplateInfo $info If defined, shall contain metadata about this
+     * Template.
      */
     public function __construct( Array $fragments, Template $fallback = null,
     		                 TemplateInfo $info = null )
@@ -382,12 +415,12 @@ class Template
      * Recurses from $key, processing substitutions and returning its portion
      * of the HTML tree.
      *
-     * @arg vCard $vcard The vcard being written out.
-     * @arg Substitution $substitution The current Substitution being processed.
+     * @param VCard $vcard The vcard being written out.
+     * @param Substitution $substitution The current Substitution being processed.
      * Not null.
-     * @arg string $iter_over The current vcard field being iterated over,
+     * @param string $iterOver The current vcard field being iterated over,
      * if any.
-     * @arg Property $iter_item The current Property of the vcard field being
+     * @param Property $iterItem The current Property of the vcard field being
      *   iterated over, if any.
      * @return string The portion of the HTML tree output.
      */
@@ -480,7 +513,8 @@ class Template
     /**
      * Look-up and return the requested property value or magic value.
      * @param VCard $vcard The vcard to find the property in.
-     * @param string $lookUp The name of the property or magic value. Not null.
+     * @param Substitution $substitution The Substitution currently being
+     *  processed.
      * @param string $iterOver The name of a property being iterated over, or
      * null.
      * @param Property $iterItem The current value of the property being

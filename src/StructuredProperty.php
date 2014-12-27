@@ -32,20 +32,30 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A Property which has a structured (associative array) for its value
+ * component. A StructuredProperty provides access to defined subfields.
+ * Property::getValue will return an associative array.
+ * Property::output will format subfields for output according to RFC6350,
+ * and toString will format the subfields with spaces.
+ * @see StructuredPropertyBuilder
+ */
 interface StructuredProperty extends Property
 {   
     /**
      * Fetches the contents of a field (if any).
+     * 
      * @param string $field The name of the field to fetch.
-     * @return string The contents of the field, or null.
+     * @return string|null
      * @throws \DomainException If the field is not defined.
-     * @see fields()
+     * @see getAllowedFields()
      */
     public function getField($field);
     
     /**
      * Returns the list of fields specified for this property.
-     * @return Array Array of field names.
+     * 
+     * @return string[]
      */
     public function getAllowedFields();
 }

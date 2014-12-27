@@ -34,6 +34,9 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A Trait to organize shared code for Properties having a simple scalar value.
+ */
 trait SimplePropertyBuilderTrait
 {
     use PropertyBuilderTrait;
@@ -45,12 +48,24 @@ trait SimplePropertyBuilderTrait
      */
     protected function initValue() {$this->value = null;}
     
+    /**
+     * This method will extract the value component from a pre-parsed line of
+     * raw VCard text.
+     * @param \EVought\vCardTools\VCardLine $line A line of raw VCard text
+     * which has already been parsed into its component structures.
+     * @return SimpleProperty $this
+     */
     protected function setValueFromLine(VCardLine $line)
     {
         $this->value = \stripcslashes($line->getValue());
         return $this;
     }
     
+    /**
+     * Set the value component of this PropertyBuilder.
+     * @param string $value Not null.
+     * @return SimpleProperty $this
+     */
     public function setValue($value)
     {
         \assert(null !== $value);
@@ -59,6 +74,10 @@ trait SimplePropertyBuilderTrait
         return $this;
     }
 
+    /**
+     * Get the value component of this Property.
+     * @return string
+     */
     public function getValue()
     {
         return $this->value;

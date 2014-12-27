@@ -42,6 +42,7 @@ interface Property
 {
     /**
      * Return the PropertySpecification defining this Property.
+     * @return PropertySpecification
      */
     public function getSpecification();
     
