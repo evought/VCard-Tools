@@ -15,7 +15,6 @@ use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
 
 class VCardTest extends \PHPUnit_Framework_TestCase
 {
-    // TODO: Test setFNAppropriately()
     // TODO: Test assignment error conditions
 
     // some components of expected values
@@ -602,7 +601,71 @@ class VCardTest extends \PHPUnit_Framework_TestCase
 	unset($vcard->fn);
 	return $vcard;
     }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     */
+    public function testSetN(vCard $vcard)
+    {
+        $n = VCard::builder('n')
+            ->setValue([ 'GivenName'=>'John',
+                         'AdditionalNames'=>'Jacob Jingleheimer',
+                         'FamilyName'=>'Smith' ])
+            ->build();
+        $vcard->push($n);
+        
+        $this->assertNotEmpty($vcard->n);
+        $this->assertInternalType('array', $vcard->n);
+        $this->assertEquals([$n], $vcard->n);
+        
+        unset($vcard->n);
+        return $vcard;
+    }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     */
+    public function testSetOrg(vCard $vcard)
+    {
+        $org = VCard::builder('org')
+            ->setValue(['Name'=>'Church of the Militant Agnostic'])
+            ->build();
+        $vcard->push($org);
+        
+        $this->assertNotEmpty($vcard->org);
+        $this->assertInternalType('array', $vcard->org);
+        $this->assertEquals([$org], $vcard->org);
+        
+        unset($vcard->org);
+        return $vcard;
+    }
 
+    /**
+     * @group default
+     * @depends testSetOrg
+     */
+    public function testSetTwoOrgs(vCard $vcard)
+    {
+        $org1 = VCard::builder('org')
+            ->setValue(['Name'=>'Church of the Militant Agnostic'])
+            ->build();
+        $org2 = VCard::builder('org')
+            ->setValue(['Name'=>'State University of North Carolina'])
+            ->build();
+
+        $vcard->push($org1)->push($org2);
+        
+        $this->assertNotEmpty($vcard->org);
+        $this->assertInternalType('array', $vcard->org);
+        $this->assertEquals([$org1, $org2], $vcard->org);
+        
+        unset($vcard->org);
+        return $vcard;
+    }
+
+    
     /**
      * @group default
      * @depends testConstructEmptyVCard
@@ -908,6 +971,69 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Some UID', $property2->getValue());
         
         $vcard->clearUID();
+        return $vcard;
+    }
+
+    /**
+     * When neither N nor ORG are set, can't come up with a useful value.
+     * @depends testConstructEmptyVCard
+     * @group default
+     */
+    public function testSetFNAppropriatelyNoHint(VCard $vcard)
+    {
+        $vcard->setFNAppropriately();
+        $this->assertNotEmpty($vcard->fn);
+        $this->assertEmpty($vcard->fn->getValue());
+        
+        unset($vcard->fn);
+        return $vcard;
+    }
+    
+    /**
+     * @depends testSetN
+     * @depends testSetFNAppropriatelyNoHint
+     * @group default
+     */
+    public function testSetFNAppropriatelyIndividual(VCard $vcard)
+    {
+        $n = VCard::builder('n')
+            ->setValue([ 'GivenName'=>'John',
+                         'AdditionalNames'=>'Jacob Jingleheimer',
+                         'FamilyName'=>'Smith' ])
+            ->build();
+        $kind = VCard::builder('kind')->setValue('individual')->build();
+        
+        $vcard->push($n)->push($kind);
+        $vcard->setFNAppropriately();
+        $this->assertNotEmpty($vcard->fn);
+        $this->assertEquals((string) $n, $vcard->fn->getValue());
+        
+        unset($vcard->fn);
+        unset($vcard->n);
+        unset($vcard->kind);
+        return $vcard;
+    }
+    
+    /**
+     * @depends testSetOrg
+     * @depends testSetFNAppropriatelyNoHint
+     * @group default
+     */
+    public function testSetFNAppropriatelyOrganization(VCard $vcard)
+    {
+        $org = VCard::builder('org')
+            ->setValue(['Name'=>'Society For The Appreciation of Beefsteak'])
+            ->build();
+        $kind = VCard::builder('kind')->setValue('organization')->build();
+        
+        $vcard->push($org)->push($kind);
+        $vcard->setFNAppropriately();
+        $this->assertNotEmpty($vcard->fn);
+        $this->assertEquals((string) $org, $vcard->fn->getValue());
+        
+        unset($vcard->fn);
+        unset($vcard->org);
+        unset($vcard->kind);
         return $vcard;
     }
 

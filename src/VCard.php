@@ -864,11 +864,11 @@ class VCard implements \Iterator
                 }
             }
 	    if ( \array_key_exists("kind", $this->Data)
-		 && $this->Data["kind"]->getValue() === "organization" )
+		 && $this->Data["kind"]->getValue() === "individual" )
 	    {
                 if (\array_key_exists('n', $this->Data))
                 {
-                    $org = $this->Data['n'];
+                    $n = $this->Data['n'][0];
                     $fullname = (string) $n;
                 }
             }

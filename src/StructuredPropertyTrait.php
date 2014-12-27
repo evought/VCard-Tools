@@ -70,8 +70,8 @@ trait StructuredPropertyTrait
         $fieldStrings = [];
         foreach ($this->getAllowedFields() as $field)
         {
-            $fieldStrings[] = array_key_exists($field, $this->value)
-                              ? $this->value[$field] : '';
+            if (array_key_exists($field, $this->value))
+                $fieldStrings[] = $this->value[$field];
         }
         return \implode(' ', $fieldStrings);
     }
