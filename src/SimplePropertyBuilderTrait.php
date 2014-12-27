@@ -40,7 +40,11 @@ namespace EVought\vCardTools;
 trait SimplePropertyBuilderTrait
 {
     use PropertyBuilderTrait;
-    
+
+    /**
+     * The value of the property. For SimpleProperty, the value is a string.
+     * @var string
+     */
     private $value;
 
     /**

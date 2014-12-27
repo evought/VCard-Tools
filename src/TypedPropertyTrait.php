@@ -35,21 +35,46 @@
 
 namespace EVought\vCardTools;
 
+/**
+ * A trait to store common code for TypedProperty and any derived type which
+ * supports the TYPE parameter. Provides methods for accessing set properties,
+ * accessing the list of defined TYPEs for this property, and properly
+ * outputting a property with TYPEs set.
+ */
 trait TypedPropertyTrait
 {
+    /**
+     * The list of types set for this Property.
+     * @var string[]
+     */
     private $types;
     
+    /**
+     * Copy and set the types from the builder being used to initialize the
+     * Property. This method should be called from the constructor of a
+     * concrete implementation.
+     * @param \EVought\vCardTools\TypedPropertyBuilder $builder The builder
+     * being used to initialize this Property.
+     */
     protected function setTypesFromBuilder(TypedPropertyBuilder $builder)
     {
         $this->types = $builder->getTypes();
         if (!empty($this->types)) $this->hasParameters  = true;
     }
     
+    /**
+     * Get the types set for this Property.
+     * @return string[]
+     */
     public function getTypes()
     {
         return $this->types;
     }
     
+    /**
+     * Return the list of types defined for this Property.
+     * @return string[]
+     */
     public function getAllowedTypes()
     {
         return $this->getSpecification()->getConstraints()['allowedTypes'];
