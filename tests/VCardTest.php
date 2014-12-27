@@ -930,6 +930,73 @@ class VCardTest extends \PHPUnit_Framework_TestCase
      * @depends testConstructEmptyVCard
      * @group default
      */
+    public function testIteratorEmpty(vCard $vcard)
+    {
+        $this->assertCount(0, $vcard);
+        $vcard->rewind();
+        $this->assertFalse($vcard->valid());
+        
+        return $vcard;
+    }
+    
+    /**
+     * @depends testIteratorEmpty
+     * @depends testPushSpeccedSingle
+     * @group default
+     */
+    public function testIteratorOneSingle(vCard $vcard)
+    {
+        $this->assertCount(0, $vcard);
+        $fn = VCard::builder('fn')->setValue('foo')->build();
+        $vcard->push($fn);
+        $this->assertCount(1, $vcard);
+        $vcard->rewind();
+        $this->assertTrue($vcard->valid());
+        $this->assertEquals($fn, $vcard->current());
+        $vcard->next();
+        $this->assertFalse($vcard->valid());
+        
+        unset($vcard->fn);
+        return $vcard;
+    }
+    
+    /**
+     * @depends testIteratorOneSingle
+     * @depends testPushSpeccedMultiple
+     * @group default
+     */
+    public function testIteratorSingleAndMultiple(vCard $vcard)
+    {
+        $this->assertCount(0, $vcard);
+        $fn = VCard::builder('fn')->setValue('foo')->build();
+        $adr1 = VCard::builder('adr')->setField('Locality', 'Albequerque')
+                ->build();
+        $adr2 = VCard::builder('adr')->setField('Locality', 'Austin')
+                ->build();
+        $org  = VCard::builder('org')->setField('Name', 'FooCorp')->build();
+        $properties = [$fn, $adr1, $adr2, $org];
+        
+        $vcard->push($fn)->push($adr1)->push($adr2)->push($org);
+        
+        $this->assertCount(4, $vcard);
+        
+        foreach ($vcard as $property)
+        {
+            // check off properties as we find them
+            $this->assertContains($property, $properties);
+            $properties = \array_values(\array_diff($properties, [$property]));
+        }
+        
+        unset($vcard->fn);
+        unset($vcard->adr);
+        unset($vcard->org);
+        return $vcard;
+    }
+    
+    /**
+     * @depends testConstructEmptyVCard
+     * @group default
+     */
     public function testUID(VCard $vcard)
     {
         $vcard->setUID('Globally Unique');

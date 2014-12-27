@@ -59,6 +59,13 @@ class VCard implements \Iterator, \Countable
      * @var string
      */
     private $uid;
+    
+    /**
+     * The index of a property array currently being iterated over, if
+     * applicable.
+     * @var int
+     */
+    private $current_index = 0;
 
     private static function initSpecifications()
     {
@@ -967,7 +974,8 @@ class VCard implements \Iterator, \Countable
      */
     public function rewind()
     {
-        reset($this -> Data);
+        reset($this->Data);
+        $this->current_index = 0;
     }
 
     /**
@@ -976,7 +984,12 @@ class VCard implements \Iterator, \Countable
      */
     public function current()
     {
-        return current($this -> Data);
+        if (key($this->Data) === null) return false;
+        
+        if ($this->getSpecification(key($this->Data))->allowsMultipleValues())
+            return current($this->Data)[$this->current_index];
+        else
+            return current($this->Data);
     }
 
     /**
@@ -985,7 +998,17 @@ class VCard implements \Iterator, \Countable
      */
     public function next()
     {
-        return next($this -> Data);
+        if ($this->getSpecification(key($this->Data))->allowsMultipleValues())
+        {
+            $this->current_index += 1;
+            if ($this->current_index === count(current($this->Data)))
+            {
+                $this->current_index = 0;
+                next($this->Data);
+            }
+        } else {
+            next($this->Data);
+        }
     }
 
     /**
@@ -994,7 +1017,7 @@ class VCard implements \Iterator, \Countable
      */
     public function valid()
     {
-        return ($this -> current() !== false);
+        return ($this->current() !== false);
     }
 
     /**
@@ -1003,7 +1026,7 @@ class VCard implements \Iterator, \Countable
      */
     public function key()
     {
-        return key($this -> Data);
+        return null;
     }
     
     /**
