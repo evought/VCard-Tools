@@ -54,6 +54,17 @@ trait StructuredPropertyTrait
         return $this->getSpecification()->getConstraints()['allowedFields'];
     }
     
+    public function compareValue(Property $a, Property $b)
+    {
+        // FIXME: unicode compare and take LANGUAGE into account.
+        if ((string) $a == (string) $b)
+            return 0;
+        elseif ((string) $a < (string) $b)
+            return -1;
+        else
+            return 1;    
+    }
+    
     protected function outputValue()
     {
         $fieldStrings = [];

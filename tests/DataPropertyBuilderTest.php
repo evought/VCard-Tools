@@ -90,6 +90,25 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testSetAndBuild
+     */
+    public function testCompareValue(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $property1 = $builder->setValue('http://foo')->build();
+        $property2 = $builder->setValue('http://bar')->build();
+        $property3 = $builder->setValue('http://baz')->build();
+        $property4 = $builder->setValue('http://baz')->build();
+        
+        $this->assertEquals(1, $property1->compareValue($property1, $property2));
+        $this->assertEquals(-1, $property1->compareValue($property2, $property3));
+        $this->assertEquals(0, $property1->compareValue($property3, $property4));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
      * @expectedException \DomainException
      */
     public function testBadURL(PropertySpecification $specification)

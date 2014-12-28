@@ -68,6 +68,59 @@ interface Property
     public function getValue();
     
     /**
+     * Return the value of the preference parameter for this property.
+     * PREF is defined for any property which can have multiple values and is
+     * undefined otherwise.
+     * @param bool $default If true and no PREF parameter specified, this
+     * method will return the preference value indicating the least preferred.
+     * Passing false for $default is necessary to determine whether an explicit
+     * PREF was provided.
+     * @return int
+     */
+    public function getPref($default = true);
+    
+    /**
+     * A sort-function suitable for use with \usort() or \uasort() which
+     * compares the PREF parameter.
+     * @param Property $a
+     * @param Property $b
+     * @return int -1, 0, or 1 if $b sorts less than, equal to, or greater than
+     * $a.
+     * @see \usort()
+     * @see \uasort()
+     * @see getPref()
+     * @see compareValue Alternative comparison.
+     */
+    public function comparePref(Property $a, Property $b);
+
+    /**
+     * A sort-function suitable for use with \usort() or \uasort() which
+     * compares property *values*.
+     * @param Property $a
+     * @param Property $b
+     * @return int -1, 0, or 1 if $b sorts less than, equal to, or greater than
+     * $a.
+     * @see \usort()
+     * @see \uasort()
+     * @see comparePref() Alternative comparison.
+     */
+    public function compareValue(Property $a, Property $b);
+
+        /**
+     * A sort-function suitable for use with \usort() or \uasort() which
+     * compares PREF parameters first, then property *values*.
+     * @param Property $a
+     * @param Property $b
+     * @return int -1, 0, or 1 if $b sorts less than, equal to, or greater than
+     * $a.
+     * @see \usort()
+     * @see \uasort()
+     * @see comparePref() First comparison.
+     * @see compareValue() Second comparison.
+     */
+    public function comparePrefThenValue(Property $a, Property $b);
+    
+    /**
      * Convert the value of this property to a string. This will produce
      * a *human-readable* representation of the value, taking advantage of
      * any appropriate parameter hints for the presentation of that value

@@ -52,11 +52,4 @@ class SimpleProperty implements \EVought\vCardTools\Property
         $this->initProperty($builder);
         $this->setValueFromBuilder($builder);
     }
-
-    /**
-     * Format the parameters appropriate for inclusion in a VCard text line.
-     * As SimpleProperty does not take parameters, output is empty.
-     * @return string
-     */
-    protected function outputParameters() {return '';}
 }

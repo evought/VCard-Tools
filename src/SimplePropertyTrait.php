@@ -50,6 +50,17 @@ trait SimplePropertyTrait
         return $this->value;
     }
     
+    public function compareValue(Property $a, Property $b)
+    {
+        // FIXME: unicode compare and take LANGUAGE into account.
+        if ($a->getValue() == $b->getValue())
+            return 0;
+        elseif ($a->getValue() < $b->getValue())
+            return -1;
+        else
+            return 1;    
+    }
+    
     protected function outputValue()
     {
         return VCard::escape($this->getValue());

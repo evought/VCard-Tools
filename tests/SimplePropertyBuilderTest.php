@@ -88,6 +88,121 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testSetAndBuild
      */
+    public function testSetPref(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setValue('foo')->setPref(35);
+        $property = $builder->build();
+        $this->assertEquals(35, $property->getPref());
+        $this->assertEquals(35, $property->getPref(true));
+        $this->assertEquals(35, $property->getPref(false));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
+    public function testGetPrefDefault(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $property = $builder->setValue('foo')->build();
+        $this->assertEquals(100, $property->getPref());
+        $this->assertEquals(100, $property->getPref(true));
+        $this->assertNull($property->getPref(false));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testGetPrefDefault
+     */
+    public function testComparePref(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder()->setValue('foo');
+        $property1 = $builder->build();
+        $property2 = $builder->setPref(1)->build();
+        $property3 = $builder->setPref(23)->build();
+        $property4 = $builder->setPref(23)->build();
+        
+        $this->assertEquals(1, $property1->comparePref($property1, $property2));
+        $this->assertEquals(-1, $property1->comparePref($property2, $property3));
+        $this->assertEquals(0, $property1->comparePref($property3, $property4));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
+    public function testCompareValue(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $property1 = $builder->setValue('foo')->build();
+        $property2 = $builder->setValue('bar')->build();
+        $property3 = $builder->setValue('baz')->build();
+        $property4 = $builder->setValue('baz')->build();
+        
+        $this->assertEquals(1, $property1->compareValue($property1, $property2));
+        $this->assertEquals(-1, $property1->compareValue($property2, $property3));
+        $this->assertEquals(0, $property1->compareValue($property3, $property4));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testComparePref
+     * @depends testCompareValue
+     */
+    public function testComparePrefAndValue(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $property1 = $builder->setValue('foo')->build();
+        $property2 = $builder->setValue('bar')->setPref(1)->build();
+        $property3 = $builder->setValue('baz')->build();
+        $property4 = $builder->setValue('baz')->setPref(2)->build();
+        
+        $this->assertEquals( 1,
+                $property1->comparePrefThenValue($property1, $property2) );
+        $this->assertEquals(-1,
+                $property1->comparePrefThenValue($property2, $property3) );
+        $this->assertEquals(-1,
+                $property1->comparePrefThenValue($property3, $property4) );
+        $this->assertEquals(-1,
+                $property1->comparePrefThenValue($property4, $property1) );
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testComparePref
+     */
+    public function testUSortPref(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder()->setValue('foo');
+        $property1 = $builder->build();
+        $property2 = $builder->setPref(1)->build();
+        $property3 = $builder->setPref(23)->build();
+        $property4 = $builder->setPref(23)->build();
+        
+        $list = [$property1, $property2, $property3, $property4];
+        
+        \usort($list, [$property1, 'comparePref']);
+        $this->assertEquals($property2, $list[0]);
+        $this->assertEquals($property1, $list[3]);
+        $this->assertEquals(23, $list[1]->getPref());
+        $this->assertEquals(23, $list[2]->getPref());
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
     public function testOutput()
     {
         $specification = new PropertySpecification(
@@ -151,6 +266,8 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals('g', $builder->getGroup());
         $this->assertEquals('http://abc.es', $builder->getValue());
+        
+        return $specification;
     }
     
     /**
@@ -167,6 +284,25 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder->setFromVCardLine($vcardLine);
         
         $this->assertEmpty($builder->getGroup());
+        $this->assertEquals('http://abc.es', $builder->getValue());
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetFromVCardLine
+     */
+    public function testSetFromVCardLinePref(PropertySpecification $specification)
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->setName('url')->setValue('http://abc.es')
+                ->setParameter('pref', 1);
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals(1, $builder->getPref());
         $this->assertEquals('http://abc.es', $builder->getValue());
     }
     

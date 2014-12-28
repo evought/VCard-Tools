@@ -60,6 +60,12 @@ trait PropertyTrait
     private $hasParameters;
     
     /**
+     * The PREF parameter for this property (if specified).
+     * @var int
+     */
+    private $pref;
+    
+    /**
      * Initialize core Property from PropertyBuilder
      * @param \EVought\vCardTools\PropertyBuilder $builder
      */
@@ -68,6 +74,8 @@ trait PropertyTrait
         $this->specification = $builder->getSpecification();
         $this->group = $builder->getGroup();
         $this->hasParameters = false;
+        $this->pref = $builder->getPref();
+        if (null !== $this->pref) $this->hasParameters = true;
     }
     
     /**
@@ -96,6 +104,62 @@ trait PropertyTrait
     public function getGroup()
     {
         return $this->group;
+    }
+    
+    /**
+     * Return the value of the preference parameter for this property.
+     * PREF is defined for any property which can have multiple values and is
+     * undefined otherwise.
+     * @param bool $default If true and no PREF parameter specified, this
+     * method will return the preference value indicating the least preferred.
+     * Passing false for $default is necessary to determine whether an explicit
+     * PREF was provided.
+     * @return int
+     * @see Property::getPref()
+     */
+    public function getPref($default = true)
+    {
+        if ($default === true)
+            return ($this->pref === null) ? 100 : $this->pref;
+        else
+            return $this->pref;
+    }
+    
+    /**
+     * A sort-function suitable for use with \usort() or \uasort() which
+     * compares the PREF parameter.
+     * @param Property $a
+     * @param Property $b
+     * @return int -1, 0, or 1 if $a sorts less than, equal to, or greater than
+     * $b.
+     * @see Property::comparePref()
+     */
+    public function comparePref(Property $a, Property $b)
+    {
+        if ($a->getPref() == $b->getPref())
+            return 0;
+        elseif ($a->getPref() < $b->getPref())
+            return -1;
+        else
+            return 1;
+    }
+
+    /**
+     * A sort-function suitable for use with \usort() or \uasort() which
+     * compares PREF parameters first, then property *values*.
+     * @param Property $a
+     * @param Property $b
+     * @return int -1, 0, or 1 if $a sorts less than, equal to, or greater than
+     * $b.
+     * @see Property::comparePrefThenValue()
+     */
+    public function comparePrefThenValue(Property $a, Property $b)
+    {
+        $prefCompare = $this->comparePref($a, $b);
+        if ($prefCompare === 0)
+            return $this->compareValue($a, $b);
+        else
+            return $prefCompare;
     }
     
     /**
@@ -134,14 +198,17 @@ trait PropertyTrait
         $groupPart = empty($this->group) ? '' : \strtoupper($this->group . '.');
         return \strtoupper($groupPart . $this->getName());
     }
-       
+    
     /**
      * Format parameters for output as part of a raw vcard string.
      * Should only be called if hasParameters() returns true.
      * @return string The string of parameters.
      * @see output()
      */
-    protected abstract function outputParameters();
+    protected function outputParameters()
+    {
+        return (null === $this->pref) ? '' : 'PREF='.$this->pref;
+    }
     
     /**
      * Returns true if-and-only-if there are named parameters to output.

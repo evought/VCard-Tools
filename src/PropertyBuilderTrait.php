@@ -48,6 +48,12 @@ trait PropertyBuilderTrait
      */
     private $group;
     
+    /**
+     *The PREF parameter value, if specified.
+     * @var int|null
+     */
+    private $pref = null;
+    
     public function push(PropertyContainer $container)
     {
         $property = $this->build();
@@ -74,6 +80,28 @@ trait PropertyBuilderTrait
         return $this->group;
     }
     
+    /**
+     * Set the PREF parameter.
+     * @param int $value 1 <= $pref <= 100 
+     * @return self $this
+     */
+    public function setPref($value)
+    {
+        \assert(is_int($value));
+        $this->pref= $value;
+        return $this;
+    }
+    
+    /**
+     * Get the value of the PREF parameter, or null if none specified. PREF is
+     * only defined for Properties which can have more than one value.
+     * @return int|null In the range 1 to 100.
+     */
+    public function getPref()
+    {
+        return $this->pref;
+    }
+    
     protected function initBuilder($specification)
     {
         \assert(null !== $specification);
@@ -86,6 +114,14 @@ trait PropertyBuilderTrait
         \assert($this->getName() === $vcardLine->getName());
         $this->group = empty($vcardLine->getGroup())
                         ? null : $vcardLine->getGroup();
+        if ($vcardLine->hasParameter('pref'))
+        {
+            if ($this->getSpecification()->requiresSingleValue())
+                throw new \DomainException(
+                    'PREF not allowed for single value property '
+                    . $this->getName ());
+            $this->pref = $vcardLine->getParameter('pref');
+        }
         return $this;
     }
 }

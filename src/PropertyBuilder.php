@@ -93,6 +93,20 @@ interface PropertyBuilder
     public function getValue();
     
     /**
+     * Set the PREF parameter.
+     * @param int $value 1 <= $pref <= 100 
+     * @return self $this
+     */
+    public function setPref($value);
+    
+    /**
+     * Get the value of the PREF parameter, or null if none specified. PREF is
+     * only defined for Properties which can have more than one value.
+     * @return int|null In the range 1 to 100.
+     */
+    public function getPref();
+    
+    /**
      * Returns the PropertySpecification defining the property being built.
      * @return PropertySpecification
      */

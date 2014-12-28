@@ -104,6 +104,25 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
+     * @depends testSetAndBuild
+     */
+    public function testCompareValue(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $property1 = $builder->setField('Locality', 'Level 1')->build();
+        $property2 = $builder->setField('Locality', 'Level 9')->build();
+        $property3 = $builder->setField('Locality', 'Level 9')->build();
+        $property4 = $builder->setField('Locality', 'Cleveland')->build();
+        
+        $this->assertEquals(-1, $property1->compareValue($property1, $property2));
+        $this->assertEquals(0, $property1->compareValue($property2, $property3));
+        $this->assertEquals(1, $property1->compareValue($property3, $property4));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
      * @depends testConstruct
      * @expectedException \DomainException
      */
