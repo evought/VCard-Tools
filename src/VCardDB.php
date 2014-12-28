@@ -243,6 +243,9 @@ class VCardDB
                     $this->getQueryInfo('store', $property->getName()) );
         
         $stmt->bindValue(':uid', $uid);
+        // HACK: Special case N, doesn't have PREF
+        if ('n' !== $property->getName())
+            $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
     	foreach($property->getAllowedFields() as $key)
     	{
             $stmt->bindValue(':'.$key, $property->getField($key), \PDO::PARAM_STR);
@@ -303,7 +306,8 @@ class VCardDB
                     $this->getQueryInfo('store', $property->getName()) );
     	
         $stmt->bindValue(':uid', $uid);
-    	$stmt->bindValue(":value", $property->getValue());
+    	$stmt->bindValue(':value', $property->getValue());
+        $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
 
@@ -564,10 +568,16 @@ class VCardDB
         
         while ($result = $stmt->fetch(\PDO::FETCH_ASSOC))
     	{
-            $propertyID = $result['PropID'];
-            unset($result['PropID']);
-            
             $builder = VCard::builder($propertyName);
+            
+            // FIXME: Need to store this
+            $propertyID = $result['pid'];
+            unset($result['pid']);
+            
+            if (null !== $result['pref'])
+                $builder->setPref($result['pref']);
+            unset($result['pref']);
+            
             \assert($builder instanceof StructuredPropertyBuilder);            
             $builder->setValue(\array_filter($result, '\strlen'));
             
@@ -603,16 +613,24 @@ class VCardDB
                     $this->getQueryInfo('fetch', $propertyName) );
         $stmt->bindValue(':id', $uid);
         $stmt->execute();
-        $values = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
         
+        /** @var Property[] */
         $properties = [];
-        foreach ($values as $value)
-        {
-            $properties[]
-                    = VCard::builder($propertyName)->setValue($value)->build();
+        while ($result = $stmt->fetch(\PDO::FETCH_ASSOC))
+    	{
+            $builder = VCard::builder($propertyName);
+            $builder->setValue($result['value']);
+            
+            // FIXME: Need to store this.
+            $propertyID = $result['pid'];
+            if (null !== $result['pref'])
+                $builder->setPref($result['pref']);
+
+            $properties[] = $builder->build();            
         }
-    	return empty($properties) ? null : $properties;
+        $stmt->closeCursor();
+
+        return empty($properties) ? null : $properties;
     } // i_fetchBasicProperty()    
     
     /**

@@ -423,6 +423,31 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
     /**
      * @group default
+     * @depends testStoreAndRetrieveWAddress
+     */
+    public function testStoreAndRetrieveWAddressPref(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+        $vcard = new VCard();
+        
+        VCard::builder('adr')
+                ->setValue(['StreetAddress'=>'47 Some Street',
+                            'Locality'=>'Birmingham',
+                            'Region'=>'AL'])
+                ->setPref(1)
+                ->push($vcard);
+        VCard::builder('fn')->setValue('Fred Jones')->push($vcard);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>0, 'CONTACT_ADR'=>1],
+                               $vcard );
+        $resultVCard = $vcardDB->fetchOne($contactID);
+
+        $this->compareVCards($vcard, $resultVCard);    	 
+    } //testStoreAndRetrieveWAddressType()
+    
+    /**
+     * @group default
      * @depends testStoreAndRetrieveVCard
      */
     public function testStoreAndRetrieveWUID(VCardDB $vcardDB)
@@ -673,6 +698,29 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
         $resultVCard = $vcardDB->fetchOne($contactID);
 	$this->compareVCards($vcard, $resultVCard);
+        
+        return $vcardDB;
+    } //testStoreAndRetrieveWTel()
+    
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveWTel
+     */
+    public function testStoreAndRetrieveWTelPref(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+
+        $vcard = new VCard();
+	VCard::builder('fn')->setValue('Information')->push($vcard);
+        VCard::builder('tel')->setValue('555-1212')->setPref(1)->push($vcard);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts(['CONTACT'=>1, 'CONTACT_TEL'=>1], $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+	$this->compareVCards($vcard, $resultVCard);
+        
+        return $vcardDB;
     } //testStoreAndRetrieveWTel()
     
     /**

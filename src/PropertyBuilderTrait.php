@@ -87,8 +87,7 @@ trait PropertyBuilderTrait
      */
     public function setPref($value)
     {
-        \assert(is_int($value));
-        $this->pref= $value;
+        $this->pref= (int) $value;
         return $this;
     }
     
