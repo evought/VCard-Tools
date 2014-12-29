@@ -115,9 +115,9 @@ trait PropertyBuilderTrait
                         ? null : $vcardLine->getGroup();
         if ($vcardLine->hasParameter('pref'))
         {
-            if ($this->getSpecification()->requiresSingleProperty())
+            if (!($this->getSpecification()->isCardinalityToN()))
                 throw new \DomainException(
-                    'PREF not allowed for single value property '
+                    'PREF not allowed for *1 or 1 cardinality: '
                     . $this->getName ());
             $this->pref = $vcardLine->getParameter('pref');
         }
