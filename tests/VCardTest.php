@@ -1160,8 +1160,8 @@ class VCardTest extends \PHPUnit_Framework_TestCase
      */
     public function testOutputOneCategory($unescaped, $escaped, VCard $vcard)
     {
-        VCard::builder('fn')->setValue('foo')->push($vcard);
-	VCard::builder('categories')->setValue($unescaped)->push($vcard);
+        VCard::builder('fn')->setValue('foo')->pushTo($vcard);
+	VCard::builder('categories')->setValue($unescaped)->pushTo($vcard);
 
 	$output = $vcard->output();
 
@@ -1189,9 +1189,9 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
         $vcard = new VCard();
         VCard::builder('categories')
-                ->setValue('sporting goods')->push($vcard)
-                ->setValue('telephone sanitizing')->push($vcard);
-        VCard::builder('fn')->setValue('foo')->push($vcard);
+                ->setValue('sporting goods')->pushTo($vcard)
+                ->setValue('telephone sanitizing')->pushTo($vcard);
+        VCard::builder('fn')->setValue('foo')->pushTo($vcard);
 
 	$output = $vcard->output();
         
@@ -1217,8 +1217,8 @@ class VCardTest extends \PHPUnit_Framework_TestCase
      */
     public function testOutputOneURL($unescaped, $escaped, $vcard)
     {
-	VCard::builder('url')->setValue($unescaped)->push($vcard);
-        VCard::builder('fn')->setValue('foo')->push($vcard);
+	VCard::builder('url')->setValue($unescaped)->pushTo($vcard);
+        VCard::builder('fn')->setValue('foo')->pushTo($vcard);
 
 	$output = $vcard->output();
         
@@ -1247,9 +1247,9 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
         $vcard = new VCard();
         VCard::builder('url')
-                ->setValue('something')->push($vcard)
-                ->setValue('somethingElse')->push($vcard);
-        VCard::builder('fn')->setValue('foo')->push($vcard);
+                ->setValue('something')->pushTo($vcard)
+                ->setValue('somethingElse')->pushTo($vcard);
+        VCard::builder('fn')->setValue('foo')->pushTo($vcard);
         
 	$output = $vcard->output();
         
@@ -1283,8 +1283,8 @@ class VCardTest extends \PHPUnit_Framework_TestCase
 			'Country' => 'Elbonia'
 		    ];
 
-        VCard::builder('adr')->setValue($address)->push($vcard);
-        VCard::builder('fn')->setValue('foo')->push($vcard);
+        VCard::builder('adr')->setValue($address)->pushTo($vcard);
+        VCard::builder('fn')->setValue('foo')->pushTo($vcard);
 
 	$output = $vcard->output();
         

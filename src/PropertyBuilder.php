@@ -56,7 +56,7 @@ interface PropertyBuilder
      * to add the Property to.
      * @return self $this
      */
-    public function push(PropertyContainer $container);
+    public function pushTo(PropertyContainer $container);
     
     /**
      * @return string The name of the property being built.

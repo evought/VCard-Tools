@@ -54,7 +54,7 @@ trait PropertyBuilderTrait
      */
     private $pref = null;
     
-    public function push(PropertyContainer $container)
+    public function pushTo(PropertyContainer $container)
     {
         $property = $this->build();
         $container->push($property);

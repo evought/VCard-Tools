@@ -930,13 +930,13 @@ class VCard implements PropertyContainer
 	    {
                 // FIXME: copy LANGUAGE parameter and ALTID?
                 foreach ($this->data['org'] as $org)
-                    self::builder('fn')->setValue((string) $org)->push($this);
+                    self::builder('fn')->setValue((string) $org)->pushTo($this);
             } elseif ( ($this->data["kind"]->getValue() === "individual")
                  && \array_key_exists('n', $this->data) )
 	    {
                 // FIXME: copy LANGUAGE parameter and ALTID?
                 foreach ($this->data['n'] as $n)
-                    self::builder('fn')->setValue((string) $n)->push($this);
+                    self::builder('fn')->setValue((string) $n)->pushTo($this);
             }
         }
         return $this;

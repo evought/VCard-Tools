@@ -202,7 +202,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$this->checkRowCounts(['CONTACT'=>0]);
     	
         $vcard = new VCard();
-    	VCard::builder('fn')->setValue('foo')->push($vcard);
+    	VCard::builder('fn')->setValue('foo')->pushTo($vcard);
     	
     	$contactID = $vcardDB->store($vcard);
     	$this->checkRowCounts(['CONTACT'=>1], $vcard);
@@ -225,7 +225,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	$this->checkRowCounts(['CONTACT'=>0]);
     	
         $vcard = new VCard();
-    	VCard::builder('fn')->setValue('foo')->push($vcard);
+    	VCard::builder('fn')->setValue('foo')->pushTo($vcard);
     	 
     	$contact_id = $vcardDB->store($vcard);
     	$this->checkRowCounts(['CONTACT'=>1], $vcard);
@@ -433,8 +433,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
                             'Locality'=>'Birmingham',
                             'Region'=>'AL'])
                 ->setPref(1)
-                ->push($vcard);
-        VCard::builder('fn')->setValue('Fred Jones')->push($vcard);
+                ->pushTo($vcard);
+        VCard::builder('fn')->setValue('Fred Jones')->pushTo($vcard);
 
         $contactID = $vcardDB->store($vcard);
         $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>0, 'CONTACT_ADR'=>1],
@@ -556,12 +556,12 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
                         'fn' => 'Fred Jones'
                      ];
         $vcard = new VCard();
-	VCard::builder('fn')->setValue($expected['fn'])->push($vcard);
+	VCard::builder('fn')->setValue($expected['fn'])->pushTo($vcard);
         VCard::builder('n')
                 ->setField('GivenName', $expected['n_GivenName'])
                 ->setField('FamilyName', $expected['n_FamilyName'])
-                ->push($vcard);
-        VCard::builder('email')->setValue($expected['email'])->push($vcard);
+                ->pushTo($vcard);
+        VCard::builder('email')->setValue($expected['email'])->pushTo($vcard);
 
         $contactID = $vcardDB->store($vcard);
         $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,
@@ -706,8 +706,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->checkRowCounts(['CONTACT'=>0]);
 
         $vcard = new VCard();
-	VCard::builder('fn')->setValue('Information')->push($vcard);
-        VCard::builder('tel')->setValue('555-1212')->setPref(1)->push($vcard);
+	VCard::builder('fn')->setValue('Information')->pushTo($vcard);
+        VCard::builder('tel')->setValue('555-1212')->setPref(1)->pushTo($vcard);
 
         $contactID = $vcardDB->store($vcard);
         $this->checkRowCounts(['CONTACT'=>1, 'CONTACT_TEL'=>1], $vcard );

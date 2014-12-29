@@ -318,7 +318,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         
         $builder = $specification->getBuilder();
         $builder->setValue('http://liquor.cabi.net');
-        $property = $builder->push($container);
+        $property = $builder->pushTo($container);
         
         $this->assertEquals( 'http://liquor.cabi.net',
                                 $container->current()->getValue() );
