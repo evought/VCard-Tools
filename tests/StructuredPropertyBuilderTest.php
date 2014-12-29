@@ -47,8 +47,9 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $specification = new PropertySpecification(
                 'adr',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedFields'=>['StreetAddress', 'Locality', 'Region']]
             );
         $builder = $specification->getBuilder();

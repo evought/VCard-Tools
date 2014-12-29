@@ -616,7 +616,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertNotEmpty($vcard->fn); // precondition
     	
     	$output = $template->output($vcard);
-    	$this->assertEquals($vcard->fn, $output);
+    	$this->assertEquals($vcard->fn[0], $output);
     }
     
     /**
@@ -736,7 +736,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	 
     	$vcard = $this->getSeinarApl();
     	$this->assertNotEmpty($vcard->fn); // precondition
-    	$expected = $vcard->fn;
+    	$expected = (string) $vcard->fn[0];
     	 
     	$output = $template->output($vcard);
     	$this->assertEquals($expected, $output);
@@ -777,7 +777,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	$this->assertNotEmpty($vcard->fn); // precondition
     	
     	$output = $template->output($vcard);
-    	$this->assertEquals(urlencode($vcard->fn), $output);
+    	$this->assertEquals(urlencode((string)$vcard->fn[0]), $output);
     }
     
     /**

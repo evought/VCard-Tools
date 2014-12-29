@@ -191,10 +191,10 @@ class VCardDB
         
         $stmt->bindValue(':uid', $uid);
 
-        foreach ( [ 'kind', 'fn', 'bday', 'anniversary', 'rev' ]
+        foreach ( [ 'kind', 'rev' ]
                   as $simpleProperty )
         {
-            assert( $vcard->getSpecification($simpleProperty)->requiresSingleValue(),
+            assert( $vcard->getSpecification($simpleProperty)->requiresSingleProperty(),
                     $simpleProperty . ' must be a single value element' );
             $stmt->bindValue( ':'.$simpleProperty,
                                 empty($vcard->$simpleProperty)
@@ -205,9 +205,10 @@ class VCardDB
         // HACK: #51, #52, #53, #54, #55: VCard and the spec think URL,
         // NICKNAME, etc. are multiple.
         // Database doesn't. Arbitrarily take the first value.
-        foreach (['url', 'nickname', 'role', 'title', 'tz'] as $hackMultiple)
+        foreach ([ 'url', 'nickname', 'role', 'title', 'tz', 'fn', 'bday',
+                   'anniversary' ] as $hackMultiple)
         {
-            assert(!($vcard->getSpecification($hackMultiple)->requiresSingleValue()),
+            assert(!($vcard->getSpecification($hackMultiple)->requiresSingleProperty()),
                     $simpleProperty . ' must NOT be a single value element');
             $hackMultipleValue = $vcard->$hackMultiple;
             if (empty($hackMultipleValue))
@@ -243,8 +244,7 @@ class VCardDB
                     $this->getQueryInfo('store', $property->getName()) );
         
         $stmt->bindValue(':uid', $uid);
-        // HACK: Special case N, doesn't have PREF
-        if ('n' !== $property->getName())
+        if ($property->getSpecification()->isCardinalityToN())
             $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
     	foreach($property->getAllowedFields() as $key)
     	{

@@ -41,8 +41,9 @@ class TypedStructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $specification = new PropertySpecification(
                 'adr',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedStructuredPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 [
                     'allowedTypes'=>['work', 'home'],
                     'allowedFields'=>['Locality', 'Region']

@@ -536,9 +536,9 @@ class Template
 	if ($substitution->isMagic())
 	{
 	    if ($lookUpProperty == "_id")
-		$value = urlencode($vcard->fn);
+		$value = urlencode((string) $vcard->fn[0]);
 	    else if ($lookUpProperty == "_rawvcard")
-		$value .= $vcard;
+		$value = $vcard->output();
 	    else
 	    	assert(false, 'bad magic:' . $lookUpProperty);
 	} else if ($substitution->lookUpIsStructured()) {
@@ -623,4 +623,3 @@ class Template
 	return $value;
     } //i_processFragment()
 } // Template
-

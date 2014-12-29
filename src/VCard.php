@@ -75,24 +75,27 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'source',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N']
             )
         );
         //https://tools.ietf.org/html/rfc6350#section-6.1.4
         self::registerSpecification(
             new PropertySpecification(
                 'kind',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero or One']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.1.5
         self::registerSpecification(
             new PropertySpecification(
                 'xml',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.1
@@ -100,8 +103,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'fn',
-                PropertySpecification::SINGLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['One To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -109,8 +113,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'n',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero or One'],
                 ['allowedFields'=>['FamilyName', 'GivenName', 'AdditionalNames',
                     'Prefixes', 'Suffixes']]
             )
@@ -119,16 +124,18 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'nickname',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.4
         self::registerSpecification(
             new PropertySpecification(
                 'photo',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -136,24 +143,27 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'bday',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero or One']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.6
         self::registerSpecification(
             new PropertySpecification(
                 'anniversary',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero or One']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.7
         self::registerSpecification(
             new PropertySpecification(
                 'gender',
-                PropertySpecification::SINGLE_VALUE,
+                PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero or One'],
                 ['allowedFields'=>['Sex', 'Text']]
             )
         );
@@ -161,8 +171,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'adr',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedStructuredPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>[ 'dom', 'intl', 'postal', 'parcel',
                             'home', 'work'],
                  'allowedFields'=>['POBox', 'ExtendedAddress', 'StreetAddress', 
@@ -174,8 +185,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'tel',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['home', 'msg', 'work', 'voice', 'fax', 
                        'cell', 'video', 'pager', 'bbs', 'modem', 'car', 
                        'isdn', 'pcs']
@@ -186,8 +198,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'email',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['internet', 'x400']]
             )
         );
@@ -195,8 +208,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'impp',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['personal', 'business', 'home', 'work',
                     'mobile']
                 ]
@@ -206,8 +220,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'language',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -215,8 +230,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'tz',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -224,8 +240,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'geo',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -233,8 +250,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'title',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -242,8 +260,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'role',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -251,8 +270,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'logo',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -260,8 +280,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'org',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedStructuredPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home'],
                  'allowedFields'=>['Name', 'Unit1', 'Unit2']
                 ]
@@ -271,16 +292,18 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'member',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.6.6
         self::registerSpecification(
             new PropertySpecification(
                 'related',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes' => [ 'contact', 'acquaintance', 'friend', 'met',
                            'co-worker', 'colleague', 'co-resident',
                            'neighbor', 'child', 'parent', 'sibling',
@@ -293,8 +316,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'categories',
-                PropertySpecification::COMMA_VALUE,
+                PropertySpecification::COMMA_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -302,8 +326,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'note',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -311,24 +336,27 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'prodid',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero or One']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.4
         self::registerSpecification(
             new PropertySpecification(
                 'rev',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero or One']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.5
         self::registerSpecification(
             New PropertySpecification(
                 'sound',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -336,16 +364,18 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'uid',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero or One']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.7
         self::registerSpecification(
             new PropertySpecification(
                 'clientpidmap',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedFields'=>['Pid', 'Uri']]
             )
         );
@@ -353,8 +383,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'url',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -362,16 +393,18 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'version',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Exactly One']
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.8.1
         self::registerSpecification(
             New PropertySpecification(
                 'key',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -379,8 +412,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'fburl',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -388,8 +422,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'caladruri',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -397,8 +432,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'caluri',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             )
         );
@@ -409,8 +445,9 @@ class VCard implements PropertyContainer
         self::registerSpecification(
             new PropertySpecification(
                 'agent',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N']
             )
         );
     }
@@ -562,7 +599,7 @@ class VCard implements PropertyContainer
                 \assert($item instanceof Property);
                 if ('uid' === $item->getName())
                     $this->setUID($item->getValue());
-                elseif ($item->getSpecification()->requiresSingleValue())
+                elseif ($item->getSpecification()->requiresSingleProperty())
                     $this->data[$item->getName()] = $item;
                 else
                     $this->data[$item->getName()][] = $item;
@@ -582,6 +619,12 @@ class VCard implements PropertyContainer
         return $this;
     }
     
+    /**
+     * Return a new builder for the requested property name.
+     * @param string $propName
+     * @return PropertyBuilder
+     * @throws \DomainException If the requested property has not been defined.
+     */
     public static function builder($propName)
     {
         $specification = self::getSpecification($propName);
@@ -731,7 +774,7 @@ class VCard implements PropertyContainer
             return;
         }
         
-        if ($specification->allowsMultipleValues())
+        if ($specification->allowsMultipleProperties())
         {
             if (!\is_array($value))
                 throw new \DomainException($name . ' takes multiple values.');
@@ -837,8 +880,8 @@ class VCard implements PropertyContainer
      */
     protected function getUIDAsProperty()
     {
-        return $this->getSpecification('uid')
-                ->getBuilder()->setValue($this->checkSetUID())->build();
+        $builder = self::builder('uid');
+        return $builder->setValue($this->checkSetUID())->build();
     }
     
     /**
@@ -873,37 +916,28 @@ class VCard implements PropertyContainer
      * If FN is not set, set it appropriately from either the
      * individual or organization name (RFC says FN should not
      * be empty).
-     * Use this just before saving or displaying the record using
-     * anything other than the toString() method.
+     * Use this just before saving or displaying the record.
      * @return VCard $this for method chaining.
      */
     public function setFNAppropriately()
     {
         // FIXME: #64 : Get PREFerred Property
         if ( (!(\array_key_exists('fn', $this->data)))
-             || empty($this->data["fn"]->getValue()) )
+             && \array_key_exists("kind", $this->data) )
         {
-            $fullname = '';
-	    if ( \array_key_exists("kind", $this->data)
-		 && $this->data["kind"]->getValue() === "organization" )
+	    if ( ($this->data["kind"]->getValue() === "organization")
+                 && \array_key_exists('org', $this->data) )
 	    {
-                if (\array_key_exists('org', $this->data))
-                {
-                    $org = $this->data['org'][0];
-                    $fullname = (string) $org;
-                }
-            }
-	    if ( \array_key_exists("kind", $this->data)
-		 && $this->data["kind"]->getValue() === "individual" )
+                // FIXME: copy LANGUAGE parameter and ALTID?
+                foreach ($this->data['org'] as $org)
+                    self::builder('fn')->setValue((string) $org)->push($this);
+            } elseif ( ($this->data["kind"]->getValue() === "individual")
+                 && \array_key_exists('n', $this->data) )
 	    {
-                if (\array_key_exists('n', $this->data))
-                {
-                    $n = $this->data['n'][0];
-                    $fullname = (string) $n;
-                }
+                // FIXME: copy LANGUAGE parameter and ALTID?
+                foreach ($this->data['n'] as $n)
+                    self::builder('fn')->setValue((string) $n)->push($this);
             }
-            $this->data["fn"] = $this->getSpecification('fn')->getBuilder()
-                    ->setValue(trim($fullname))->build();
         }
         return $this;
     } // setFNAppropriately()
@@ -1012,7 +1046,7 @@ class VCard implements PropertyContainer
     {
         if (key($this->data) === null) return false;
         
-        if ($this->getSpecification(key($this->data))->allowsMultipleValues())
+        if ($this->getSpecification(key($this->data))->allowsMultipleProperties())
             return current($this->data)[$this->current_index];
         else
             return current($this->data);
@@ -1024,7 +1058,7 @@ class VCard implements PropertyContainer
      */
     public function next()
     {
-        if ($this->getSpecification(key($this->data))->allowsMultipleValues())
+        if ($this->getSpecification(key($this->data))->allowsMultipleProperties())
         {
             $this->current_index += 1;
             if ($this->current_index === count(current($this->data)))
@@ -1072,7 +1106,7 @@ class VCard implements PropertyContainer
         $count = 0;
         foreach ($this->data as $key=>$values)
         {
-            if ($this->getSpecification($key)->allowsMultipleValues())
+            if ($this->getSpecification($key)->allowsMultipleProperties())
                 $count += count($values);
             else
                 $count += 1;
@@ -1095,7 +1129,7 @@ class VCard implements PropertyContainer
     	
         if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        return self::getSpecification($key)->requiresSingleValue();
+        return self::getSpecification($key)->requiresSingleProperty();
     }
 
     /**
@@ -1113,7 +1147,7 @@ class VCard implements PropertyContainer
     	
         if (!self::isSpecified($key))
             throw new \DomainException($key . ' is not a defined property.');
-        return self::getSpecification($key)->allowsCommaValues();
+        return self::getSpecification($key)->allowsCommaProperties();
     }
 
     /**

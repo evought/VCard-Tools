@@ -42,8 +42,9 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $specification = new PropertySpecification(
                 'tel',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home', 'cell', 'voice']]
             );
         $builder = $specification->getBuilder();

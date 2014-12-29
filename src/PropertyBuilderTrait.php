@@ -115,7 +115,7 @@ trait PropertyBuilderTrait
                         ? null : $vcardLine->getGroup();
         if ($vcardLine->hasParameter('pref'))
         {
-            if ($this->getSpecification()->requiresSingleValue())
+            if ($this->getSpecification()->requiresSingleProperty())
                 throw new \DomainException(
                     'PREF not allowed for single value property '
                     . $this->getName ());

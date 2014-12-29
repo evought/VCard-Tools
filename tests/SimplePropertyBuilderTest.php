@@ -42,8 +42,9 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $specification = new PropertySpecification(
                 'url',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N']
             );
         $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\SimplePropertyBuilder',
@@ -207,11 +208,11 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $specification = new PropertySpecification(
                 'fn',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Exactly One']
             );
-        $builder = $specification->getBuilder();
-        $builder->setValue('Mr. Toad');
+        $builder = $specification->getBuilder()->setValue('Mr. Toad');
         $property = $builder->build();
         
         $this->assertEquals('FN:Mr. Toad'."\n", $property->output());
@@ -240,11 +241,11 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $specification = new PropertySpecification(
                 'fn',
-                PropertySpecification::SINGLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::SINGLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Exactly One']
             );
-        $builder = $specification->getBuilder();
-        $builder->setValue('Mr. Toad');
+        $builder = $specification->getBuilder()->setValue('Mr. Toad');
         $property = $builder->build();
         
         $this->assertEquals('Mr. Toad', (string) $property);

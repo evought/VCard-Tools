@@ -201,9 +201,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     {
     	$this->checkRowCounts(['CONTACT'=>0]);
     	
-    	$fn = VCard::builder('fn')->setValue('foo')->build();
-    	$vcard = new VCard();
-    	$vcard->fn = $fn;
+        $vcard = new VCard();
+    	VCard::builder('fn')->setValue('foo')->push($vcard);
     	
     	$contactID = $vcardDB->store($vcard);
     	$this->checkRowCounts(['CONTACT'=>1], $vcard);
@@ -224,10 +223,9 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     public function testSearchWithOneVCardFails(VCardDB $vcardDB)
     {
     	$this->checkRowCounts(['CONTACT'=>0]);
-    	 
-    	$fn = VCard::builder('fn')->setValue('foo')->build();
-    	$vcard = new VCard();
-    	$vcard->fn = $fn;
+    	
+        $vcard = new VCard();
+    	VCard::builder('fn')->setValue('foo')->push($vcard);
     	 
     	$contact_id = $vcardDB->store($vcard);
     	$this->checkRowCounts(['CONTACT'=>1], $vcard);
@@ -558,15 +556,12 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
                         'fn' => 'Fred Jones'
                      ];
         $vcard = new VCard();
-	$vcard->push(VCard::builder('fn')->setValue($expected['fn'])->build());
-        $vcard->push(
-            VCard::builder('n')
+	VCard::builder('fn')->setValue($expected['fn'])->push($vcard);
+        VCard::builder('n')
                 ->setField('GivenName', $expected['n_GivenName'])
                 ->setField('FamilyName', $expected['n_FamilyName'])
-                ->build() );
-        $vcard->push(
-            VCard::builder('email')->setValue($expected['email'])->build() );
-	$vcard->push(VCard::builder('fn')->setValue($expected['fn'])->build());
+                ->push($vcard);
+        VCard::builder('email')->setValue($expected['email'])->push($vcard);
 
         $contactID = $vcardDB->store($vcard);
         $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,

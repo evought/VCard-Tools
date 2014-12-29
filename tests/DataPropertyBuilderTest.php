@@ -49,8 +49,9 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $specification = new PropertySpecification(
                 'logo',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             );
         $builder = $specification->getBuilder();

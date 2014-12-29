@@ -35,14 +35,16 @@ class PropertyContainerImplTest extends \PHPUnit_Framework_TestCase
         $this->container = new PropertyContainerImpl;
         $this->specifications['adr'] = new PropertySpecification(
                 'adr',
-                PropertySpecification::MULTIPLE_VALUE,
+                PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedFields'=>['StreetAddress', 'Locality', 'Region']]
             );
         $this->specifications['url'] = new PropertySpecification(
                 'url',
-                PropertySpecification::MULTIPLE_VALUE,
-                __NAMESPACE__ . '\SimplePropertyBuilder'
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\SimplePropertyBuilder',
+                PropertySpecification::$cardinalities['Zero To N']
             );
     }
 
