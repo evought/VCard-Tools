@@ -1713,7 +1713,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
 	$input =	self::$vcard_begin . "\r\n"
 			. self::$vcard_version . "\r\n"
-			. "CATEGORIES:" . $escaped . "\r\n"
+			. 'CATEGORIES:"' . $escaped . '"'."\r\n"
 			. self::$vcard_end . "\r\n";
 
 	$vcard = new vCard(false, $input);
@@ -1742,6 +1742,32 @@ class VCardTest extends \PHPUnit_Framework_TestCase
 	$vcard = new vCard(false, $input);
         
         $builder = VCard::builder('categories');
+        $catProp1 = $builder->setValue($category1)->build();
+        $catProp2 = $builder->setValue($category2)->build();
+
+	$this->assertNotEmpty($vcard->categories);
+	$this->assertInternalType("array", $vcard->categories);
+	$this->assertCount(2, $vcard->categories,
+		print_r($vcard->categories, true) );
+	$this->assertEquals([$catProp1, $catProp2], $vcard->categories);
+    }
+    
+    /**
+     * @group default
+     * @depends testImportVCardOneCategory
+     */
+    public function testImportVCardTwoCategoriesComma()
+    {
+	$category1 = "farrier";
+	$category2 = "smurf";
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			.'CATEGORIES;TYPE=WORK:'.$category1.','.$category2."\r\n"
+			. self::$vcard_end . "\r\n";
+
+	$vcard = new vCard(false, $input);
+        
+        $builder = VCard::builder('categories')->addType('work');
         $catProp1 = $builder->setValue($category1)->build();
         $catProp2 = $builder->setValue($category2)->build();
 

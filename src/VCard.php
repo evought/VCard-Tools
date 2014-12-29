@@ -711,12 +711,24 @@ class VCard implements PropertyContainer
                 throw new \DomainException(
                     $vcardLine->getName() . ' is not a defined property.');
             
-            $builder = self::getSpecification($vcardLine->getName())
-                        ->getBuilder();
-            $builder->setFromVCardLine($vcardLine);
+            $specification = self::getSpecification($vcardLine->getName());
+           
             
-            $property = $builder->build();
-            $this->push($property);
+            if ($specification->allowsCommaProperties())
+            {
+                // Deal with the possibility of multiple values
+                $origValue = $vcardLine->getValue();
+                $values = \str_getcsv($origValue);
+                foreach ($values as $value)
+                {
+                    $vcardLine->setValue($value);
+                    $specification->getBuilder()
+                        ->setFromVCardLine($vcardLine)->pushTo($this);
+                }
+            } else {
+                $specification->getBuilder()
+                    ->setFromVCardLine($vcardLine)->pushTo($this);
+            }
         }
         
         if (\array_key_exists('uid', $this->data))
