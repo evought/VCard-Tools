@@ -575,37 +575,50 @@ class VCard implements PropertyContainer
     }
     
     /**
-     * Add the proferred $property to this VCard.
-     * If the property is defined as requiring a single value, then the
-     * passed property will replace any existing property by the same name,
-     * otherwise, it is added to the list of values for that property.
+     * Add any number of Property instances to this VCard.
+     * If a target property is defined as requiring a single value, then the
+     * last passed such property will replace any existing property by the same
+     * name, otherwise, it is added to the list of values for that property.
      * The uid property is handled specially, resulting in a call to setUID(..)
      * and being discarded.
-     * @param Property|PropertyContainer $properties,...
+     * Arrays or Traversables of (only) Properties will be unpacked and pushed.
+     * @param Property|Array|\Traversable $properties,...
      * @return VCard $this
      */
     public function push($properties)
     {
         $items = func_get_args();
         foreach ($items as $item)
-        {
-            if ($item instanceof PropertyContainer)
-            {
-                foreach ($item as $property)
-                {
-                    $this->push($property);
-                }
-            } else {
-                \assert($item instanceof Property);
-                if ('uid' === $item->getName())
-                    $this->setUID($item->getValue());
-                elseif ($item->getSpecification()->requiresSingleProperty())
-                    $this->data[$item->getName()] = $item;
-                else
-                    $this->data[$item->getName()][] = $item;
-            }
-        }
+            $this->pushOneArg($item);
         return $this;
+    }
+    
+    /**
+     * Utility function for push without variable args.
+     * Push one Property instance or array|\Traversable of such instances.
+     * @return void
+     * @param Property|array|\Traversable $item
+     * @throws \UnexpectedValueException If any individual value is not a 
+     * Property.
+     */
+    private function pushOneArg($item)
+    {
+        if ($item instanceof Property)
+        {
+            if ('uid' === $item->getName())
+                $this->setUID($item->getValue());
+            elseif ($item->getSpecification()->requiresSingleProperty())
+                $this->data[$item->getName()] = $item;
+            else
+                $this->data[$item->getName()][] = $item;            
+        } elseif (is_array($item) || ($item instanceof \Traversable)) {
+            foreach ($item as $property)
+            {
+                $this->pushOneArg($property);
+            }
+        } else {
+            throw new \UnexpectedValueException('Not a property');
+        }        
     }
     
     /**
@@ -705,10 +718,9 @@ class VCard implements PropertyContainer
             if (null === $vcardLine)
 	        continue;
 
-            // FIXME: Deal with COMMA properties
-            // FIXME: Deal gracefully with unknown and X-properties
+            // FIXME: #25 Deal gracefully with unknown and X-properties
             if (!self::isSpecified($vcardLine->getName()))
-                throw new \DomainException(
+                throw new UndefinedPropertyException(
                     $vcardLine->getName() . ' is not a defined property.');
             
             $specification = self::getSpecification($vcardLine->getName());
@@ -762,52 +774,84 @@ class VCard implements PropertyContainer
             return null;
         return $this->data[$keyLower];
     } // __get()
-    
+
+    /**
+     * Magic setter method for value assignment (overloads '=' operator
+     * for assignment). Using assignment to set Property values is
+     * primarily useful when you want to replace all values of a named
+     * property at the same time: __set() clears current values and replaces
+     * them with what is passed in (which may be null, in which case this is
+     * the equivalent of uset() for a property.
+     *
+     * Using assignment, however, is less useful for adding values. To use
+     * assignment, the caller has to worry about whether the named property
+     * requires single or multiple values and the names of the Property
+     * instances passed in must match the property being assigned to. To add
+     * Property instances to a VCard, it is recommended that push() be used
+     * instead.
+     * 
+     * It should also be noted that assignment does not return a useful value
+     * and therefore assignments may not be chained.
+     * @param string $name
+     * @param Property[]|Property $value If $name refers to a property which
+     * requiresSingleValue(), $value shall be a Property, otherwise it may be
+     * a Property or anything Traversable which contains Properties.
+     * @return void
+     * @throws UndefinedPropertyException If the named property is undefined/
+     * not permitted (no PropertySpecification available).
+     * @throws \DomainException If there is a mismatch between the name of a
+     *     Property assigned and the name of the property being set.
+     * @throws \UnexpectedValueException If a value or member of a value array
+     *     is not a Property.
+     * @see push() As a safer method for adding properties.
+     */
     public function __set($name, $value)
     {
         \assert(null !== $name);
+        \assert(is_string($name));
+
+        if (!( (null === $value)
+               || (is_array($value))
+               || ($value instanceof \Traversable)
+               || ($value instanceof Property) ))
+            throw new \UnexpectedValueException(
+                'Argument must be a Property, an array, or a \Traversable' );
+        
         $specification = $this->getSpecification($name);
         if (null === $specification)
-            throw new \DomainException($name . ' is not a defined property.');
-        if ('uid' === $name)
-        {
-            if ($value === null)
-            {
-                $this->uid = null;
-            } else {
-                \assert($value instanceof Property);
-                $this->uid = $value->getValue();
-            }
-            return;
-        }
+            throw new UndefinedPropertyException(
+                $name . ' is not a defined property.' );
+
+        unset($this->data[$name]);
+        
         if (null === $value)
         {
-            unset($this->data[$name]);
-            return;
-        }
-        
-        if ($specification->allowsMultipleProperties())
+            if ('uid' === $name) $this->uid = null;
+        } else if ( $specification->requiresSingleProperty()
+                || ($value instanceof Property) )
         {
-            if (!\is_array($value))
-                throw new \DomainException($name . ' takes multiple values.');
+            if (!($value instanceof Property))
+                throw new \UnexpectedValueException( $name .
+                    ' requiresSingleValue() and $value is not a Property.' );
+            if ($name !== $value->getName())
+                throw new \DomainException(
+                        $value->getName()
+                        . ' Cannot be assigned to property ' . $name);
+                
+            $this->push($value);
+        } else {        
+            // Does not require a single and is NOT a bare Property
             foreach ($value as $property)
             {
                 if (!($property instanceof Property))
-                    throw new \DomainException('Not a property.');
+                    throw new \UnexpectedValueException('Not a Property.');
                 if (!($property->getName() === $name))
                     throw new \DomainException(
                         $property->getName()
                         . ' Cannot be assigned to property ' . $name);
+                $this->push($property);
             }
-        } else {
-            if (!($value instanceof Property))
-                throw new \DomainException('Not a property.');
-            if (!($value->getName() === $name))
-                throw new \DomainException(
-                    $value->getName() . ' Cannot be assigned to property '
-                    . $name);
         }
-        $this->data[$name] = $value;
     }
 
     /**

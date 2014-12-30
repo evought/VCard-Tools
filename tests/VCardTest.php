@@ -444,6 +444,17 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Fake UID', $vcard->getUID());
         $vcard->clearUID();
     }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     * @expectedException UnexpectedValueException
+     */
+    public function testPushBadProperty(VCard $vcard)
+    {
+        $vcard->push('foo');
+        return $vcard->clear();
+    }
 
     /**
      * @group default
@@ -560,7 +571,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testNoFN
-     * @expectedException DomainException
+     * @expectedException UnexpectedValueException
      */
     public function testAssignBadSingleValue(vCard $vcard)
     {
@@ -571,7 +582,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testNoFN
-     * @expectedException DomainException
+     * @expectedException UnexpectedValueException
      */
     public function testAssignBadProperty(vCard $vcard)
     {
@@ -593,12 +604,17 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testNoFN
-     * @expectedException DomainException
      */
     public function testAssignSingleToMultiple(vCard $vcard)
     {
-        $vcard->adr = VCard::builder('adr')
-                ->setValue(['Locality'=>'Cheesequake'])->build();
+        $adr = VCard::builder('adr')
+                ->setValue(['Locality'=>'Cheesequake', 'Region'=>'NJ'])
+                ->build();
+        $vcard->adr = $adr;
+        
+        $this->assertNotEmpty($vcard->adr);
+        $this->assertCount(1, $vcard->adr);
+        $this->assertEquals($adr, $vcard->adr[0]);
 	return $vcard;
     }
 
@@ -887,6 +903,26 @@ class VCardTest extends \PHPUnit_Framework_TestCase
 	unset($vcard->adr);
 	$this->assertEmpty($vcard->adr);
 	return $vcard;
+    }
+    
+    /**
+     * @group default
+     * @depends testPushMultipleAdr
+     */
+    public function testPushMultipleAdrContainer(VCard $vcard)
+    {
+        $builder = VCard::builder('adr');
+        $adr1 = $builder->setValue(['StreetAddress' => 'Some Street'])->build();
+        $adr2 = $builder->build();
+	$vcard->push([$adr1, $adr2]);
+        
+	$this->assertNotEmpty($vcard->adr);
+	$this->assertCount(2, $vcard->adr);
+
+	$this->assertContains($adr1, $vcard->adr, \print_r($vcard->adr, true));
+        $this->assertContains($adr2, $vcard->adr, \print_r($vcard->adr, true));
+
+	return $vcard->clear();
     }
 
     /**
