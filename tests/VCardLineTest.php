@@ -507,7 +507,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testConstruct
-     * @expectedException EVought\vCardTools\MalformedPropertyException
+     * @expectedException EVought\vCardTools\Exceptions\MalformedPropertyException
      */
     public function testFromLineTextBadLine()
     {

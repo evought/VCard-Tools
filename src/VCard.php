@@ -511,6 +511,11 @@ class VCard implements PropertyContainer
      * have only a single value are returned as that value instead of an array
      * If false, an array is returned even if it has only one value.
      * @throws \Exception If the path to the raw data is not accessible.
+     * @throws Exceptions\UndefinedPropertyException During import if an
+     * encountered property is undefined or not permitted.
+     * @throws Exceptions\MalformedPropertyException During import if an
+     * encountered property line does not follow the defined structure.
+
      * @return boolean
      */
     public function __construct( $Path = false, $RawData = false,
@@ -690,8 +695,10 @@ class VCard implements PropertyContainer
     /**
      * Parsing loop for one raw vCard. Sets appropriate internal properties.
      * @param string $rawData Not null.
-     * @throws UndefinedPropertyException If an encountered property is
-     * undefined or not permitted.
+     * @throws Exceptions\UndefinedPropertyException If an encountered property
+     * is undefined or not permitted.
+     * @throws Exceptions\MalformedPropertyException if an encountered property
+     * line does not follow the defined structure.
      */
     protected function processRawCard($rawData)
     {
@@ -722,7 +729,7 @@ class VCard implements PropertyContainer
 
             // FIXME: #25 Deal gracefully with unknown and X-properties
             if (!self::isSpecified($vcardLine->getName()))
-                throw new UndefinedPropertyException(
+                throw new Exceptions\UndefinedPropertyException(
                     $vcardLine->getName() . ' is not a defined property.');
             
             $specification = self::getSpecification($vcardLine->getName());

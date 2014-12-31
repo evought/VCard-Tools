@@ -13,7 +13,10 @@
         "rhumsaa/uuid": "~2.8"
     },
     "autoload": {
-        "psr-4": {"EVought\\vCardTools\\": "src/"}
+        "psr-4": {
+            "EVought\\vCardTools\\": "src/",
+            "EVought\\vCardTools\\Exceptions\\": "src/Exceptions/"
+        }
     }
 }
 

@@ -30,7 +30,7 @@
  * THE SOFTWARE.
  */
 
-namespace EVought\vCardTools;
+namespace EVought\vCardTools\Exceptions;
 
 /**
  * A \DomainException for an undefined/unpermitted property (no

@@ -460,7 +460,7 @@ class VCardLine
 /x";
         $matches = \preg_match($re, $rawLine, $parsed);
         if (1 !== $matches)
-            throw new MalformedPropertyException(
+            throw new Exceptions\MalformedPropertyException(
                 'Malformed property entry: ' . $rawLine );
         
         $vcardLine = new static($version);

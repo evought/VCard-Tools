@@ -1521,7 +1521,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testImportEmptyVCard
-     * @expectedException EVought\vCardTools\UndefinedPropertyException
+     * @expectedException EVought\vCardTools\Exceptions\UndefinedPropertyException
      */
     public function testImportVCardUndefinedProperty()
     {

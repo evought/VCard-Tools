@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-namespace EVought\vCardTools;
+namespace EVought\vCardTools\Exceptions;
 
 /**
  * \DomainException to indicate that a property encountered during import is
