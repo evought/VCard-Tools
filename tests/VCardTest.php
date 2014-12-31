@@ -1517,7 +1517,22 @@ class VCardTest extends \PHPUnit_Framework_TestCase
 
 	$vcard = new vCard(false, $input);
     }
+    
+    /**
+     * @group default
+     * @depends testImportEmptyVCard
+     * @expectedException EVought\vCardTools\UndefinedPropertyException
+     */
+    public function testImportVCardUndefinedProperty()
+    {
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. 'FOO:bar' . "\r\n"
+			. self::$vcard_end . "\r\n";
 
+	$vcard = new vCard(false, $input);
+    }
+    
     /**
      * @group default
      * @depends testImportVCardEmptyFN

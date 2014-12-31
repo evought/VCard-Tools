@@ -503,4 +503,14 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                 $vcardLine->getParameters() );
         $this->assertEquals($components['value'], $vcardLine->getValue());
     }
+    
+    /**
+     * @group default
+     * @depends testConstruct
+     * @expectedException EVought\vCardTools\MalformedPropertyException
+     */
+    public function testFromLineTextBadLine()
+    {
+        VCardLine::fromLineText('foo', '4.0');
+    }
 }

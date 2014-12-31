@@ -690,6 +690,8 @@ class VCard implements PropertyContainer
     /**
      * Parsing loop for one raw vCard. Sets appropriate internal properties.
      * @param string $rawData Not null.
+     * @throws UndefinedPropertyException If an encountered property is
+     * undefined or not permitted.
      */
     protected function processRawCard($rawData)
     {

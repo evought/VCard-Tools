@@ -415,9 +415,8 @@ class VCardLine
      */
     public static function fromLineText($rawLine, $version)
     {
-        // Lines without colons are skipped because, most
-        // likely, they contain no data.
-	if (strpos($rawLine, ':') === false)
+        // Lines with only whitespace are skipped
+	if (empty(trim($rawLine)))
             return null;
      
         $parsed = [];
@@ -461,7 +460,8 @@ class VCardLine
 /x";
         $matches = \preg_match($re, $rawLine, $parsed);
         if (1 !== $matches)
-            throw new \DomainException('Malformed property entry: ' . $rawLine);
+            throw new MalformedPropertyException(
+                'Malformed property entry: ' . $rawLine );
         
         $vcardLine = new static($version);
         $vcardLine  ->setValue($parsed['value'])
