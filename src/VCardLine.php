@@ -339,7 +339,7 @@ class VCardLine
 	foreach ($rawParams as $paramStr)
 	{
             if (empty($paramStr))
-                throw new \DomainException(
+                throw new Exceptions\MalformedParameterException(
                     'Empty or malformed parameter in property: '
                     . $this->name
                     . '; check colons, semi-colons, and unmatched quotes.');
@@ -374,7 +374,7 @@ class VCardLine
                     $this->parameters['type'] = $this->novalue;
                 unset($this->novalue);
             } else {
-                throw new \DomainException(
+                throw new Exceptions\MalformedParameterException(
                     'One or more parameters do not have values and version '
                     . ' is not 2.1: '
                     . \implode(',', $this->novalue ) );

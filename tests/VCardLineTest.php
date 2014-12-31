@@ -184,8 +184,21 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
+     * @depends testConstruct
+     * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
+     */
+    public function testParseParametersMalformed()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters(['']);
+        
+        $this->assertEmpty($vcardLine->getParameters());
+    }
+    
+    /**
+     * @group defaultDomainException
      * @depends testParseParametersEmpty
-     * @expectedException \DomainException
+     * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
      */
     public function testParseParametersNoValue40()
     {
@@ -196,7 +209,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testParseParametersEmpty
-     * @expectedException \DomainException
+     * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
      */
     public function testParseParametersNoValue30()
     {
