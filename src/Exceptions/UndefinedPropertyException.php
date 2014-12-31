@@ -1,11 +1,12 @@
 <?php
 /**
- * UndefinedPropertyException
+ * UndefinedPropertyException.php
  * @author Eric Vought <evought@pobox.com>
  * 2014-11-16
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
+
 /*
  * The MIT License
  *
@@ -38,4 +39,4 @@ namespace EVought\vCardTools\Exceptions;
  *
  * @author evought
  */
-class UndefinedPropertyException extends \DomainException {}
+class UndefinedPropertyException extends PropertyException {}

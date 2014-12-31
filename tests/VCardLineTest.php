@@ -196,7 +196,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @group defaultDomainException
+     * @group default
      * @depends testParseParametersEmpty
      * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
      */
@@ -228,6 +228,43 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
         $vcardLine->parseParameters(['foo']);
         
         $this->assertEquals(['foo'], $vcardLine->getParameter('type'));
+    }
+    
+    /**
+     * @group default
+     * @depends testParseParametersEmpty
+     * @expectedException EVought\vCardTools\Exceptions\IllegalParameterValueException
+     */
+    public function testParseParametersPrefType40()
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->parseParameters(['TYPE=PREF']);
+    }
+    
+    /**
+     * @group default
+     * @depends testParseParametersEmpty
+     */
+    public function testParseParametersPrefType30()
+    {
+        $vcardLine = new VCardLine('3.0');
+        $vcardLine->parseParameters(['TYPE=PREF']);
+        
+        // PREF TYPE should be moved to PREF parameter.
+        $this->assertEquals(['1'], $vcardLine->getParameter('pref'));
+    }
+    
+    /**
+     * @group default
+     * @depends testParseParametersEmpty
+     */
+    public function testParseParametersPrefType21()
+    {
+        $vcardLine = new VCardLine('2.1');
+        $vcardLine->parseParameters(['TYPE=PREF']);
+        
+        // PREF TYPE should be moved to PREF parameter.
+        $this->assertEquals(['1'], $vcardLine->getParameter('pref'));
     }
     
     /**

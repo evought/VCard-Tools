@@ -1,10 +1,9 @@
 <?php
 /**
- * MalformedParameterException.php
- *
- * @link https://github.com/evought/VCard-Tools
- * @author Eric Vought
- * @see RFC 2426, RFC 2425, RFC 6350
+ * PropertyException.php
+ * @author Eric Vought <evought@pobox.com>
+ * 2014-11-16
+ * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
 
@@ -35,8 +34,9 @@
 namespace EVought\vCardTools\Exceptions;
 
 /**
- * A \DomainException for a malformed Property parameter during import.
+ * Ancestor of \DomainException s describing failures with parsing, creating,
+ * setting, and storing VCard properties.
  *
  * @author evought
  */
-class MalformedParameterException extends \DomainException {}
+class PropertyException extends \DomainException {}

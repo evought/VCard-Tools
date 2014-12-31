@@ -397,7 +397,7 @@ class VCardLine
                     $this->setParameter('pref', ['1']);
                 $this->clearParamValues('type', ['pref']);
             } else {
-                throw new \DomainException(
+                throw new Exceptions\IllegalParameterValueException(
                     'PREF is given as TYPE for ' . $this->getName()
                     . ' and VERSION is not 2.1 or 3.0' );
             }

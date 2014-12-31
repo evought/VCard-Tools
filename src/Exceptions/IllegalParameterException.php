@@ -1,6 +1,6 @@
 <?php
 /**
- * MalformedParameterException.php
+ * IllegalParameterException.php
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -35,8 +35,9 @@
 namespace EVought\vCardTools\Exceptions;
 
 /**
- * A \DomainException for a malformed Property parameter during import.
+ * A \DomainException indicating that a parameter is illegal for a particular
+ * property (or that a combination of parameters is illegal).
  *
  * @author evought
  */
-class MalformedParameterException extends \DomainException {}
+class IllegalParameterException Extends ParameterException {}
