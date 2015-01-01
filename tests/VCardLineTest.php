@@ -451,17 +451,6 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                 'parameters'    =>[],
                                 'value'         =>'data:image/jpeg;base64,MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0'
                             ]
-                        ],
-                    'PHOTO X-ABCROP-RECTANGLE' =>
-                        ['PHOTO;X-ABCROP-RECTANGLE=ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g==;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA',
-                            [
-                                'group'         =>'',
-                                'name'          =>'photo',
-                                'parameters'    =>['x-abcrop-rectangle'=>['ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g=='],
-                                                   'encoding'=>['b'],
-                                                   'type'=>['jpeg']],
-                                'value'         =>'/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA'
-                            ]
                         ]
         ];
     }
@@ -519,6 +508,42 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($components['value'], $vcardLine->getValue());
     }
     
+    public function lineProvider30()
+    {
+        return [
+            'PHOTO X-ABCROP-RECTANGLE' =>
+                        ['PHOTO;X-ABCROP-RECTANGLE=ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g==;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA',
+                            [
+                                'group'         =>'',
+                                'name'          =>'photo',
+                                'parameters'    =>['x-abcrop-rectangle'=>['ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g=='],
+                                                   'type'=>['jpeg']],
+                                'value'         =>  \base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA')
+                            ]
+                        ]
+            ];
+    }
+
+    /**
+     * @depends testFromLineText
+     * @param string $rawLine Line to parse.
+     * @param array $components Components of expected value.
+     * @dataProvider lineProvider30
+     * @group default
+     * @group vcard30
+     */
+    public function testFromLineText30($rawLine, array $components)
+    {
+        $vcardLine = VCardLine::fromLineText($rawLine, '3.0');
+        
+        $this->assertEquals($components['group'], $vcardLine->getGroup());
+        $this->assertEquals($components['name'], $vcardLine->getName());
+        $this->assertEquals( $components['parameters'],
+                                $vcardLine->getParameters() );
+        $this->assertEquals($components['value'], $vcardLine->getValue());
+    }
+
+    
     public function lineProvider21()
     {
         return [
@@ -567,6 +592,25 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                     'parameters'        =>[], // CHARSET converted and discarded
                     'value'             =>'Übermann;;;;'
                 ]
+            ],
+            'PHOTO Base64' =>
+            ['PHOTO;X-ABCROP-RECTANGLE=ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g==;ENCODING=BASE64;TYPE=JPEG:/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA',
+                [
+                    'group'         =>'',
+                    'name'          =>'photo',
+                    'parameters'    =>['x-abcrop-rectangle'=>['ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g=='],
+                                        'type'=>['jpeg']],
+                    'value'         =>\base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA')
+                ]
+            ],
+            'LABEL QUOTED-PRINTABLE' =>
+            ["LABEL;DOM;POSTAL;ENCODING=QUOTED-PRINTABLE:P. O. Box 456=0D=0A123 Main Street=0D=0AAny Town, CA 91921-1234=0D=0AU.S.A.",
+                [
+                    'group'         =>'',
+                    'name'          =>'label',
+                    'parameters'    =>['type'=>['dom', 'postal']],
+                    'value'         =>  \quoted_printable_decode("P. O. Box 456=0D=0A123 Main Street=0D=0AAny Town, CA 91921-1234=0D=0AU.S.A.")
+                ]
             ]
         ];
     }
@@ -612,6 +656,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
+     * @group vcard21
      * @depends testFromLineText
      * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
      */

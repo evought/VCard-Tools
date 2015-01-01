@@ -476,6 +476,7 @@ class VCardLine
         
             $vcardLine->parseParameters($parameters);
         }
+        $vcardLine->handleEncoding();
         $vcardLine->handleCharset();
         
         return $vcardLine;
@@ -505,6 +506,54 @@ class VCardLine
             // FIXME: What happens if CHARSET is not a valid character set?
             $this->value = \iconv($charset, 'utf-8', $this->value);
             $this->unsetParameter('charset');
+        }
+    }
+    
+    /**
+     * Handle ENCODING for legacy VCards. If ENCODING is well-formed and
+     * permitted, decode the property value and discard parameter.
+     * @throws Exceptions\MalformedParameterException If the ENCODING is
+     * unknown, not permitted for the specified VCard version or the version is
+     * 4.0 (which does not permit ENCODING at all).
+     */
+    protected function handleEncoding()
+    {
+        if (($encodingVals = $this->getParameter('encoding')) !== null)
+        {
+            if (count($encodingVals) !== 1)
+                throw new Exceptions\MalformedParameterException(
+                    'ENCODING has more than one value: ' . $this->getName () );
+            $encoding = strtolower($encodingVals[0]);
+            switch ($this->version) {
+                case '2.1':
+                    if ('quoted-printable' === $encoding)
+                    {
+                        $this->value = \quoted_printable_decode($this->value);
+                    } elseif ('base64' === $encoding) {
+                        $this->value = \base64_decode($this->value);
+                    } else {
+                        throw new Exceptions\MalformedParameterException(
+                            'Unknown 2.1 ENCODING, ' . $encoding . ', for '
+                            . $this->name );
+                    }
+                    break;
+                case '3.0':
+                    if ('b' === $encoding)
+                    {
+                        $this->value = \base64_decode($this->value);
+                    } else {
+                        throw new Exceptions\MalformedParameterException(
+                            'Unknown 3.0 ENCODING, ' . $encoding . '. for '
+                            . $this->name );
+                    }
+                    break;
+                default:
+                    throw new Exceptions\MalformedParameterException(
+                            'ENCODING not permitted in VCard 4.0 at '
+                            . $this->name );
+                    break;
+            }
+            $this->unsetParameter('encoding');
         }
     }
 }
