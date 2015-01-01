@@ -531,8 +531,44 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                            'type'=>['work','voice'] ],
                         'value'         =>'+1-999-555-1212'
                     ]
+                ],
+            '2.1 CHARSET UTF-8' =>
+            ['N;CHARSET=UTF-8:Last Name;Iñtërnâtiônàlizætiøn;;;',
+                [
+                    'group'             =>'',
+                    'name'              =>'n',
+                    'parameters'        =>[], // CHARSET converted and discarded
+                    'value'             =>'Last Name;Iñtërnâtiônàlizætiøn;;;'
                 ]
-            ];
+            ],
+            '2.1 CHARSET 8859-1' =>
+            ["N;CHARSET=iso-8859-1:Patrick;Fabriz\xEDus",
+                [
+                    'group'             =>'',
+                    'name'              =>'n',
+                    'parameters'        =>[], // CHARSET converted and discarded
+                    'value'             =>'Patrick;Fabrizíus'
+                ]
+            ],
+            '2.1 CHARSET UTF-8 Japanese' =>
+            ['N;CHARSET=UTF-8:溌剌;元気',
+                [
+                    'group'             =>'',
+                    'name'              =>'n',
+                    'parameters'        =>[], // CHARSET converted and discarded
+                    'value'             =>'溌剌;元気'
+                ]
+            ],
+            '2.1 CHARSET iso-8859-15' =>
+            ["N;CHARSET=iso-8859-15:\xDCbermann;;;;",
+                [
+                    'group'             =>'',
+                    'name'              =>'n',
+                    'parameters'        =>[], // CHARSET converted and discarded
+                    'value'             =>'Übermann;;;;'
+                ]
+            ]
+        ];
     }
     
     /**
@@ -562,5 +598,27 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
     public function testFromLineTextBadLine()
     {
         VCardLine::fromLineText('foo', '4.0');
+    }
+    
+    /**
+     * @group default
+     * @depends testFromLineText
+     * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
+     */
+    public function testFromLineTextBadCharset40()
+    {
+        VCardLine::fromLineText('N;CHARSET=iso-8859-1:Patrick;Fabrizius', '4.0');
+    }
+    
+    /**
+     * @group default
+     * @depends testFromLineText
+     * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
+     */
+    public function testFromLineTextMultCharset21()
+    {
+        VCardLine::fromLineText(
+            'N;CHARSET=iso-8859-1;CHARSET=iso-8859-1:Patrick;Fabrizius', '2.1'
+            );
     }
 }

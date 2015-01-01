@@ -476,7 +476,35 @@ class VCardLine
         
             $vcardLine->parseParameters($parameters);
         }
+        $vcardLine->handleCharset();
         
         return $vcardLine;
+    }
+    
+    /**
+     * If CHARSET is set, and it is permitted, convert the value to UTF8 and
+     * discard the CHARSET parameter.
+     * @throws Exceptions\MalformedParameterException If CHARSET is set to
+     * anything other than UTF-8 and version is not 4.0.
+     * @throws Exceptions\MalformedParameterException If more than one value
+     * for CHARSET is provided.
+     */
+    protected function handleCharset()
+    {
+        if (($charsetVals = $this->getParameter('charset')) !== null)
+        {
+            if (count($charsetVals) !== 1)
+                throw new Exceptions\MalformedParameterException(
+                    'CHARSET has more than one value: ' . $this->getName () );
+            $charset = strtolower($charsetVals[0]);
+            if (('utf-8' !== strtolower($charset)) && ($this->version === '4.0'))
+                throw new Exceptions\MalformedParameterException(
+                    'CHARSET is specified for ' . $this->name .
+                    ', but version is 4.0' );
+            
+            // FIXME: What happens if CHARSET is not a valid character set?
+            $this->value = \iconv($charset, 'utf-8', $this->value);
+            $this->unsetParameter('charset');
+        }
     }
 }
