@@ -139,6 +139,7 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @depends testConstruct
      * @expectedException \DomainException
+     * @expectedExceptionMessage Bozo
      */
     public function testSetInvalidFieldViaValue(
                                         PropertySpecification $specification )

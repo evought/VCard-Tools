@@ -67,11 +67,21 @@ trait StructuredPropertyBuilderTrait
         }
     }
 
+    /**
+     * Return the list of allowed fields for this property from the
+     * Specification.
+     * @return string[]
+     */
     public function fields()
     {
         return $this->getSpecification()->getConstraints()['allowedFields'];
     }
 
+    /**
+     * Return the value of the named field, if set.
+     * @param string $field The name of the field to look up
+     * @return string|null
+     */
     public function getField($field)
     {
         \assert(is_array($this->value));
@@ -114,9 +124,10 @@ trait StructuredPropertyBuilderTrait
     
     public function setValue($value)
     {
+        \assert(is_array($value));
         $badKeys = \array_diff_key($value, \array_flip($this->fields()));
         if (!empty($badKeys))
-            throw new \DomainException(\implode(' ', $badKeys)
+            throw new \DomainException(\implode(' ', \array_keys($badKeys))
                                                 . ': not in allowed fields for '
                                                 . $this->getName() );
         $this->value = $value;
