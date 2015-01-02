@@ -58,11 +58,14 @@ class VCardParser
 # and body
 ^BEGIN:VCARD\n
 VERSION:(?P<version>\d+\.\d+)\n
-(?P<body>.*)
+(?P<body>(?U).*)
 (?P<end>END:VCARD\n)
-/sux
+/suxm
 EOD;
     
+    /**
+     * Construct an empty parser.
+     */
     public function __construct()
     {
     }
@@ -71,6 +74,7 @@ EOD;
      * Return a VCard by its uid, if it exists, else null.
      * @param string $uid The uid of the VCard to return. Not empty.
      * @return type
+     * @api
      */
     public function getCard($uid)
     {
@@ -86,6 +90,7 @@ EOD;
     /**
      * Return an array of all uids which have been parsed.
      * @return type
+     * @api
      */
     public function getUIDs()
     {
@@ -95,6 +100,7 @@ EOD;
     /**
      * Reset this parser and remove all stored VCards.
      * @return self $this
+     * @api
      */
     public function clear()
     {
@@ -103,26 +109,119 @@ EOD;
     }
     
     /**
-     * Parsing loop for one raw vCard. Adds the card to $this->vcards
+     * Parsing loop for extracting vcards from raw text.
+     * Discovered cards are returned as an array and also stored for retrieval
+     * by getCard() (so that the results of multiple parsing runs can be
+     * aggregated and related cards matched up).
      * @param string $rawData Not null.
      * @throws Exceptions\UndefinedPropertyException If an encountered property
      * is undefined or not permitted.
      * @throws Exceptions\MalformedPropertyException if an encountered property
      * line does not follow the defined structure.
      * @return VCard[]|null The VCards returned in this pass of parsing.
+     * @api
      */
     public function importCards($rawData)
     {
     	\assert(null !== $rawData);
     	\assert(\is_string($rawData));
         
+        $vcards = [];
+        
         // Make newlines consistent, spec requires CRLF, but PHP often strips
         // carriage returns before data gets to us, so we can't depend on it.
         $fixNewlines = \str_replace(["\r\n", "\r"], "\n", $rawData);
         
+        $matches = $this->getCardBodies($fixNewlines);
+        
+        foreach ($matches as $components)
+        {
+            $vcard = $this->parseCardBody($components);
+        
+            $this->vcards[$vcard->getUID()] = $vcard;
+            $vcards[] = $vcard;
+        }
+        
+        return $vcards;
+    }
+    
+    /**
+     * Import one or more VCards from a file.
+     * @param string $file The file path to read from.
+     * @throws \Exception If the file cannot be read.
+     * @throws Exceptions\UndefinedPropertyException If an encountered property
+     * is undefined or not permitted.
+     * @throws Exceptions\MalformedPropertyException if an encountered property
+     * line does not follow the defined structure.
+     * @api
+     * @returns VCard[] The VCards parsed from the file.
+     */
+    public function importFromFile($file)
+    {
+        if (!\is_readable($file))
+	    throw new \Exception('VCardParser: Path not accessible: ' . $file);
+
+        $rawData = \file_get_contents($file);
+        return $this->importCards($rawData);
+    }
+    
+    /**
+     * Extracts the version and body of the VCard from the given raw text
+     * string, returning the components.
+     * This must be done before unfolding occurs because the vcard version may
+     * determine other parsing steps (including unfolding rules).
+     * This method is exposed primarily for diagnostic purposes for helping
+     * identify problems in failed vcards. It's API should not be depended upon.
+     * @param string $text The raw VCard text
+     * @return array Keys will be set for at least 'version' and 'body'.
+     * @throws \DomainException If the VCard is not well-formed.
+     */
+    public function getCardBody($text)
+    {
+        $fragments = [];
+        $matches = \preg_match(self::$bodyRegExp, $text, $fragments);
+        if (1 !== $matches)
+            throw new \DomainException('Malformed VCard');
+        return $fragments;
+    }
+
+    /**
+     * Extracts the version and body of the VCard from each vcard matched in 
+     * the given raw text string, returning the components.
+     * This must be done before unfolding occurs because the vcard version may
+     * determine other parsing steps (including unfolding rules).
+     * This method is exposed primarily for diagnostic purposes for helping
+     * identify problems in failed vcards. It's API should not be depended upon.
+     * @param string $text The text of one or more raw vcards.
+     * @return array An array of arrays. In each subarray, keys will be set for
+     * at least 'version' and 'body'.
+     * @throws \DomainException If no well-formed vcard is found.
+     */
+    public function getCardBodies($text)
+    {
+        $fragments = [];
+        $matches = \preg_match_all( self::$bodyRegExp, $text, $fragments,
+            PREG_SET_ORDER);
+        if ($matches < 1)
+            throw new \DomainException('Malformed VCard');
+        return $fragments;
+    }
+    
+    /**
+     * Parses a vcard from the output of getCardBpdy (or from an iteration
+     * over getCardBodies) and returns the resulting VCard instance.
+     * This method is exposed primarily for diagnostic and testing purpose to
+     * help identify problems in failed vcards. *Do not depend on its API.*
+     * Use importCards() and importFromFile() instead.
+     * @param type $components
+     * @return \EVought\vCardTools\VCard
+     * @throws Exceptions\UndefinedPropertyException
+     * @see importCards()
+     * @see importFromFile()
+     */
+    public function parseCardBody($components)
+    {
         $vcard = new VCard();
-    	
-        $components = $this->getCardBody($fixNewlines);
         
         if ('2.1' === $components['version'])
             $unfoldedData = self::unfold21($components['body']);
@@ -166,47 +265,7 @@ EOD;
         }
         
         $vcard->checkSetUID();
-        $this->vcards[$vcard->getUID()] = $vcard;
-        
-        return [$vcard];
-    }
-    
-    /**
-     * Import one or more VCards from a file.
-     * @param string $file The file path to read from.
-     * @throws \Exception If the file cannot be read.
-     * @throws Exceptions\UndefinedPropertyException If an encountered property
-     * is undefined or not permitted.
-     * @throws Exceptions\MalformedPropertyException if an encountered property
-     * line does not follow the defined structure.
-
-     * @returns VCard[] The VCards parsed from the file.
-     */
-    public function importFromFile($file)
-    {
-        if (!\is_readable($file))
-	    throw new \Exception('VCardParser: Path not accessible: ' . $file);
-
-        $rawData = \file_get_contents($file);
-        return $this->importCards($rawData);
-    }
-    
-    /**
-     * Extracts the version and body of the VCard from the given raw text
-     * string, returning the components.
-     * This must be done before unfolding occurs because the vcard version may
-     * determine other parsing steps (including unfolding rules).
-     * @param string $text The raw VCard text
-     * @return array Keys will be set for at least 'version' and 'body'.
-     * @throws \DomainException If the VCard is not well-formed.
-     */
-    public function getCardBody($text)
-    {
-        $fragments = [];
-        $matches = \preg_match(self::$bodyRegExp, $text, $fragments);
-        if (1 !== $matches)
-            throw new \DomainException('Malformed VCard');
-        return $fragments;
+        return $vcard;
     }
     
     /**

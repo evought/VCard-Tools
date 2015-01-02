@@ -716,7 +716,7 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $vcards);
         $this->assertEquals($vcard, $vcards[0]);
     }
-
+    
     /**
      * @group default
      * @depends testImportVCardDDBinks
@@ -760,6 +760,74 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($vcard, $vcards[0], $vcards[0]->getUID());
     }
 
+    /**
+     * @group default
+     * @depends testImportVCardSeinarAPLFromFile
+     * @depends testImportVCardRaithSeinarFromFile
+     * @depends testImportVCardDDBinksFromFile
+     */
+    public function testImportMultipleVCards()
+    {
+        foreach (['DDBinks.vcf', 'RaithSeinar.vcf', 'SeinarAPL.vcf'] as $file)
+        {
+            $path = __DIR__ . '/vcards/' . $file;
+            $vcards = $this->parser->importFromFile($path);
+            $this->assertCount(1, $vcards);
+        }
+        $ddBinks = $this->getDDBinks();
+        $raithSeinar = $this->getRaithSeinar();
+        $seinarAPL = $this->getSeinarAPL();
+   	 
+        $uids = $this->parser->getUIDs();
+        $this->assertCount(3, $uids);
+        $this->assertContains($ddBinks->getUID(), $uids);
+        $this->assertContains($raithSeinar->getUID(), $uids);
+        $this->assertContains($seinarAPL->getUID(), $uids);
+        $this->assertEquals( $ddBinks,
+                $this->parser->getCard($ddBinks->getUID()) );
+        $this->assertEquals( $raithSeinar,
+                $this->parser->getCard($raithSeinar->getUID()) );
+        $this->assertEquals( $seinarAPL,
+                $this->parser->getCard($seinarAPL->getUID()) );
+    }
+
+    /**
+     * @group default
+     * @depends testImportVCardSeinarAPLFromFile
+     * @depends testImportVCardRaithSeinarFromFile
+     * @depends testImportVCardDDBinksFromFile
+     */
+    public function testImportMultipleVCardsOnePass()
+    {
+        $inputString = '';
+        foreach (['DDBinks.vcf', 'RaithSeinar.vcf', 'SeinarAPL.vcf'] as $file)
+        {
+            $path = __DIR__ . '/vcards/' . $file;
+            $inputString .= \file_get_contents($path);
+            $vcards = $this->parser->importCards($inputString);
+        }
+        $this->assertCount(3, $vcards);
+
+        $ddBinks = $this->getDDBinks();
+        $raithSeinar = $this->getRaithSeinar();
+        $seinarAPL = $this->getSeinarAPL();
+
+        $this->assertEquals($ddBinks, $vcards[0]);
+        $this->assertEquals($raithSeinar, $vcards[1]);
+        $this->assertEquals($seinarAPL, $vcards[2]);
+        
+        $uids = $this->parser->getUIDs();
+        $this->assertCount(3, $uids);
+        $this->assertContains($ddBinks->getUID(), $uids);
+        $this->assertContains($raithSeinar->getUID(), $uids);
+        $this->assertContains($seinarAPL->getUID(), $uids);
+        $this->assertEquals( $ddBinks,
+                $this->parser->getCard($ddBinks->getUID()) );
+        $this->assertEquals( $raithSeinar,
+                $this->parser->getCard($raithSeinar->getUID()) );
+        $this->assertEquals( $seinarAPL,
+                $this->parser->getCard($seinarAPL->getUID()) );
+    }
     
     /**
      * @group default
@@ -775,6 +843,57 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('4.0', $components['version']);
         $this->assertArrayHasKey('body', $components);
         $this->assertEquals("FN:foo\n", $components['body']);
+    }
+    
+    /**
+     * @group default
+     * @depends testGetCardBody
+     */
+    public function testGetCardBodiesJustOne()
+    {
+        $input =   'BEGIN:VCARD'."\n"
+                 . 'VERSION:4.0'."\n"
+                 . 'FN:foo'."\n"
+                 . 'END:VCARD'."\n";
+        $matches = $this->parser->getCardBodies($input);
+        $this->assertCount(1, $matches);
+        
+        $components = $matches[0];
+        $this->assertArrayHasKey('version', $components);
+        $this->assertEquals('4.0', $components['version']);
+        $this->assertArrayHasKey('body', $components);
+        $this->assertEquals("FN:foo\n", $components['body']);
+    }
+    
+    /**
+     * @group default
+     * @depends testGetCardBody
+     */
+    public function testGetCardBodies()
+    {
+        $input =   'BEGIN:VCARD'."\n"
+                 . 'VERSION:4.0'."\n"
+                 . 'FN:foo'."\n"
+                 . 'END:VCARD'."\n"
+                 . 'BEGIN:VCARD'."\n"
+                 . 'VERSION:4.0'."\n"
+                 . 'FN:foo'."\n"
+                 . 'END:VCARD'."\n"
+                 . 'BEGIN:VCARD'."\n"
+                 . 'VERSION:4.0'."\n"
+                 . 'FN:foo'."\n"
+                 . 'END:VCARD'."\n";
+        
+        $matches = $this->parser->getCardBodies($input);
+        $this->assertCount(3, $matches, print_r($matches, true));
+        
+        foreach ($matches as $components)
+        {
+            $this->assertArrayHasKey('version', $components);
+            $this->assertEquals('4.0', $components['version']);
+            $this->assertArrayHasKey('body', $components);
+            $this->assertEquals("FN:foo\n", $components['body']);
+        }
     }
 
     public function unfold4Provider()
