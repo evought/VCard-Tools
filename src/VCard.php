@@ -566,6 +566,7 @@ class VCard implements PropertyContainer
      * @param type $rawData
      * @return string The raw text with line continuations removed.
      * @see https://tools.ietf.org/html/rfc6350#section-3.2
+     * @deprecated Moved to VCardParser
      */
     public static function unfold21($rawData)
     {
@@ -589,6 +590,7 @@ class VCard implements PropertyContainer
      * Arrays or Traversables of (only) Properties will be unpacked and pushed.
      * @param Property|Array|\Traversable $properties,...
      * @return VCard $this
+     * @deprecated Moved to VCardParser
      */
     public function push($properties)
     {
@@ -659,6 +661,7 @@ class VCard implements PropertyContainer
      * @param string $text The raw VCard text
      * @return array Keys will be set for at least 'version' and 'body'.
      * @throws \DomainException If the VCard is not well-formed.
+     * @deprecated Moved to VCardParser
      */
     private function getCardBody($text)
     {
@@ -699,6 +702,7 @@ class VCard implements PropertyContainer
      * is undefined or not permitted.
      * @throws Exceptions\MalformedPropertyException if an encountered property
      * line does not follow the defined structure.
+     * @deprecated Moved to VCardParser
      */
     protected function processRawCard($rawData)
     {
