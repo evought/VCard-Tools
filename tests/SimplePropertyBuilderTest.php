@@ -44,7 +44,11 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
                 'url',
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero To N']
+                PropertySpecification::$cardinalities['Zero To N'],
+                [
+                    'allowedValueTypes' => ['uri'],
+                    'valueTypeDefault' => 'uri'
+                ]
             );
         $builder = $specification->getBuilder();
         $this->assertInstanceOf( 'EVought\vCardTools\SimplePropertyBuilder',
@@ -83,6 +87,42 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('item1', $property->getGroup());
         
         return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
+    public function testSetValueType(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder()->setValue('foo');
+        
+        $this->assertEquals('uri', $builder->getValueTypeDefault());
+        $this->assertEquals(['uri'], $builder->getAllowedValueTypes());
+        
+        $this->assertNull($builder->getValueType());
+        $property = $builder->build();
+        $this->assertEquals('uri', $property->getValueType());
+        $this->assertNull($property->getValueType(false));
+        
+        $builder->setValueType('uri');
+        $this->assertEquals('uri', $builder->getValueType());
+        $property = $builder->build();
+        $this->assertEquals('uri', $property->getValueType());
+        $this->assertEquals('uri', $property->getValueType(false));
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
+     * @expectedExceptionMessage Value type: foo
+     */
+    public function testSetValueTypeBadType(
+                                    PropertySpecification $specification )
+    {
+        $builder = $specification->getBuilder()->setValue('foo')
+                ->setValueType('foo');
     }
     
     /**
@@ -210,7 +250,11 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
                 'fn',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Exactly One']
+                PropertySpecification::$cardinalities['Exactly One'],
+                [
+                    'allowedValueTypes' => ['text'],
+                    'valueTypeDefault' => 'text'
+                ]
             );
         $builder = $specification->getBuilder()->setValue('Mr. Toad');
         $property = $builder->build();
@@ -232,7 +276,20 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         
         $this->assertEquals('AGROUP.FN:Mr. Toad'."\n", $property->output());
     }
-    
+
+    /**
+     * @group default
+     * @depends testOutput
+     */
+    public function testOutputWithValueType(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setValue('Mr. Toad')->setValueType('text');
+        $property = $builder->build();
+        
+        $this->assertEquals('FN;VALUE=text:Mr. Toad'."\n", $property->output());
+    }
+
     /**
      * @group default
      * @depends testSetAndBuild
@@ -243,7 +300,11 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
                 'fn',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Exactly One']
+                PropertySpecification::$cardinalities['Exactly One'],
+                [
+                    'allowedValueTypes' => ['text'],
+                    'valueTypeDefault' => 'text'
+                ]
             );
         $builder = $specification->getBuilder()->setValue('Mr. Toad');
         $property = $builder->build();
@@ -309,10 +370,28 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetFromVCardLine
+     */
+    public function testSetFromVCardLineValueType(
+                                    PropertySpecification $specification )
+    {
+        $vcardLine = new VCardLine('4.0');
+        $vcardLine->setName('url')->setValue('http://abc.es')
+                ->pushParameter('value', 'uri');
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals('uri', $builder->getValueType());
+        $this->assertEquals('http://abc.es', $builder->getValue());
+    }
+    
+    /**
+     * @group default
      * @depends testSetAndBuild
      * @param \EVought\vCardTools\PropertySpecification $specification
      */
-    public function testPush(PropertySpecification $specification)
+    public function testPushTo(PropertySpecification $specification)
     {
         $container = new PropertyContainerImpl();
         

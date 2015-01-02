@@ -8,6 +8,7 @@
  */
 use EVought\vCardTools\VCard as VCard;
 use EVought\vCardTools\VCardDB as VCardDB;
+use EVought\vCardTools\VCardParser as VCardParser;
 
 class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 {
@@ -16,6 +17,10 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 
     // only instantiate PHPUnit_Extensions_Database_DB_IDatabaseConnection once
     private $conn = null;
+    
+    private $raithSeinar = null;
+    private $seinarAPL = null;
+    private $ddBinks = null;
 
     /**
      * @return PHPUnit_Extensions_Database_DB_IDatabaseConnection
@@ -101,36 +106,56 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function getRaithSeinar()
     {
-    	$path = __DIR__ . '/vcards/RaithSeinar.vcf';
-    	$vcard = new vCard($path);
-    	unset($vcard->version); // don't want version to cause == to fail.
-    	return $vcard;
+    	if (null === $this->raithSeinar)
+    	{
+    	    $path = __DIR__ . '/vcards/RaithSeinar.vcf';
+            
+            $parser = new VCardParser();
+            $vcards = $parser->importFromFile($path);
+            
+            $this->assertCount(1, $vcards);
+	    $this->raithSeinar = $vcards[0];
+    	}
+	return $this->raithSeinar;
     }
-    
+	
     /**
      * Some cards for testing.
      * @return an organization VCard.
      */
     public function getSeinarAPL()
     {
-    	$path = __DIR__ . '/vcards/SeinarAPL.vcf';
-   	$vcard = new vCard($path); // don't want version to cause == to fail.
-   	unset($vcard->version);
-   	return $vcard;    	 
+    	if (null === $this->seinarAPL)
+    	{
+	    $path = __DIR__ . '/vcards/SeinarAPL.vcf';
+            
+            $parser = new VCardParser();
+            $vcards = $parser->importFromFile($path);
+            
+            $this->assertCount(1, $vcards);
+            $this->seinarAPL = $vcards[0];
+    	}
+	return $this->seinarAPL;
     }
-
+	
     /**
      * Some cards for testing.
      * @return an individual VCard.
      */
     public function getDDBinks()
     {
-    	$path = __DIR__ . '/vcards/DDBinks.vcf';
-   	$vcard = new vCard($path); // don't want version to cause == to fail.
-   	unset($vcard->version);
-   	return $vcard;
+    	if (null === $this->ddBinks)
+    	{
+	    $path = __DIR__ . '/vcards/DDBinks.vcf';
+            $parser = new VCardParser();
+            $vcards = $parser->importFromFile($path);
+            
+            $this->assertCount(1, $vcards);
+            $this->ddBinks = $vcards[0];
+    	}
+	return $this->ddBinks;
     }
-
+    
     /**
      * Ensure that we can instantiate a VCardDB instance.
      * @group default

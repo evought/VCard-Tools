@@ -238,7 +238,12 @@ trait PropertyTrait
      */
     protected function outputParameters()
     {
-        return (null === $this->pref) ? '' : 'PREF='.$this->pref;
+        $params = '';
+        if (null !== $this->pref)
+            $params .= 'PREF='.$this->pref;
+        if (null !== $this->valueType)
+            $params .= 'VALUE='.$this->getValueType();
+        return $params;
     }
     
     /**

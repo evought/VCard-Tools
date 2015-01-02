@@ -6,6 +6,7 @@ use EVought\vCardTools\VCard;
 use EVought\vCardTools\Template;
 use EVought\vCardTools\Substitution;
 use EVought\vCardTools\TemplateInfo;
+use EVought\vCardTools\VCardParser;
 
 define('TEST_DIR', __DIR__);
 
@@ -35,9 +36,12 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	if (null === $this->raithSeinar)
     	{
     	    $path = __DIR__ . '/vcards/RaithSeinar.vcf';
-	    $this->raithSeinar = new vCard($path);
-	    // don't want version to cause == to fail.
-	    unset($this->raithSeinar->version); 
+            
+            $parser = new VCardParser();
+            $vcards = $parser->importFromFile($path);
+            
+            $this->assertCount(1, $vcards);
+	    $this->raithSeinar = $vcards[0];
     	}
 	return $this->raithSeinar;
     }
@@ -51,9 +55,12 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     	if (null === $this->seinarAPL)
     	{
 	    $path = __DIR__ . '/vcards/SeinarAPL.vcf';
-	    $this->seinarAPL = new vCard($path);
-	    // don't want version to cause == to fail.
-	    unset($this->seinarAPL->version);
+            
+            $parser = new VCardParser();
+            $vcards = $parser->importFromFile($path);
+            
+            $this->assertCount(1, $vcards);
+            $this->seinarAPL = $vcards[0];
     	}
 	return $this->seinarAPL;
     }
@@ -66,12 +73,14 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     {
     	if (null === $this->ddBinks)
     	{
-	    $path = 'tests/vcards/DDBinks.vcf';
-	    $this->ddBinks = new vCard($path);
-	    // don't want version to cause == to fail.
-	    unset($this->ddBinks->version);
+	    $path = __DIR__ . '/vcards/DDBinks.vcf';
+            $parser = new VCardParser();
+            $vcards = $parser->importFromFile($path);
+            
+            $this->assertCount(1, $vcards);
+            $this->ddBinks = $vcards[0];
     	}
-	return $vcard;
+	return $this->ddBinks;
     }
     
     /**

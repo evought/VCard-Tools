@@ -43,13 +43,6 @@ class VCard implements PropertyContainer
     private static $specifications;
     
     /**
-     * @var array Internal options container. Options:
-     *	bool Collapse: If true, elements that can have multiple values but have only a single value are returned as that value instead of an array
-     *		If false, an array is returned even if it has only one value.
-     */
-    private $Options = array( 'Collapse' => false );
-
-    /**
      * @var Properties[] The collection of Properties.
      */
     private $data = [];
@@ -587,8 +580,8 @@ class VCard implements PropertyContainer
                 __NAMESPACE__ . '\SimplePropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
                 [
-                    'allowedValueTypes'=>['agent', 'text', 'uri'],
-                    'valueTypeDefault'=>'agent'
+                    'allowedValueTypes'=>['vcard', 'text', 'uri'],
+                    'valueTypeDefault'=>'vcard'
                 ]
             )
         );
@@ -645,82 +638,10 @@ class VCard implements PropertyContainer
     
     /**
      * vCard constructor
-     * @param string $Path to file, optional.
-     * @param string $RawData Raw vCard data as a string to import.
-     * @param array $Options Additional options, optional. Currently supported
-     * options:
-     * bool Collapse: If true, elements that can have multiple values but 
-     * have only a single value are returned as that value instead of an array
-     * If false, an array is returned even if it has only one value.
-     * @throws \Exception If the path to the raw data is not accessible.
-     * @throws Exceptions\UndefinedPropertyException During import if an
-     * encountered property is undefined or not permitted.
-     * @throws Exceptions\MalformedPropertyException During import if an
-     * encountered property line does not follow the defined structure.
-
-     * @return boolean
      */
-    public function __construct( $Path = false, $RawData = false,
-                                     array $Options = null )
+    public function __construct()
     {        
-        // Checking preconditions for the parser. If path is given, the file 
-        // should be accessible. If raw data is given, it is taken as it is.
-	if ($Path)
-	{
-	    if (!is_readable($Path))
-	    throw new \Exception('vCard: Path not accessible (' . $Path . ')');
-
-	    $RawData = file_get_contents($Path);
-	}
-
-       if (!$RawData) return true;
-
-       if ($Options) $this->Options = array_merge($this -> Options, $Options);
-
-       $this->processRawCard($RawData);
     } // --construct()
-
-    /**
-     * Perform unfolding (joining of continued lines) according to RFC6350.
-     * Text must be unfolded before properties are parsed.
-     * @param type $rawData
-     * @return string The raw text with line continuations removed.
-     * @see https://tools.ietf.org/html/rfc6350#section-3.2
-     */
-    public static function unfold4($rawData)
-    {
-        \assert(null !== $rawData);
-        \assert(\is_string($rawData));
-        
-        // Joining multiple lines that are split with a soft
-        // wrap (space or tab on the beginning of the next line
-        $folded = \str_replace(["\n ", "\n\t"], '', $rawData);
-        
-        return $folded;
-    }
-    
-    /**
-     * Perform unfolding (joining of continued lines) according to VCard 2.1.
-     * Text must be unfolded before properties are parsed.
-     * In VCard 2.1 soft-breaks only occur in Linear-White-Space (LWSP) and
-     * are reduced to the LWSP char as opposed to later versions where the LWSP
-     * is removed as well. 
-     * @param type $rawData
-     * @return string The raw text with line continuations removed.
-     * @see https://tools.ietf.org/html/rfc6350#section-3.2
-     * @deprecated Moved to VCardParser
-     */
-    public static function unfold21($rawData)
-    {
-        \assert(null !== $rawData);
-        \assert(\is_string($rawData));
-        
-        // Joining multiple lines that are split with a soft
-        // wrap (space or tab on the beginning of the next line
-        $folded = \str_replace(["\n ", "\n\t"], [" ", "\t"], $rawData);
-        
-        return $folded;
-    }
     
     /**
      * Add any number of Property instances to this VCard.
@@ -732,7 +653,6 @@ class VCard implements PropertyContainer
      * Arrays or Traversables of (only) Properties will be unpacked and pushed.
      * @param Property|Array|\Traversable $properties,...
      * @return VCard $this
-     * @deprecated Moved to VCardParser
      */
     public function push($properties)
     {
@@ -795,115 +715,6 @@ class VCard implements PropertyContainer
                     $propName . ' is not a defined property.' );
         return $specification->getBuilder();
     }
-    /**
-     * Extracts the version and body of the VCard from the given raw text
-     * string, returning the components.
-     * This must be done before unfolding occurs because the vcard version may
-     * determine other parsing steps (including unfolding rules).
-     * @param string $text The raw VCard text
-     * @return array Keys will be set for at least 'version' and 'body'.
-     * @throws \DomainException If the VCard is not well-formed.
-     * @deprecated Moved to VCardParser
-     */
-    private function getCardBody($text)
-    {
-        $fragments = [];
-        $matches = \preg_match(
-            '/^BEGIN:VCARD\nVERSION:(?P<version>\d+\.\d+)\n(?P<body>.*)(?P<end>END:VCARD\n)$/s',
-                    $text, $fragments );
-        if (1 !== $matches)
-            throw new \DomainException('Malformed VCard');
-        return $fragments;
-    }
-    
-    /**
-     * Handle the legacy AGENT property by parsing and storing the embedded
-     * VCard.
-     * @param string $agentText
-     */
-    protected function handleAgent($agentText)
-    {
-        $ClassName = \get_class($this);
-        
-        // Unescape embedded special characters (e.g. comma, newline) so they
-        // can be parsed.
-        $unescaped = self::unescape($agentText);
-        
-        $agent = new $ClassName(false, $unescaped);
-        if (!isset($this -> data['agent']))
-        {
-            $this -> data['agent'] = [];
-        }
-	$this -> data['agent'][] = $agent;
-    }
-
-    /**
-     * Parsing loop for one raw vCard. Sets appropriate internal properties.
-     * @param string $rawData Not null.
-     * @throws Exceptions\UndefinedPropertyException If an encountered property
-     * is undefined or not permitted.
-     * @throws Exceptions\MalformedPropertyException if an encountered property
-     * line does not follow the defined structure.
-     * @deprecated Moved to VCardParser
-     */
-    protected function processRawCard($rawData)
-    {
-    	\assert(null !== $rawData);
-    	\assert(\is_string($rawData));
-        
-        // Make newlines consistent, spec requires CRLF, but PHP often strips
-        // carriage returns before data gets to us, so we can't depend on it.
-        $fixNewlines = \str_replace(["\r\n", "\r"], "\n", $rawData);
-    	
-        $components = $this->getCardBody($fixNewlines);
-        
-        if ('2.1' === $this->version)
-            $unfoldedData = self::unfold21($components['body']);
-        else
-            $unfoldedData = self::unfold4($components['body']);
-                
-        $lines = \explode("\n", $unfoldedData);
-
-        foreach ($lines as $line)
-        {
-            // FIXME: Make sure that TYPE, ENCODING, CHARSET are dealt
-            // with by PropertyBuilder
-            $vcardLine = VCardLine::fromLineText($line, $components['version']);
-            
-            if (null === $vcardLine)
-	        continue;
-
-            // FIXME: #25 Deal gracefully with unknown and X-properties
-            if (!self::isSpecified($vcardLine->getName()))
-                throw new Exceptions\UndefinedPropertyException(
-                    $vcardLine->getName() . ' is not a defined property.');
-            
-            $specification = self::getSpecification($vcardLine->getName());
-           
-            
-            if ($specification->allowsCommaProperties())
-            {
-                // Deal with the possibility of multiple values
-                $origValue = $vcardLine->getValue();
-                $values = \str_getcsv($origValue);
-                foreach ($values as $value)
-                {
-                    $vcardLine->setValue($value);
-                    $specification->getBuilder()
-                        ->setFromVCardLine($vcardLine)->pushTo($this);
-                }
-            } else {
-                $specification->getBuilder()
-                    ->setFromVCardLine($vcardLine)->pushTo($this);
-            }
-        }
-        
-        if (\array_key_exists('uid', $this->data))
-        {
-            $this->uid = $this->data['uid']->getValue();
-            unset($this->data['uid']);
-        }
-    } // processSingleRawCard()
 
     /**
      * Magic method to get the various vCard properties as object members, e.g.

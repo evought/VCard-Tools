@@ -126,12 +126,13 @@ trait PropertyBuilderTrait
                 'Value type: ' . $valueType . ' not permitted for '
                 . $this->getName() );
         $this->valueType = $valueType;
+        return $this;
     }
     
     protected function checkValueType($valueType)
     {
         \assert(null !== $valueType);
-        \assert(\is_string($valueType));
+        \assert(\is_string($valueType), \print_r($valueType, true));
         $allowedTypes = $this->getAllowedValueTypes();
         if (\in_array($valueType, $allowedTypes))
             return true;
@@ -237,6 +238,15 @@ trait PropertyBuilderTrait
                     'PREF not allowed for *1 or 1 cardinality: '
                     . $this->getName ());
             $this->pref = $vcardLine->getParameter('pref');
+        }
+        if ($vcardLine->hasParameter('value'))
+        {
+            $valueTypes = $vcardLine->getParameter('value');
+            if (count($valueTypes) != 1)
+                throw new Exceptions\MalformedParameterException(
+                    'Muliple VALUE parameters provided for : '
+                    . $this->getName() );
+            $this->setValueType($valueTypes[0]);
         }
         return $this;
     }

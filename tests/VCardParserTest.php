@@ -650,7 +650,7 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
 	$this->assertEquals($unescaped, $vcards[0]->url[0]->getValue());
     }
 
-       /**
+    /**
      * @group default
      * @depends testImportVCardOneURL
      */
@@ -674,7 +674,62 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(2, $vcards[0]->url);
 	$this->assertEquals([$prop1, $prop2], $vcards[0]->url);
     }
-   
+
+    /**
+     * @group default
+     * @depends testImportVCardFN
+     */
+    public function testImportVCardAgentURI()
+    {
+    	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. 'AGENT;VALUE=uri:CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com' . "\r\n"
+			. self::$vcard_end . "\r\n";
+
+        $vcards = $this->parser->importCards($input);
+        $this->assertCount(1, $vcards);
+        $this->assertCount(1, $vcards[0]->related);
+	$this->assertEquals(
+            'CID:JQPUBLIC.part3.960129T083020.xyzMail@host3.com',
+            $vcards[0]->related[0]->getValue() );
+        $this->assertEquals('uri', $vcards[0]->related[0]->getValueType());
+        $this->assertEquals(['agent'], $vcards[0]->related[0]->getTypes());
+    }
+    
+    /**
+     * @group default
+     * @depends testImportVCardFN
+     */
+    public function testImportVCardAgent()
+    {
+    	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+                        . 'UID:test1' . "\r\n"
+			. 'AGENT:BEGIN:VCARD\nUID:test2\nFN:Susan Thomas\nTEL:+1-919-555-1234\nEMAIL\;TYPE=INTERNET:sthomas@host.com\nEND:VCARD\n' . "\r\n"
+			. self::$vcard_end . "\r\n";
+
+        $vcards = $this->parser->importCards($input);
+        $this->assertCount(2, $vcards);
+        
+        $test1 = $this->parser->getCard('test1');
+        $this->assertNotNull($test1);
+        $this->assertCount(1, $test1->related);
+        $this->assertEquals(['agent'], $test1->related[0]->getTypes());
+        $this->assertEquals('test2', $test1->related[0]->getValue());
+        $this->assertEquals('uri', $test1->related[0]->getValueType());
+        
+        $test2 = $this->parser->getCard('test2');
+        $this->assertNotNull($test2);
+        $this->assertCount(1, $test2->fn);
+        $this->assertEquals('Susan Thomas', $test2->fn[0]->getValue());
+        $this->assertCount(1, $test2->tel);
+        $this->assertEquals('+1-919-555-1234', $test2->tel[0]->getValue());
+        $this->assertCount(1, $test2->email);
+        $this->assertEquals('sthomas@host.com', $test2->email[0]->getValue());
+        $this->assertEquals(['internet'], $test2->email[0]->getTypes());
+    }
+
+    
     /**
      * @group default
      * @depends testImportVCardFN

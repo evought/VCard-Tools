@@ -63,6 +63,15 @@ VERSION:(?P<version>\d+\.\d+)\n
 /suxm
 EOD;
     
+    private static $agentBodyRegExp = <<<'EOD'
+/
+# AGENT embedded VCards may not have a VERSION tag
+^BEGIN:VCARD\n
+(:? VERSION:(?P<version>\d+\.\d+)\n)?
+(?P<body>(?U).*)
+(?P<end>END:VCARD\n)
+/suxm
+EOD;
     /**
      * Construct an empty parser.
      */
@@ -177,13 +186,16 @@ EOD;
      * This method is exposed primarily for diagnostic purposes for helping
      * identify problems in failed vcards. It's API should not be depended upon.
      * @param string $text The raw VCard text
+     * @param a regular expression to use to perform the match-and-extract
      * @return array Keys will be set for at least 'version' and 'body'.
      * @throws \DomainException If the VCard is not well-formed.
      */
-    public function getCardBody($text)
+    public function getCardBody($text, $regexp = null)
     {
+        if (null === $regexp) $regexp = self::$bodyRegExp;
+        
         $fragments = [];
-        $matches = \preg_match(self::$bodyRegExp, $text, $fragments);
+        $matches = \preg_match($regexp, $text, $fragments);
         if (1 !== $matches)
             throw new \DomainException('Malformed VCard');
         return $fragments;
@@ -207,7 +219,7 @@ EOD;
         $matches = \preg_match_all( self::$bodyRegExp, $text, $fragments,
             PREG_SET_ORDER);
         if ($matches < 1)
-            throw new \DomainException('Malformed VCard');
+            throw new \DomainException('Malformed VCard: ' . $text);
         return $fragments;
     }
     
@@ -335,14 +347,17 @@ EOD;
             if ($agent->getValueType() === 'vcard')
             {
                 $agentText = $agent->getValue();
-                $vcards = $this->importCards(\stripcslashes($agentText));
-                if (1 !== count($vcards))
-                    throw new \DomainException(
-                        'AGENT should contain a single embedded vcard' );
+                $components = $this->getCardBody( \stripcslashes($agentText),
+                        self::$agentBodyRegExp );
+                // Embedded AGENT VCards might not have VERSION but they only
+                // existed in 3.0.
+                $components['version'] = '3.0';
+                $agentCard = $this->parseCardBody($components);
                 
                 $relatedBld->setValueType('uri')
-                    ->setValue($vcards[0]->getUID())->pushTo($vcard);
-                return $vcards[0];
+                    ->setValue($agentCard->getUID())->pushTo($vcard);
+                $this->vcards[$agentCard->getUID()] = $agentCard;
+                return $vcard;
             } else {
                 $relatedBld->setValue($agent->getValue())
                     ->setValueType($agent->getValueType())->pushTo($vcard);
