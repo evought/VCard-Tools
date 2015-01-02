@@ -93,6 +93,37 @@ interface PropertyBuilder
     public function getValue();
     
     /**
+     * Set the VALUE parameter for this property. VALUE describes the content
+     * and format of the property value. If VALUE is not explicitly set,
+     * a property-specific default will be used.
+     * In many properties, resetting VALUE to text will allow free-form
+     * information to be set.
+     * @throws Exceptions\MalformedParameterException If an attempt is made to
+     * set a VALUE which is not permitted for the target Property.
+     * @param string $valueType
+     * @return self $this
+     */
+    public function setValueType($valueType);
+
+    /**
+     * Return the VALUE param setting for this property, if it has been set.
+     * @return string|null The VALUE parameter contents, or null.
+     */
+    public function getValueType();
+    
+    /**
+     * Return the property-specific default for the VALUE parameter.
+     * @return string The default VALUE parameter.
+     */
+    public function getValueTypeDefault();
+    
+    /**
+     * Return the property-specific list of allowed VALUE parameter settings.
+     * @return string[] an array containing permitted values.
+     */
+    public function getAllowedValueTypes();
+        
+    /**
      * Set the PREF parameter.
      * @param int $value 1 <= $pref <= 100 
      * @return self $this

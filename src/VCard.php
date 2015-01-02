@@ -77,7 +77,11 @@ class VCard implements PropertyContainer
                 'source',
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero To N']
+                PropertySpecification::$cardinalities['Zero To N'],
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri'
+                ]
             )
         );
         //https://tools.ietf.org/html/rfc6350#section-6.1.4
@@ -86,7 +90,11 @@ class VCard implements PropertyContainer
                 'kind',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero or One']
+                PropertySpecification::$cardinalities['Zero or One'],
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.1.5
@@ -95,7 +103,11 @@ class VCard implements PropertyContainer
                 'xml',
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero To N']
+                PropertySpecification::$cardinalities['Zero To N'],
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.1
@@ -106,7 +118,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['One To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.2
@@ -116,8 +132,12 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero or One'],
-                ['allowedFields'=>['FamilyName', 'GivenName', 'AdditionalNames',
-                    'Prefixes', 'Suffixes']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedFields'=>['FamilyName', 'GivenName',
+                        'AdditionalNames', 'Prefixes', 'Suffixes']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.3
@@ -126,7 +146,11 @@ class VCard implements PropertyContainer
                 'nickname',
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero To N']
+                PropertySpecification::$cardinalities['Zero To N'],
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.4
@@ -136,7 +160,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.5
@@ -145,7 +173,11 @@ class VCard implements PropertyContainer
                 'bday',
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero or One']
+                PropertySpecification::$cardinalities['Zero or One'],
+                [
+                    'allowedValueTypes'=>['date-and-or-time','text'],
+                    'valueTypeDefault'=>'date-and-or-time'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.6
@@ -154,7 +186,11 @@ class VCard implements PropertyContainer
                 'anniversary',
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero or One']
+                PropertySpecification::$cardinalities['Zero or One'],
+                [
+                    'allowedValueTypes'=>['date-and-or-time','text'],
+                    'valueTypeDefault'=>'date-and-or-time'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.2.7
@@ -164,7 +200,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero or One'],
-                ['allowedFields'=>['Sex', 'Text']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedFields'=>['Sex', 'Text']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.3.1
@@ -174,9 +214,12 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedStructuredPropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>[ 'dom', 'intl', 'postal', 'parcel',
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>[ 'dom', 'intl', 'postal', 'parcel',
                             'home', 'work'],
-                 'allowedFields'=>['POBox', 'ExtendedAddress', 'StreetAddress', 
+                    'allowedFields'=>['POBox', 'ExtendedAddress', 'StreetAddress', 
                             'Locality', 'Region', 'PostalCode', 'Country']
                 ]
             )
@@ -188,7 +231,10 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['home', 'msg', 'work', 'voice', 'fax', 
+                [
+                    'allowedValueTypes'=>['text', 'uri'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['home', 'msg', 'work', 'voice', 'fax', 
                        'cell', 'video', 'pager', 'bbs', 'modem', 'car', 
                        'isdn', 'pcs']
                 ]
@@ -201,7 +247,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['internet', 'x400']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['internet', 'x400']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.4.3
@@ -211,7 +261,10 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['personal', 'business', 'home', 'work',
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['personal', 'business', 'home', 'work',
                     'mobile']
                 ]
             )
@@ -223,7 +276,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['language-tag'],
+                    'valueTypeDefault'=>'language-tag',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         //https://tools.ietf.org/html/rfc6350#section-6.5.1
@@ -233,7 +290,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['text', 'uri', 'utc-offset'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.5.2
@@ -243,7 +304,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.6.1
@@ -253,7 +318,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.6.2
@@ -263,7 +332,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.6.3
@@ -273,7 +346,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.6.4
@@ -283,8 +360,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedStructuredPropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home'],
-                 'allowedFields'=>['Name', 'Unit1', 'Unit2']
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['work', 'home'],
+                    'allowedFields'=>['Name', 'Unit1', 'Unit2']
                 ]
             )
         );
@@ -294,7 +374,11 @@ class VCard implements PropertyContainer
                 'member',
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero To N']
+                PropertySpecification::$cardinalities['Zero To N'],
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.6.6
@@ -304,8 +388,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes' => [ 'contact', 'acquaintance', 'friend', 'met',
-                           'co-worker', 'colleague', 'co-resident',
+                [
+                    'allowedValueTypes'=>['uri', 'text'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes' => [ 'contact', 'acquaintance', 'friend',
+                           'met', 'co-worker', 'colleague', 'co-resident',
                            'neighbor', 'child', 'parent', 'sibling',
                            'spouse', 'kin', 'muse', 'crush', 'date',
                            'sweetheart', 'me', 'agent', 'emergency' ]
@@ -319,7 +406,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::COMMA_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.2
@@ -329,7 +420,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.3
@@ -338,7 +433,11 @@ class VCard implements PropertyContainer
                 'prodid',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero or One']
+                PropertySpecification::$cardinalities['Zero or One'],
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.4
@@ -347,7 +446,11 @@ class VCard implements PropertyContainer
                 'rev',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero or One']
+                PropertySpecification::$cardinalities['Zero or One'],
+                [
+                    'allowedValueTypes'=>['timestamp'],
+                    'valueTypeDefault'=>'timestamp'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.5
@@ -357,7 +460,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.6
@@ -366,7 +473,11 @@ class VCard implements PropertyContainer
                 'uid',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero or One']
+                PropertySpecification::$cardinalities['Zero or One'],
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.7
@@ -376,7 +487,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedFields'=>['Pid', 'Uri']]
+                [
+                    'allowedValueTypes'=>[],
+                    'valueTypeDefault'=>null,
+                    'allowedFields'=>['Pid', 'Uri']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.8
@@ -386,7 +501,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.7.9
@@ -395,7 +514,11 @@ class VCard implements PropertyContainer
                 'version',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Exactly One']
+                PropertySpecification::$cardinalities['Exactly One'],
+                [
+                    'allowedValueTypes'=>['text'],
+                    'valueTypeDefault'=>'text'
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.8.1
@@ -405,7 +528,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\DataPropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri', 'text'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         //https://tools.ietf.org/html/rfc6350#section-6.9.1
@@ -415,7 +542,10 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.9.2
@@ -425,7 +555,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // https://tools.ietf.org/html/rfc6350#section-6.9.3
@@ -435,7 +569,11 @@ class VCard implements PropertyContainer
                 PropertySpecification::MULTIPLE_PROPERTY,
                 __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
-                ['allowedTypes'=>['work', 'home']]
+                [
+                    'allowedValueTypes'=>['uri'],
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
+                ]
             )
         );
         // from VCard 3.0, deprecated.
@@ -447,7 +585,11 @@ class VCard implements PropertyContainer
                 'agent',
                 PropertySpecification::SINGLE_PROPERTY,
                 __NAMESPACE__ . '\SimplePropertyBuilder',
-                PropertySpecification::$cardinalities['Zero To N']
+                PropertySpecification::$cardinalities['Zero To N'],
+                [
+                    'allowedValueTypes'=>['agent', 'text', 'uri'],
+                    'valueTypeDefault'=>'agent'
+                ]
             )
         );
     }

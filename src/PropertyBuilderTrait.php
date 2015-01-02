@@ -54,6 +54,33 @@ trait PropertyBuilderTrait
      */
     private $pref = null;
     
+    /**
+     * The VALUE parameter setting, or null if it has not explicitly been set.
+     * @var string|null 
+     */
+    private $valueType = null;
+    
+    /**
+     * The default VALUE parameter for this property.
+     * @var string
+     */
+    private $valueTypeDefault = null;
+    
+    /**
+     * The list of permitted VALUE parameter settings for this property.
+     * @var string[]
+     */
+    private $allowedValueTypes = null;
+    
+    /**
+     * @see http://www.iana.org/assignments/vcard-elements/vcard-elements.xhtml#value-data-types
+     * @var string[]
+     */
+    protected static $allValueTypes
+        = [ 'text', 'uri', 'date', 'time', 'date-time', 'date-and-or-time',
+            'timestamp', 'boolean', 'integer', 'float', 'utc-offset',
+            'language-tag' ];
+    
     public function pushTo(PropertyContainer $container)
     {
         $property = $this->build();
@@ -81,6 +108,76 @@ trait PropertyBuilderTrait
     }
     
     /**
+     * Set the VALUE parameter for this property. VALUE describes the content
+     * and format of the property value. If VALUE is not explicitly set,
+     * a property-specific default will be used.
+     * In many properties, resetting VALUE to text will allow free-form
+     * information to be set.
+     * @throws Exceptions\MalformedParameterException If an attempt is made to
+     * set a VALUE which is not permitted for the target Property.
+     * @param string $valueType
+     * @return self $this
+     * @see PropertyBuilder::setValueType()
+     */
+    public function setValueType($valueType)
+    {
+        if ($this->checkValueType($valueType) === false)
+            throw new Exceptions\MalformedParameterException(
+                'Value type: ' . $valueType . ' not permitted for '
+                . $this->getName() );
+        $this->valueType = $valueType;
+    }
+    
+    protected function checkValueType($valueType)
+    {
+        \assert(null !== $valueType);
+        \assert(\is_string($valueType));
+        $allowedTypes = $this->getAllowedValueTypes();
+        if (\in_array($valueType, $allowedTypes))
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Return the VALUE param setting for this property, if it has been set.
+     * @return string|null The VALUE parameter contents, or null.
+     */
+    public function getValueType()
+    {
+        return $this->valueType;
+    }
+    
+    /**
+     * Return the property-specific default for the VALUE parameter.
+     * @return string The default VALUE parameter.
+     */
+    public function getValueTypeDefault()
+    {
+        return $this->valueTypeDefault;
+    }
+    
+    /**
+     * Return the property-specific list of allowed VALUE parameter settings.
+     * @return string[] an array containing permitted values.
+     */
+    public function getAllowedValueTypes()
+    {
+        return $this->allowedValueTypes;
+    }
+    
+    /**
+     * If the Specification does not provide a valueTypeDefault, provide a
+     * default default. Override in a concrete type to provide specific
+     * behaviors for categories of properties.
+     * @return string
+     */
+    protected function getDefaultValueTypeDefault()
+    {
+        return 'text';
+    }
+    
+    /**
      * Set the PREF parameter.
      * @param int $value 1 <= $pref <= 100 
      * @return self $this
@@ -101,11 +198,31 @@ trait PropertyBuilderTrait
         return $this->pref;
     }
     
+    /**
+     * Initialize core values of the Builder.
+     * Should be the first initialization performed in a concrete type.
+     * @param PropertySpecification $specification
+     */
     protected function initBuilder($specification)
     {
         \assert(null !== $specification);
         
         $this->specification = $specification;
+        
+        $constraints = $specification->getConstraints();
+        if (array_key_exists('allowedValueTypes', $constraints))
+        {
+            $this->allowedValueTypes = $constraints['allowedValueTypes'];
+        } else {
+            $this->allowedValueTypes = self::$allValueTypes;
+        }
+        
+        if (array_key_exists('valueTypeDefault', $constraints))
+        {
+            $this->valueTypeDefault = $constraints['valueTypeDefault'];
+        } else {
+            $this->valueTypeDefault = $this->getDefaultValueTypeDefault();
+        }
     }
     
     protected function setBuilderFromLine(VCardLine $vcardLine)

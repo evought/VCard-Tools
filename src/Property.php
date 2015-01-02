@@ -68,6 +68,18 @@ interface Property
     public function getValue();
     
     /**
+     * Return the VALUE param setting for this property, if set.
+     * The VALUE parameter describes the contents and format of the property
+     * value. If VALUE was not explicitly set, a default for this property will
+     * be returned.
+     * @param bool $subDefault If true, automatically substitute a
+     * property-specific default if none has been explicitly set.
+     * Use false to retrieve only an explicitly-set VALUE for re-exporting this
+     * property.
+     */
+    public function getValueType($subDefault = true);
+    
+    /**
      * Return the value of the preference parameter for this property.
      * PREF is defined for any property which can have multiple values and is
      * undefined otherwise.

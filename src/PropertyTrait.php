@@ -59,6 +59,10 @@ trait PropertyTrait
      */
     private $hasParameters;
     
+    private $valueType = null;
+    
+    private $valueTypeDefault = null;
+    
     /**
      * The PREF parameter for this property (if specified).
      * @var int
@@ -74,8 +78,14 @@ trait PropertyTrait
         $this->specification = $builder->getSpecification();
         $this->group = $builder->getGroup();
         $this->hasParameters = false;
+        
+        $this->valueType = $builder->getValueType();
+        $this->valueTypeDefault = $builder->getValueTypeDefault();
+        
         $this->pref = $builder->getPref();
-        if (null !== $this->pref) $this->hasParameters = true;
+        
+        if ((null !== $this->pref) || (null !== $this->valueType))
+            $this->hasParameters = true;
     }
     
     /**
@@ -104,6 +114,27 @@ trait PropertyTrait
     public function getGroup()
     {
         return $this->group;
+    }
+    
+    /**
+     * Return the VALUE param setting for this property, if set.
+     * The VALUE parameter describes the contents and format of the property
+     * value. If VALUE was not explicitly set, a default for this property will
+     * be returned.
+     * @param bool $subDefault If true, automatically substitute a
+     * property-specific default if none has been explicitly set.
+     * Use false to retrieve only an explicitly-set VALUE for re-exporting this
+     * property.
+     * @see Property::getValueType()
+     */
+    public function getValueType($subDefault = true)
+    {
+        if (null !== $this->valueType)
+            return $this->valueType;
+        elseif (true === $subDefault)
+            return $this->valueTypeDefault;
+        
+        return null;
     }
     
     /**

@@ -140,6 +140,10 @@ EOD;
         
             $this->vcards[$vcard->getUID()] = $vcard;
             $vcards[] = $vcard;
+            
+            $agentCard = $this->handleAgent($vcard);
+            if (null !== $agentCard)
+                $vcards[] = $agentCard;
         }
         
         return $vcards;
@@ -307,5 +311,43 @@ EOD;
         $folded = \str_replace(["\n ", "\n\t"], [" ", "\t"], $rawData);
         
         return $folded;
+    }
+    
+    /**
+     * If $vcard has a legacy AGENT property, convert it to a VCard 4.0
+     * RELATED property.
+     * @param VCard $vcard The card to look for an AGENT in.
+     * @return VCard|null If a new VCard was extracted and created, it is
+     * returned, otherwise null. Even if there is an AGENT in the card, it
+     * may be a text or uri value, in which case no new VCard is created.
+     * @throws \DomainException If the AGENT is supposed to contain an
+     * embedded card, but we cannot parse it.
+     */
+    protected function handleAgent(VCard $vcard)
+    {
+        if (isset($vcard->agent))
+        {
+            /* @var $agent Property */
+            $agent = $vcard->agent;
+            /* @var $relatedBld TypedPropertyBuilder */
+            $relatedBld = VCard::builder('related')->addType('agent');
+            
+            if ($agent->getValueType() === 'vcard')
+            {
+                $agentText = $agent->getValue();
+                $vcards = $this->importCards(\stripcslashes($agentText));
+                if (1 !== count($vcards))
+                    throw new \DomainException(
+                        'AGENT should contain a single embedded vcard' );
+                
+                $relatedBld->setValueType('uri')
+                    ->setValue($vcards[0]->getUID())->pushTo($vcard);
+                return $vcards[0];
+            } else {
+                $relatedBld->setValue($agent->getValue())
+                    ->setValueType($agent->getValueType())->pushTo($vcard);
+                return null;
+            }
+        }
     }
 }
