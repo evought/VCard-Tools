@@ -52,6 +52,17 @@ class VCardParser
      */
     private $vcards = [];
     
+    private static $bodyRegExp = <<<'EOD'
+/
+# Expression for breaking a vcard into components for extracting version
+# and body
+^BEGIN:VCARD\n
+VERSION:(?P<version>\d+\.\d+)\n
+(?P<body>.*)
+(?P<end>END:VCARD\n)
+/sux
+EOD;
+    
     public function __construct()
     {
     }
@@ -192,9 +203,7 @@ class VCardParser
     public function getCardBody($text)
     {
         $fragments = [];
-        $matches = \preg_match(
-            '/^BEGIN:VCARD\nVERSION:(?P<version>\d+\.\d+)\n(?P<body>.*)(?P<end>END:VCARD\n)$/su',
-                    $text, $fragments );
+        $matches = \preg_match(self::$bodyRegExp, $text, $fragments);
         if (1 !== $matches)
             throw new \DomainException('Malformed VCard');
         return $fragments;
