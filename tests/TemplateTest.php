@@ -82,46 +82,9 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     	}
 	return $this->ddBinks;
     }
-    
-    /**
-     * @group default
-     */
-    public function testTemplateInfoFromArrayEmpty()
-    {
-    	$info = TemplateInfo::fromArray([]);
-    	 
-    	$this->assertNull($info->getName());
-    	$this->assertNull($info->getDescription());
-    	$this->assertNull($info->getUsage());
-    	$this->assertNull($info->getSee());
-    	$this->assertEmpty($info->getInfo());
-    }
-    
-    /**
-     * @group default
-     */
-    public function testTemplateInfoFromArray()
-    {
-    	$data = [ 'name' => 'George',
-    	          'description' => 'My cuddly little TemplateInfo',
-    	          'usage' => 'I shall hug him and pet him and squeeze him...',
-                  'see' => 'https://www.youtube.com/watch?v=ArNz8U7tgU4',
-                  'license' => 'artistic'
-                ];
-    	$info = TemplateInfo::fromArray($data);
-    	
-    	$this->assertEquals('George', $info->getName());
-    	$this->assertEquals($data['description'], $info->getDescription());
-    	$this->assertEquals($data['usage'], $info->getUsage());
-    	$this->assertEquals($data['see'], $info->getSee());
-    	$this->assertEquals(['license'=>'artistic'], $info->getInfo());
-    	$this->assertTrue(isset($info->license));
-    	$this->assertEquals('artistic', $info->license);
-    }
 
     /**
      * @group default
-     * @depends testTemplateInfoFromArray
      */
     public function testGetDefault()
     {
@@ -205,7 +168,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testFromININoName
-     * @depends testTemplateInfoFromArray
      */
     public function testFromINIWithName()
     {

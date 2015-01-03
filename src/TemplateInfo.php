@@ -2,7 +2,7 @@
 
 /* 
  * Utility for Template metadata.
- * @author Eric Vought evought@pobox.com 2014-11-16
+ * @author Eric Vought evought@pobox.com 2014-12-08
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
@@ -76,8 +76,13 @@ class TemplateInfo
      */
     public function setSee($see)
     {
-    	$this->see = $see;
-    	return $this;
+        \assert(null !== $see);
+        $url = \filter_var($see, \FILTER_VALIDATE_URL);
+        if (false === $url)
+            throw new \DomainException($see . ' is not a valid url.');
+        else
+            $this->see = $see;
+        return $this;
     }
     
     /**
