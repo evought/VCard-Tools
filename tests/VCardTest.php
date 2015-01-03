@@ -1,7 +1,6 @@
 <?php
 /**
- * A start on unit tests for the vCard class to avoid regression as changes
- * are made.
+ * VCardTest.php
  * @author Eric Vought <evought@pobox.com>
  * 2014-11-16
  * @copyright Eric Vought 2014, Some rights reserved.
