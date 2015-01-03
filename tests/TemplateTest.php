@@ -1,16 +1,16 @@
 <?php
 /**
- * PHPUnit testcase for vcard-templates
+ * TemplateTest.php
+ * @author Eric Vought <evought@pobox.com>
+ * 2014-12-08
+ * @copyright Eric Vought 2014, Some rights reserved.
+ * @license MIT http://opensource.org/licenses/MIT
  */
-use EVought\vCardTools\VCard;
-use EVought\vCardTools\Template;
-use EVought\vCardTools\Substitution;
-use EVought\vCardTools\TemplateInfo;
-use EVought\vCardTools\VCardParser;
+namespace EVought\vCardTools;
 
 define('TEST_DIR', __DIR__);
 
-class VCardTemplatesTest extends PHPUnit_Framework_TestCase
+class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * Sample vcard loaded from disk. Use getter.
@@ -326,7 +326,7 @@ class VCardTemplatesTest extends PHPUnit_Framework_TestCase
     public function testTrivialTemplate()
     {
     	$template = new Template([]);
-    	$vcard = new vCard();
+    	$vcard = new VCard();
 
     	$output = $template->output($vcard);
     	
