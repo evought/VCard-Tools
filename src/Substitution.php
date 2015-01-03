@@ -1,7 +1,7 @@
 <?php
 /** 
  * Template utility for parsing/interrogating fragment substitution.
- * @author Eric Vought evought@pobox.com 2014-11-16
+ * @author Eric Vought evought@pobox.com 2014-12-08
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
@@ -213,8 +213,8 @@ class Substitution
     
     /**
      * Build and return a Substitution from the key of a fragment.
-     * @param unknown $fragment
-     * @return \vCardTools\Substitution
+     * @param string $fragment
+     * @return Substitution
      */
     public static function fromFragment($fragment)
     {

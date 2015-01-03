@@ -350,132 +350,7 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
-     */
-    public function testSubstitutionFromTextFragment()
-    {
-    	$substitution = Substitution::fromText('key');
-    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
-    	 
-    	$this->assertTrue($substitution->hasFragment());
-    	$this->assertEquals('key', $substitution->getFragment());
-    	 
-    	$this->assertFalse($substitution->hasQuest());
-    	$this->assertFalse($substitution->shouldLookUp());
-    	$this->assertFalse($substitution->iterates());
-    }
-    
-    /**
-     * @group default
-     */
-    public function testSubstitutionFromTextQuest()
-    {
-    	$substitution = Substitution::fromText('key, ?adr');
-    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
-    
-    	$this->assertTrue($substitution->hasFragment());
-    	$this->assertEquals('key', $substitution->getFragment());
-    
-    	$this->assertTrue($substitution->hasQuest());
-    	$this->assertEquals('adr', $substitution->getQuest());
-    	 
-    	$this->assertFalse($substitution->shouldLookUp());
-    	$this->assertFalse($substitution->iterates());
-    }
-    
-    /**
-     * @group default
-     */
-    public function testSubstitutionFromTextLookup()
-    {
-    	$substitution = Substitution::fromText('!n');
-    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
-    
-    	$this->assertFalse($substitution->hasFragment());
-    
-    	$this->assertFalse($substitution->hasQuest());
-    
-    	$this->assertTrue( $substitution->shouldLookUp(),
-                           print_r($substitution->getLookUp(), true) );
-    	$this->assertEquals('n', $substitution->getLookUp()['property']);
-    	
-    	$this->assertFalse($substitution->lookUpIsStructured());
-    
-    	$this->assertFalse($substitution->iterates());
-    }
-    
-    /**
-     * @group default
-     */
-    public function testSubstitutionFromTextLookupStructured()
-    {
-    	$substitution = Substitution::fromText('!n GivenName');
-    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
-    
-    	$this->assertFalse($substitution->hasFragment());
-    
-    	$this->assertFalse($substitution->hasQuest());
-    
-    	$this->assertTrue( $substitution->shouldLookUp(),
-    			print_r($substitution->getLookUp(), true) );
-    	$this->assertEquals('n', $substitution->getLookUp()['property']);
-    	 
-    	$this->assertTrue($substitution->lookUpIsStructured());
-    	$this->assertEquals('GivenName', $substitution->getLookUp()['field']);
-    
-    	$this->assertFalse($substitution->iterates());
-    }
-    
-    /**
-     * @group default
-     */
-    public function testSubstitutionFromTextLookupMagic()
-    {
-    	$substitution = Substitution::fromText('!_id');
-    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
-    
-    	$this->assertFalse($substitution->hasFragment());
-    	$this->assertFalse($substitution->hasQuest());
-    
-    	$this->assertTrue($substitution->shouldLookUp());
-    	$this->assertFalse($substitution->lookUpIsStructured());
-    	$this->assertTrue($substitution->isMagic());
-    	$this->assertEquals('_id', $substitution->getLookUp()['property']);
-    
-    	$this->assertFalse($substitution->iterates());
-    }
-
-    /**
-     * @group default
-     * @expectedException \DomainException
-     */
-    public function testSubstitutionFromTextLookupBadMagic()
-    {
-    	$substitution = Substitution::fromText('!_abacadabra');
-    }
-    
-    /**
-     * @group default
-     */
-    public function testSubstitutionFromTextIterates()
-    {
-    	$substitution = Substitution::fromText('key, #n');
-    	$this->assertInstanceOf('EVought\vCardTools\Substitution', $substitution);
-    
-    	$this->assertTrue($substitution->hasFragment());
-    	$this->assertEquals('key', $substitution->getFragment());
-    
-    	$this->assertFalse($substitution->hasQuest());
-    
-    	$this->assertFalse($substitution->shouldLookUp());
-    
-    	$this->assertTrue($substitution->iterates());
-    	$this->assertEquals('n', $substitution->getIterOver());
-    }
-    
-    /**
-     * @group default
      * @depends testLiteralTemplate
-     * @depends testSubstitutionFromTextFragment
      */
     public function testOneRecursion()
     {
@@ -494,7 +369,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testLiteralTemplate
-     * @depends testSubstitutionFromTextFragment
      */
     public function testOneRecursionNoMatch()
     {
@@ -600,7 +474,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testLiteralTemplate
-     * @depends testSubstitutionFromTextLookup
      */
     public function testFNLookupEmpty()
     {
@@ -615,7 +488,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testLiteralTemplate
-     * @depends testSubstitutionFromTextLookup
      */
     public function testFNLookup()
     {
@@ -631,7 +503,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testLiteralTemplate
-     * @depends testSubstitutionFromTextLookup
      */
     public function testNFamilyNameLookup()
     {
@@ -649,7 +520,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testFNLookup
-     * @depends testSubstitutionFromTextQuest
      */
     public function testQuestFNNo()
     {
@@ -666,7 +536,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testFNLookup
-     * @depends testSubstitutionFromTextQuest
      */
     public function testQuestFNYes()
     {
@@ -683,7 +552,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testFNLookup
-     * @depends testSubstitutionFromTextIterates
      */
     public function testCategoriesIterEmpty()
     {
@@ -699,7 +567,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testFNLookup
-     * @depends testSubstitutionFromTextIterates
      */
     public function testCategoriesIter()
     {
@@ -733,7 +600,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
      * Principle of least surprise: should substitute once.
      * @group default
      * @depends testCategoriesIter
-     * @depends testSubstitutionFromTextIterates
      */
     public function testFNITer()
     {
@@ -756,7 +622,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
      * Principle of least surprise: should do nothing.
      * @group default
      * @depends testCategoriesIter
-     * @depends testSubstitutionFromTextIterates
      */
     public function testFNITerEmpty()
     {
@@ -776,7 +641,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testOneRecursion
-     * @depends testSubstitutionFromTextFragment
      */
     public function testMagicID()
     {
@@ -792,7 +656,6 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testOneRecursion
-     * @depends testSubstitutionFromTextFragment
      */
     public function testMagicRawVCard()
     {
