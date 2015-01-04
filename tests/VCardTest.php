@@ -270,6 +270,61 @@ class VCardTest extends \PHPUnit_Framework_TestCase
      * @depends testGetSpecifications
      * @group default
      */
+    public function testGetSpecificationNotStrict()
+    {
+        $specification = VCard::getSpecification('undefined', false);
+        $this->assertNotEmpty($specification);
+        $this->assertEquals('undefined', $specification->getName());
+    }
+    
+    /**
+     * @depends testGetSpecifications
+     * @group default
+     */
+    public function testGetSpecificationStrictUndefined()
+    {
+        $specification = VCard::getSpecification('undefined', true);
+        $this->assertNull($specification);
+    }
+    /**
+     * @depends testGetSpecification
+     * @group default
+     */
+    public function testBuilder()
+    {
+        $builder = VCard::builder('adr');
+        $this->assertNotEmpty($builder);
+        $this->assertInstanceOf('EVought\vCardTools\PropertyBuilder', $builder);
+        $this->assertEquals('adr', $builder->getName());
+    }
+    
+    /**
+     * @depends testGetSpecification
+     * @group default
+     * @expectedException \DomainException
+     * @expectedExceptionMessage undefined
+     */
+    public function testBuilderStrictUndefined()
+    {
+        $builder = VCard::builder('undefined');
+    }
+    
+    /**
+     * @depends testGetSpecification
+     * @group default
+     */
+    public function testBuilderNotStrict()
+    {
+        $builder = VCard::builder('undefined', false);
+        $this->assertNotEmpty($builder);
+        $this->assertInstanceOf('EVought\vCardTools\PropertyBuilder', $builder);
+        $this->assertEquals('undefined', $builder->getName());
+    }
+    
+    /**
+     * @depends testGetSpecifications
+     * @group default
+     */
     public function testIsSpecified()
     {
         $this->assertTrue(VCard::isSpecified('fn'));

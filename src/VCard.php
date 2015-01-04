@@ -625,15 +625,32 @@ class VCard implements PropertyContainer
      * Return a PropertySpecification for the given property name, or null
      * if no specification is defined.
      * @param string $name
+     * @param bool $strict If false and no specification is defined for the
+     * requested property, return a generic specification suitable for building
+     * unknown extended properties.
      * @return PropertySpecification
      */
-    public static function getSpecification($name)
+    public static function getSpecification($name, $strict = true)
     {
         self::initSpecifications();
         \assert(null !== $name);
         \assert(\is_string($name));
-        return \array_key_exists($name, self::$specifications)
-                ? self::$specifications[$name] : null;
+        if (\array_key_exists($name, self::$specifications))
+            return self::$specifications[$name];
+        elseif (false === $strict)
+            return self::getGenericSpecification ($name);
+        else
+            return null;
+    }
+    
+    public static function getGenericSpecification($name)
+    {
+        return new PropertySpecification(
+            $name,
+            PropertySpecification::MULTIPLE_PROPERTY,
+            __NAMESPACE__ . '\SimplePropertyBuilder',
+            PropertySpecification::$cardinalities['Zero To N']
+        );
     }
     
     /**
@@ -703,19 +720,23 @@ class VCard implements PropertyContainer
     
     /**
      * Return a new builder for the requested property name.
-     * @param string $propName
+     * @param string $propName The name of the property to return a builder for.
+     * @param bool $strict If true, will throw an exception if the requested
+     * property has not been defined, otherwise, a generic builder will be
+     * returned, suitable for unknown extended properties.
      * @return PropertyBuilder
-     * @throws \DomainException If the requested property has not been defined.
+     * @throws \DomainException If the requested property has not been defined
+     * and $strict is true.
      */
-    public static function builder($propName)
+    public static function builder($propName, $strict = true)
     {
-        $specification = self::getSpecification($propName);
+        $specification = self::getSpecification($propName, $strict);
         if (null === $specification)
             throw new \DomainException(
                     $propName . ' is not a defined property.' );
         return $specification->getBuilder();
     }
-
+    
     /**
      * Magic method to get the various vCard properties as object members, e.g.
      *	a call to $vCard -> N gets the "N" property
