@@ -1052,7 +1052,23 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         
         return $vcard->clear();
     }
-    
+
+    /**
+     * @depends testConstructEmptyVCard
+     * @group default
+     */
+    public function testGetUndefinedProperties(VCard $vcard)
+    {
+        VCard::builder('tel')->setValue('555-1212')->pushTo($vcard);
+        VCard::builder('undefined', false)->setValue('foo')->pushTo($vcard);
+        $iterator = $vcard->getUndefinedProperties();
+        $iterator->rewind();
+        $this->assertTrue($iterator->valid());
+        $prop = $iterator->current();
+        $this->assertEquals('undefined', $prop->getName());
+        return $vcard->clear();
+    }
+        
     /**
      * @depends testConstructEmptyVCard
      * @group default

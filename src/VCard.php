@@ -654,6 +654,19 @@ class VCard implements PropertyContainer
     }
     
     /**
+     * Return an iterator over all Properties in this container which are not
+     * defined.
+     * @return \Iterator
+     */
+    public function getUndefinedProperties()
+    {
+        return new \CallbackFilterIterator($this, function ($current) {
+            \assert($current instanceof Property);
+            return (VCard::isSpecified($current->getName()) === false);
+        });
+    }
+    
+    /**
      * vCard constructor
      */
     public function __construct()
@@ -1089,7 +1102,7 @@ class VCard implements PropertyContainer
     {
         if (key($this->data) === null) return false;
         
-        if ($this->getSpecification(key($this->data))->allowsMultipleProperties())
+        if (current($this->data)[0]->getSpecification()->allowsMultipleProperties())
             return current($this->data)[$this->current_index];
         else
             return current($this->data);
