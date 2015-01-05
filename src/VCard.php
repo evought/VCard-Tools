@@ -1102,7 +1102,7 @@ class VCard implements PropertyContainer
     {
         if (key($this->data) === null) return false;
         
-        if (current($this->data)[0]->getSpecification()->allowsMultipleProperties())
+        if (is_array(current($this->data)))
             return current($this->data)[$this->current_index];
         else
             return current($this->data);
@@ -1114,7 +1114,7 @@ class VCard implements PropertyContainer
      */
     public function next()
     {
-        if ($this->getSpecification(key($this->data))->allowsMultipleProperties())
+        if (is_array(current($this->data)))
         {
             $this->current_index += 1;
             if ($this->current_index === count(current($this->data)))
