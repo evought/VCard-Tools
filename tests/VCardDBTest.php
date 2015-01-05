@@ -514,6 +514,26 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      * @group default
      * @depends testStoreAndRetrieveVCard
      */
+    public function testStoreAndRetrieveWXtended(VCardDB $vcardDB)
+    {
+    	$this->checkRowCounts(['CONTACT'=>0, 'CONTACT_XTENDED'=>0]);
+    
+    	$vcard = new vCard();
+    	VCard::builder('undefined', false)
+                            ->setValue('someValue')->pushTo($vcard);
+    	VCard::builder('fn')->setValue('nothingInteresting')->pushTo($vcard);
+    
+    	$contactID = $vcardDB->store($vcard);
+    	$this->checkRowCounts(['CONTACT'=>1, 'CONTACT_XTENDED'=>1], $vcard);
+    	$resultVCard = $vcardDB->fetchOne($contactID);
+    
+    	$this->compareVCards($vcard, $resultVCard);
+    }
+    
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
     public function testFetchByID(VCardDB $vcardDB)
     {
     	$this->checkRowCounts(['CONTACT'=>0]);

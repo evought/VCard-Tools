@@ -167,6 +167,11 @@ class VCardDB
     	    	$this->i_storeBasicProperty($property, $uid);
     	    }
         }
+        
+        foreach ($vcard->getUndefinedProperties() as $property)
+        {
+            $this->i_storeXtendedProperty($property, $uid);
+        }
 
         return $uid;
     } // store()
@@ -313,6 +318,33 @@ class VCardDB
 
     	return $propertyID;
     } // i_storeBasicProperty()
+    
+    /**
+     * Store a basic property (multiple simple values) which requires a
+     * subsidiary table and return the ID of the new record.
+     * @param Property $property The property to store.
+     * @param string $uid The uid of the CONTACT to associate the new
+     * record with.
+     * @return integer The ID of the newly created record.
+     */
+    private function i_storeXtendedProperty(Property $property, $uid)
+    {
+    	assert($this->connection !== null);
+    	assert(!empty($uid));
+    	assert(is_string($uid));
+    	
+    	$stmt = $this->connection->prepare(
+                    $this->getQueryInfo('store', 'xtended') );
+    	
+        $stmt->bindValue(':uid', $uid);
+        $stmt->bindValue(':name', $property->getName());
+    	$stmt->bindValue(':value', $property->getValue());
+        $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
+    	$stmt->execute();
+    	$propertyID = $this->connection->lastInsertId();
+
+    	return $propertyID;
+    }
     
     /**
      * Fetch all vcards from the database.
@@ -510,6 +542,9 @@ class VCardDB
             $vcard->$property
                 = $this->i_fetchBasicProperty($property, $vcard->getUID());
         }
+        
+        $xtended = $this->i_fetchXtendedProperties($vcard->getUID());
+        if (null !== $xtended) $vcard->push($xtended);
 
         return $vcard;
     } // i_fetchVCard()
@@ -631,7 +666,46 @@ class VCardDB
         $stmt->closeCursor();
 
         return empty($properties) ? null : $properties;
-    } // i_fetchBasicProperty()    
+    } // i_fetchBasicProperty()
+    
+    /**
+     * Fetches all records for generic, x-tended properties for which we have
+     * no detailed specification.
+     * @param string $uid The contact uid records are associated with.
+     * Numeric, not null.
+     * @return NULL|Property[] Returns an array of associated records, or null
+     * if none found.
+     */
+    private function i_fetchXtendedProperties($uid)
+    {
+    	assert(isset($this->connection));
+    	assert(!empty($uid));
+    	assert(is_string($uid));
+    	
+    	// Fetch each property record in turn
+    	$stmt = $this->connection->prepare(
+                    $this->getQueryInfo('fetch', 'xtended') );
+        $stmt->bindValue(':id', $uid);
+        $stmt->execute();
+        
+        /** @var Property[] */
+        $properties = [];
+        while ($result = $stmt->fetch(\PDO::FETCH_ASSOC))
+    	{
+            $builder = VCard::builder($result['name'], false);
+            $builder->setValue($result['value']);
+            
+            // FIXME: Need to store this.
+            $propertyID = $result['pid'];
+            if (null !== $result['pref'])
+                $builder->setPref($result['pref']);
+
+            $properties[] = $builder->build();            
+        }
+        $stmt->closeCursor();
+
+        return empty($properties) ? null : $properties;
+    }
     
     /**
      * Deletes a CONTACT from the database by uid. Should delete all dependent
