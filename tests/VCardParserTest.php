@@ -216,7 +216,7 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
         return $vcard;
     }
     
-        /**
+    /**
      * Return the property values to build a sample vcard.
      * @return array
      */

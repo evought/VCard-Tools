@@ -54,10 +54,13 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     public function getSeinarAPLInputs()
     {
     	$inputs = [
-    	    'org_Name'    => 'Seinar Fleet Systems',
-    	    'org_Unit1'   => 'Seinar Advanced Projects Laboratory',
-    	    'org_Unit2'   => 'TIE AO1X Division',
-    	    'fn'          => 'Seinar APL TIE AO1X Division',
+            'uid'         => 'urn:uuid:7a5148c4-922c-11e4-9246-40167e365cc1',
+    	    'org' => [
+                    'Name'    => 'Seinar Fleet Systems',
+                    'Unit1'   => 'Seinar Advanced Projects Laboratory',
+                    'Unit2'   => 'TIE AO1X Division'
+                ],
+            'fn'          => 'Seinar APL TIE AO1X Division',
     	    'logo'        => 'http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg',
     	    'category1'   => 'military industrial',
     	    'category2'   => 'empire',
@@ -68,17 +71,20 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     	return $inputs;
     }
     
-    /**
+   /**
      * Return the property values to build a sample vcard.
      * @return array
      */
     public function getDDBinksInputs()
     {
     	$inputs = [
-    	            'n_GivenName' => 'Darth',
-    	            'n_AdditionalNames' => 'Darth',
-    	            'n_FamilyName'  => 'Binks',
-    	            'org'       => 'Sith',
+                    'uid'           => 'urn:uuid:c5b5735e-9217-11e4-94de-40167e365cc1',
+    	            'n' => [
+                        'GivenName' => 'Darth',
+                        'AdditionalNames' => 'Darth',
+                        'FamilyName'  => 'Binks'
+                    ],
+                    'org'       => 'Sith',
     	            'fn'          => 'Darth Darth Binks',
     	            'kind'        => 'individual'
     	];
@@ -92,15 +98,20 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     public function getRaithSeinarInputs()
     {
     	$inputs = [
-    	'n_GivenName' => 'Raith',
-    	'n_FamilyName'  => 'Seinar',
-    	'org'       => 'Seinar Fleet Systems',
-    	'title'	     => 'CEO',
-    	'fn'          => 'Raith Seinar',
-    	'category1'   => 'military industrial',
-    	'category2'   => 'empire',
-    	'kind'        => 'individual'
-    			];
+                    'uid'         => 'urn:uuid:d7b14fc0-922a-11e4-aa1c-40167e365cc1',
+                    'n' => [
+                        'GivenName'     => 'Raith',
+                        'FamilyName'    => 'Seinar'
+                        ],
+                    'org' => [
+                        'Name'          => 'Seinar Fleet Systems'
+                        ],
+                    'title'	  => 'CEO',
+                    'fn'          => 'Raith Seinar',
+                    'category1'   => 'military industrial',
+                    'category2'   => 'empire',
+                    'kind'        => 'individual'
+                    ];
     	 
     	return $inputs;
     }
@@ -109,22 +120,15 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
     	$inputs = $this->getDDBinksInputs();
     	
-    	$dDBinks = new VCard();
-        $dDBinks->push(
-                VCard::builder('n')
-                    ->setField('GivenName', $inputs['n_GivenName'])
-                    ->setField('FamilyName', $inputs['n_FamilyName'])
-                    ->setField('AdditionalNames', $inputs['n_AdditionalNames'])
-                    ->build()
-            );
-        $dDBinks->push(
-                VCard::builder('org')->setField('Name', $inputs['org'])->build()
-            );
-        $dDBinks->push(VCard::builder('fn')->setValue($inputs['fn'])->build());
-        $dDBinks->push(VCard::builder('kind')->setValue($inputs['kind'])
-                ->build());
+    	$vcard = new VCard();
 
-    	return $dDBinks; 
+        $vcard->setUID($inputs['uid']);
+        VCard::builder('n')->setValue($inputs['n'])->pushTo($vcard);
+        VCard::builder('org')->setField('Name', $inputs['org'])->pushTo($vcard);
+        VCard::builder('fn')->setValue($inputs['fn'])->pushTo($vcard);
+        VCard::builder('kind')->setValue($inputs['kind'])->pushTo($vcard);
+
+    	return $vcard; 
     }
     
     /**
@@ -135,38 +139,20 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     {
     	$inputs = $this->getSeinarAPLInputs();
     
-    	$seinarAPL = new VCard();
-    	$seinarAPL->push(
-                VCard::builder('org')
-                    ->setField('Name', $inputs['org_Name'])
-                    ->setField('Unit1', $inputs['org_Unit1'])
-                    ->setField('Unit2', $inputs['org_Unit2'])
-                    ->build()
-            );
-        $seinarAPL->push(
-                VCard::builder('fn')->setValue($inputs['fn'])->build() );
-        $seinarAPL->push(
-                VCard::builder('logo')->setValue($inputs['logo'])->build()
-            );
-        $seinarAPL->push(
-                VCard::builder('categories')
-                    ->setValue($inputs['category1'])
-                    ->build()
-            );
-        $seinarAPL->push(
-                VCard::builder('categories')
-                    ->setValue($inputs['category2'])
-                    ->build()
-            );
-        $seinarAPL->push(
-                VCard::builder('categories')
-                    ->setValue($inputs['category3'])
-                    ->build()
-            );
-        $seinarAPL->push(
-                VCard::builder('kind')->setValue($inputs['kind'])->build() );
+    	$vcard = new VCard();
+        $vcard->setUID($inputs['uid']);
+        VCard::builder('org')->setValue($inputs['org'])->pushTo($vcard);
+        VCard::builder('fn')->setValue($inputs['fn'])->pushTo($vcard);
+        VCard::builder('logo')->setValue($inputs['logo'])->pushTo($vcard);
+        VCard::builder('categories')
+                ->setValue($inputs['category1'])->pushTo($vcard);
+        VCard::builder('categories')
+                ->setValue($inputs['category2'])->pushTo($vcard);
+        VCard::builder('categories')
+                    ->setValue($inputs['category3'])->pushTo($vcard);
+        VCard::builder('kind')->setValue($inputs['kind'])->pushTo($vcard);
 
-        return $seinarAPL;
+        return $vcard;
     }
     	
     /**
@@ -175,36 +161,22 @@ class VCardTest extends \PHPUnit_Framework_TestCase
      */
     public function getRaithSeinar()
     {
-    	$raithSeinar = new VCard();
-    	$inputs = $this->getRaithSeinarInputs();
-    	
-    	$raithSeinar->push(
-                VCard::builder('n')
-                    ->setField('GivenName', $inputs['n_GivenName'])
-                    ->setField('FamilyName', $inputs['n_FamilyName'])
-                    ->build()
-            );
-        $raithSeinar->push(
-                VCard::builder('org')->setField('Name', $inputs['org'])->build()
-            );
-        $raithSeinar->push(
-                VCard::builder('title')->setValue($inputs['title'])->build()
-            );
-        $raithSeinar->push(
-                VCard::builder('fn')->setValue($inputs['fn'])->build()
-            );
-        $raithSeinar->push(
-                VCard::builder('categories')->setValue($inputs['category1'])
-                    ->build()
-            );
-        $raithSeinar->push(
-                VCard::builder('categories')->setValue($inputs['category2'])
-                    ->build()
-            );
-        $raithSeinar->push(
-                VCard::builder('kind')->setValue($inputs['kind'])->build()
-            );
-    	return $raithSeinar;
+    	$vcard = new VCard();
+        
+    	$inputs = $this->getRaithSeinarInputs();    	
+        $vcard->setUID($inputs['uid']);
+        
+        VCard::builder('n')->setValue($inputs['n'])->pushTo($vcard);
+        VCard::builder('org')->setValue($inputs['org'])->pushTo($vcard);
+        VCard::builder('title')->setValue($inputs['title'])->pushTo($vcard);
+        VCard::builder('fn')->setValue($inputs['fn'])->pushTo($vcard);
+        VCard::builder('categories')->setValue($inputs['category1'])
+            ->pushTo($vcard);
+        VCard::builder('categories')->setValue($inputs['category2'])
+            ->pushTo($vcard);
+        VCard::builder('kind')->setValue($inputs['kind'])->pushTo($vcard);
+
+        return $vcard;
     }
     
     /**
@@ -1424,8 +1396,8 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     	$lines = $this->checkAndRemoveSkeleton($output);
 
         $expected = [
-    	'N:'.$inputs['n_FamilyName'].';'.$inputs['n_GivenName'].';;;',
-        'ORG:'.$inputs['org'].';;',
+    	'N:'.$inputs['n']['FamilyName'].';'.$inputs['n']['GivenName'].';;;',
+        'ORG:'.$inputs['org']['Name'].';;',
         'TITLE:'.$inputs['title'],
         'FN:'.$inputs['fn'],
         'CATEGORIES:'.$inputs['category1'],
@@ -1452,8 +1424,8 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     	$lines = $this->checkAndRemoveSkeleton($output);
 
         $expected = [
-    	    'N:' . $inputs['n_FamilyName'] . ';' . $inputs['n_GivenName']
-    	         . ';' . $inputs['n_AdditionalNames'] . ';;',
+    	    'N:' . $inputs['n']['FamilyName'] . ';' . $inputs['n']['GivenName']
+    	         . ';' . $inputs['n']['AdditionalNames'] . ';;',
             'ORG:'.$inputs['org'].';;',
             'FN:'.$inputs['fn'],
             'KIND:'.$inputs['kind'],
@@ -1477,7 +1449,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     	$lines = $this->checkAndRemoveSkeleton($output);
 
     	$expected = [
-    	'ORG:'.$inputs['org_Name'].';'.$inputs['org_Unit1'].';'.$inputs['org_Unit2'],
+    	'ORG:'.$inputs['org']['Name'].';'.$inputs['org']['Unit1'].';'.$inputs['org']['Unit2'],
     	'FN:'.$inputs['fn'],
     	'LOGO:'.addcslashes($inputs['logo'], "\\\n,:;"),
     	'CATEGORIES:'.$inputs['category1'],
