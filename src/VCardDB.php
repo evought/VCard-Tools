@@ -320,8 +320,7 @@ class VCardDB
     } // i_storeBasicProperty()
     
     /**
-     * Store a basic property (multiple simple values) which requires a
-     * subsidiary table and return the ID of the new record.
+     * Store an xtended (unspecified, vendor extension) property.
      * @param Property $property The property to store.
      * @param string $uid The uid of the CONTACT to associate the new
      * record with.
