@@ -463,6 +463,24 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
+     * Make sure lookups work with an explicitly-referenced but un-specified
+     * property. Note that a dash is allowed in VCard properties but not in
+     * PHP properties, so the magic property syntax will not work.
+     * @group default
+     * @depends testFNLookup
+     */
+    public function testUndefinedLookup()
+    {
+    	$template = new Template(['vcard' => '{{!x-undefined}}']);
+    	
+    	$vcard = new VCard();
+        VCard::builder('x-undefined', false)->setValue('test')->pushTo($vcard);
+    	
+    	$output = $template->output($vcard);
+    	$this->assertEquals((string) $vcard->__get('x-undefined')[0], $output);
+    }
+    
+    /**
      * @group default
      * @depends testLiteralTemplate
      */
@@ -507,6 +525,38 @@ class VCardTemplatesTest extends \PHPUnit_Framework_TestCase
     	$vcard = $this->getRaithSeinar();
     	$this->assertNotEmpty($vcard->fn); // precondition
     	 
+    	$output = $template->output($vcard);
+    	$this->assertEquals('Output', $output);
+    }
+    
+    /**
+     * @group default
+     * @depends testQuestFNNo
+     */
+    public function testQuestUndefinedNo()
+    {
+    	$fragments = ['vcard' => '{{output,?x-undefined}}', 'output' => 'Output'];
+    	$template = new Template($fragments);
+    	
+    	$vcard = new vCard();
+    	$this->assertEmpty($vcard->__get('x-undefined')); // precondition
+    	
+    	$output = $template->output($vcard);
+    	$this->assertEmpty($output);
+    }
+    
+    /**
+     * @group default
+     * @depends testQuestFNYes
+     */
+    public function testQuestUndefinedYes()
+    {
+    	$fragments = ['vcard' => '{{output,?x-undefined}}', 'output' => 'Output'];
+    	$template = new Template($fragments);
+    	
+    	$vcard = new vCard();
+        VCard::builder('x-undefined', false)->setValue('test')->pushTo($vcard);
+        
     	$output = $template->output($vcard);
     	$this->assertEquals('Output', $output);
     }
