@@ -360,7 +360,7 @@ class SimplePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $vcardLine = new VCardLine('4.0');
         $vcardLine->setName('url')->setValue('http://abc.es')
-                ->setParameter('pref', 1);
+                ->pushParameter('pref', '1');
         $builder = $specification->getBuilder();
         $builder->setFromVCardLine($vcardLine);
         

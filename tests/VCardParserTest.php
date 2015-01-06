@@ -439,7 +439,73 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
 	$this->assertEquals($unescaped, $vcards[0]->fn[0]->getValue());
     }
     
-        /**
+    /**
+     * @group default
+     * @depends testImportVCardFN
+     */
+    public function testImportVCardTelDefaultPref()
+    {
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. 'TEL:555-1212' . "\r\n"
+			. self::$vcard_end . "\r\n";
+
+	$vcards = $this->parser->importCards($input);
+        
+        $this->assertCount(1, $vcards);
+        
+        $this->assertCount(1, $vcards[0]);
+        $this->assertCount(1, $vcards[0]->tel);
+        $tel = $vcards[0]->tel[0];
+	$this->assertEquals('555-1212', $tel->getValue());
+        $this->assertEquals(100, $tel->getPref());
+    }
+    
+    /**
+     * @group default
+     * @depends testImportVCardFN
+     */
+    public function testImportVCardTelPref()
+    {
+	$input =	self::$vcard_begin . "\r\n"
+			. self::$vcard_version . "\r\n"
+			. 'TEL;PREF=1:555-1212' . "\r\n"
+			. self::$vcard_end . "\r\n";
+
+	$vcards = $this->parser->importCards($input);
+        
+        $this->assertCount(1, $vcards);
+        
+        $this->assertCount(1, $vcards[0]);
+        $this->assertCount(1, $vcards[0]->tel);
+        $tel = $vcards[0]->tel[0];
+	$this->assertEquals('555-1212', $tel->getValue());
+        $this->assertEquals(1, $tel->getPref());
+    }
+    
+    /**
+     * @group default
+     * @depends testImportVCardFN
+     */
+    public function testImportVCardTelPrefAsType30()
+    {
+	$input =	self::$vcard_begin . "\r\n"
+			. 'VERSION:3.0' . "\r\n"
+			. 'TEL;TYPE=PREF:555-1212' . "\r\n"
+			. self::$vcard_end . "\r\n";
+
+	$vcards = $this->parser->importCards($input);
+        
+        $this->assertCount(1, $vcards);
+        
+        $this->assertCount(1, $vcards[0]);
+        $this->assertCount(1, $vcards[0]->tel);
+        $tel = $vcards[0]->tel[0];
+	$this->assertEquals('555-1212', $tel->getValue());
+        $this->assertEquals(1, $tel->getPref());
+    }
+    
+    /**
      * @group default
      * @depends testImportVCardFN
      */

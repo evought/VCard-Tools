@@ -237,7 +237,13 @@ trait PropertyBuilderTrait
                 throw new \DomainException(
                     'PREF not allowed for *1 or 1 cardinality: '
                     . $this->getName ());
-            $this->pref = $vcardLine->getParameter('pref');
+            $prefs = $vcardLine->getParameter('pref');
+            if (count($prefs) >1)
+                throw new Exceptions\MalformedParameterException(
+                    'Multiple PREF parameters provided for : '
+                    . $this->getName () );
+            else
+                $this->pref = $prefs[0];
         }
         if ($vcardLine->hasParameter('value'))
         {
