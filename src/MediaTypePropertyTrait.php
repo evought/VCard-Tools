@@ -1,6 +1,6 @@
 <?php
 /**
- * A class for handling data-type properties.
+ * MediaTypePropertyTrait.php
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -11,7 +11,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 evought.
+ * Copyright 2015 evought.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,29 +35,43 @@
 namespace EVought\vCardTools;
 
 /**
- * A class for handling data-type Properties.
+ * A trait to collect shared code for handling the MEDIATYPE parameter.
  *
+ * @see MediaTypeProperty
  * @author evought
  */
-class DataProperty implements TypedProperty, MediaTypeProperty
+trait MediaTypePropertyTrait
 {
-    use SimplePropertyTrait, TypedPropertyTrait, MediaTypePropertyTrait;
+    private $mediaType;
     
-    public function __construct(DataPropertyBuilder $builder)
+     /**
+     * Initialize the value of the MEDIATYPE parameter from the Builder.
+     * @return type
+     */
+    protected function setMediaTypeFromBuilder(MediaTypePropertyBuilder $builder)
     {
-        $this->initProperty($builder);
-        $this->setValueFromBuilder($builder);
-        $this->setTypesFromBuilder($builder);
-        $this->setMediaTypeFromBuilder($builder);
+        $this->mediaType = $builder->getMediaType();
+        if (!empty($this->mediaType)) $this->hasParameters = true;
     }
     
-    protected function outputParameters()
+    /**
+     * Returns the media-type associated with the URL if-and-only-if such has
+     * been explicitly provided. Does _not_ attempt to resolve the media-type
+     * from the URL.
+     * @return string
+     */
+    public function getMediaType()
     {
-        $parameters = [];
-        if (!empty($this->getTypes()))
-            $parameters[] = $this->outputTypes();
-        if (!empty($this->getMediaType()))
-            $parameters[] = $this->outputMediaType();
-        return \implode(';', $parameters);
+        return $this->mediaType;
+    }
+
+    /**
+     * Output the MEDIATYPE parameter.
+     * @return string
+     */
+    protected function outputMediaType()
+    {
+        assert(!empty($this->mediaType));
+        return 'MEDIATYPE=' . $this->getMediaType();
     }
 }

@@ -39,12 +39,13 @@ namespace EVought\vCardTools;
  *
  * @author evought
  */
-class DataPropertyBuilder implements TypedPropertyBuilder
+class DataPropertyBuilder
+    implements TypedPropertyBuilder, MediaTypePropertyBuilder
 {
-    use PropertyBuilderTrait, TypedPropertyBuilderTrait;
+    use PropertyBuilderTrait, TypedPropertyBuilderTrait,
+        MediaTypePropertyBuilderTrait;
     
     private $value;
-    private $mediaType;
     
     public function __construct(PropertySpecification $specification)
     {
@@ -58,6 +59,7 @@ class DataPropertyBuilder implements TypedPropertyBuilder
     {
         $this->setBuilderFromLine($line);
         $this->setTypesFromLine($line);
+        $this->setMediaTypeFromLine($line);
         $this->setValue(\stripcslashes($line->getValue()));
         return $this;
     }
@@ -89,38 +91,5 @@ class DataPropertyBuilder implements TypedPropertyBuilder
         else
             $this->value = $value;
         return $this;
-    }
-    
-    /**
-     * Sets the media type associated with the URL. Note that this parameter
-     * is not often necessary. data URLs encode media-type internally and http
-     * URLs fetch the media-type at resolution-time. This is only necessary if
-     * the URL scheme does not otherwise provide a means to determine (e.g.
-     * ftp).
-     * @param string $value
-     * @return \EVought\vCardTools\DataPropertyBuilder
-     */
-    public function setMediaType($value)
-    {
-        /* @see https://regex101.com/r/lQ3rX4/2#pcre */
-        $regexp = '#(?P<main>\w+|\*)/(?P<sub>\w+|\*)(\s*;\s*(?P<param>\w+)=\s*=\s*(?P<val>\S+))?#';
-        $mediaType = \filter_var( $value, FILTER_VALIDATE_REGEXP,
-                                  ['options'=>['regexp'=>$regexp]] );
-        if (false === $mediaType)
-            throw new \DomainException($value . ' is not a valid mediatype.');
-        else
-            $this->mediaType = $mediaType;
-        return $this;
-    }
-    
-    /**
-     * Returns the media-type associated with the URL if-and-only-if such has
-     * been explicitly provided. Does _not_ attempt to resolve the media-type
-     * from the URL.
-     * @return string
-     */
-    public function getMediaType()
-    {
-        return $this->mediaType;
     }
 }

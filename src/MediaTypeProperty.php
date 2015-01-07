@@ -1,6 +1,6 @@
 <?php
 /**
- * A class for handling data-type properties.
+ * MediaTypeProperty.php
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -11,7 +11,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 evought.
+ * Copyright 2015 evought.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,29 +35,22 @@
 namespace EVought\vCardTools;
 
 /**
- * A class for handling data-type Properties.
- *
+ * An interface for handling properties which accept MEDIATYPE parameters in
+ * VCard 4.0. Any Property which may have a URI/URL as a value may have an
+ * optional MediaType. In particular, if the media-type is determined during
+ * the URL resolution process, there is no need for a MEDIATYPE parameter.
+ * VCard 3.0 buried media-types in the TYPE parameter.
+ * Such embedded media-types *should* be discovered and made accessible through
+ * this interface.
  * @author evought
  */
-class DataProperty implements TypedProperty, MediaTypeProperty
+interface MediaTypeProperty
 {
-    use SimplePropertyTrait, TypedPropertyTrait, MediaTypePropertyTrait;
-    
-    public function __construct(DataPropertyBuilder $builder)
-    {
-        $this->initProperty($builder);
-        $this->setValueFromBuilder($builder);
-        $this->setTypesFromBuilder($builder);
-        $this->setMediaTypeFromBuilder($builder);
-    }
-    
-    protected function outputParameters()
-    {
-        $parameters = [];
-        if (!empty($this->getTypes()))
-            $parameters[] = $this->outputTypes();
-        if (!empty($this->getMediaType()))
-            $parameters[] = $this->outputMediaType();
-        return \implode(';', $parameters);
-    }
+    /**
+     * Returns the media-type associated with the URL if-and-only-if such has
+     * been explicitly provided. Does _not_ attempt to resolve the media-type
+     * from the URL.
+     * @return string
+     */
+    public function getMediaType();
 }

@@ -121,17 +121,6 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testSetAndBuild
-     * @expectedException \DomainException
-     */
-    public function testMediaType(PropertySpecification $specification)
-    {
-        $builder = $specification->getBuilder();
-        $builder->setValue('Edsel');
-    }
-    
-    /**
-     * @group default
-     * @depends testSetAndBuild
      */
     public function testOutputJustValue(PropertySpecification $specification)
     {
@@ -156,22 +145,6 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $property = $builder->build();
         
         $this->assertEquals( 'LOGO;TYPE=WORK:'
-                             . VCard::escape('http://example.com/logo.jpg')
-                             . "\n", $property->output() );
-    }
-    
-    /**
-     * @group default
-     * @depends testSetAndBuild
-     */
-    public function testOutputMediaType(PropertySpecification $specification)
-    {
-        $builder = $specification->getBuilder();
-        $builder->setValue('http://example.com/logo.jpg')
-                ->setMediaType('image/png');
-        $property = $builder->build();
-        
-        $this->assertEquals( 'LOGO;MEDIATYPE=image/png:'
                              . VCard::escape('http://example.com/logo.jpg')
                              . "\n", $property->output() );
     }
