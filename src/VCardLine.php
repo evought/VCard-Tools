@@ -111,7 +111,7 @@ class VCardLine
      */
     private static $imageMediaTypes =
         [
-            'cgm', 'example', 'fits', 'g3fax', 'image/g3fax', 'gif', 'ief',
+            'cgm', 'example', 'fits', 'g3fax', 'gif', 'ief',
             'jp2', 'jpeg', 'jpm', 'jpx', 'ktx', 'naplps', 'png', 'prs.btif',
             'prs.pti', 'pwg-raster', 'svg+xml', 't38', 'tiff', 'tiff-fx',
             'vnd.adobe.photoshop', 'vnd.airzip.accelerator.azv',
@@ -123,6 +123,39 @@ class VCardLine
             'vnd.sealedmedia.softseal.gif', 'vnd.sealedmedia.softseal.jpg',
             'vnd.svf', 'vnd.tencent.tap', 'vnd.valve.source.texture',
             'vnd.wap.wbmp', 'vnd.xiff'
+        ];
+    
+    private static $audioMediaTypes =
+        [
+            '1d-interleaved-parityfec', '3gpp', '3gpp2', 'ac3', 'amr', 'amr-wb',
+            'amr-wb+', 'aptx', 'asc', 'atrac-advanced-lossless', 'atrac-x',
+            'atrac3', 'basic', 'bv16', 'bv32', 'clearmode', 'cn', 'dat12',
+            'dls', 'dsr-es201108', 'dsr-es202050', 'dsr-es202211',
+            'dsr-es202212', 'dv', 'dvI4', 'eac3', 'encaprtp', 'evrc',
+            'evrc-qcp', 'evrc0', 'evrc1', 'evrcb', 'evrcb0', 'evrcb1',
+            'evrcnw', 'evrcnw0', 'evrcnw1', 'evrcwb', 'evrcwb0', 'evrcwb1',
+            'example', 'g719', 'g7221', 'g722', 'g723', 'g726-16', 'g726-24',
+            'g726-32', 'g726-40', 'g728', 'g729', 'g7291', 'g729D', 'g729e',
+            'gsm', 'gsm-efr', 'gsm-hr-08', 'ilbc', 'ip-mr_v2.5', 'l8', 'l16',
+            'l20', 'l24', 'lpc', 'mobile-xmf', 'mpa', 'mp4', 'mp4a-latm',
+            'mpa-robust', 'mpeg', 'mpeg4-generic', 'ogg', 'parityfec', 'pcma',
+            'pcma-wb', 'pcmu', 'pcmu-wb', 'prs.sid', 'qcelp', 'raptorfec',
+            'red', 'rtp-enc-aescm128', 'rtploopback', 'rtp-midi', 'rtx',
+            'smv', 'smv0', 'smv-qcp', 'sp-midi', 'speex', 't140c', 't38',
+            'telephone-event', 'tone', 'uemclip', 'ulpfec', 'vdvi', 'vmr-wb',
+            'vnd.3gpp.iufp', 'vnd.4sb', 'vnd.audiokoz', 'vnd.celp',
+            'vnd.cisco.nse', 'vnd.cmles.radio-events', 'vnd.cns.anp1',
+            'vnd.cns.inf1', 'vnd.dece.audio', 'vnd.digital-winds',
+            'vnd.dlna.adts', 'vnd.dolby.heaac.1', 'vnd.dolby.heaac.2',
+            'vnd.dolby.mlp', 'vnd.dolby.mps', 'vnd.dolby.pl2', 'vnd.dolby.pl2x',
+            'vnd.dolby.pl2z', 'vnd.dolby.pulse.1', 'vnd.dra', 'vnd.dts',
+            'vnd.dts.hd', 'vnd.dvb.file', 'vnd.everad.plj', 'vnd.hns.audio',
+            'vnd.lucent.voice', 'vnd.ms-playready.media.pya',
+            'vnd.nokia.mobile-xmf', 'vnd.nortel.vbk', 'vnd.nuera.ecelp4800',
+            'vnd.nuera.ecelp7470', 'vnd.nuera.ecelp9600', 'vnd.octel.sbc',
+            'vnd.qcelp', 'vnd.rhetorex.32kadpcm', 'vnd.rip',
+            'vnd.sealedmedia.softseal.mpeg', 'vnd.vmx.cvsd', 'vorbis',
+            'vorbis-config'
         ];
 
     /**
@@ -404,30 +437,30 @@ class VCardLine
         }
         
         $this->lowercaseParameters(['type', 'encoding', 'value', 'mediatype']);
+        $this->shuffleTypes();
+
+        return $this;
+    }
+    
+    /**
+     * VCard 2.1 and 3.0 used TYPE is a catch-all; VCard 4.0 broke it out
+     * into distinct parameters. Look for and move these legacy parameter
+     * values to where they need to go.
+     * @return void
+     * @throws Exceptions\IllegalParameterValueException If we have legacy
+     * values in TYPE but are not VCard 3.0 or earlier.
+     */
+    private function shuffleTypes()
+    {
+        if (!($this->hasParameter('type'))) return;
         
         // VCard 3.0 MEDIATYPES in TYPE parameter
-        if ($this->hasParameter('type'))
-        {
-            $matches = \array_intersect( $this->getParameter('type'),
-                                            self::$imageMediaTypes );
-            
-            if (!empty($matches))
-            {
-                if (!\in_array($this->getVersion(), ['2.1', '3.0']))
-                    throw new Exceptions\MalformedParameterException(
-                        'One or more MEDIATYPEs, ' .  \implode(',', $matches)
-                        . ', are stored in TYPE and version is not 2.1/3.0' );
-            
-                foreach ($matches as $imageType)
-                {
-                    $this->pushParameter('mediatype', 'image/'.$imageType);
-                }
-                $this->clearParamValues('type', $matches);
-            }
-        }
+        $this->moveTypeToMediaType(self::$imageMediaTypes, 'image/');
+        $this->moveTypeToMediaType(self::$audioMediaTypes, 'audio/');
         
-        if ( $this->hasParameter('type')
-             && in_array('pref', $this->getParameter('type')) )
+        if (!($this->hasParameter('type'))) return;
+        
+        if (in_array('pref', $this->getParameter('type')))
         {
             // PREF was allowed as a type in 3.0
             // NOTE: if PREF was specified bare in 2.1, it will have already
@@ -444,8 +477,43 @@ class VCardLine
                     . ' and VERSION is not 2.1 or 3.0' );
             }
         }
-
-        return $this;
+        
+    }
+    
+    
+    /**
+     * A utility function to move MEDIATYPEs disguised as TYPEs in legacy
+     * vcards. Any mediatypes recognized according to $typeList will be
+     * reformatted according to $typeTemplate, added to mediatypes, and removed
+     * from types.
+     * @param string[] $typeList The list of media sub-types to look for in TYPES,
+     * e.g. jpeg. List should all be lowercased.
+     * @param string $typeTemplate The type template to use when moving to
+     * MEDIATYPE and reformatting. e.g. 'image/' will yield 'image/jpeg'.
+     * @throws Exceptions\IllegalParameterValueException if we have legacy
+     * media types but are not VCard 3.0 or earlier.
+     * @return void
+     */
+    private function moveTypeToMediaType(Array $typeList, $typeTemplate)
+    {
+        if (!($this->hasParameter('type'))) return;
+        
+        $matches = \array_intersect( $this->getParameter('type'),
+                                        $typeList );
+            
+        if (!empty($matches))
+        {
+            if (!\in_array($this->getVersion(), ['2.1', '3.0']))
+                throw new Exceptions\IllegalParameterValueException(
+                    'One or more MEDIATYPEs, ' .  \implode(',', $matches)
+                    . ', are stored in TYPE and version is not 2.1/3.0' );
+            
+            foreach ($matches as $mediaType)
+            {
+                $this->pushParameter('mediatype', $typeTemplate . $mediaType);
+            }
+            $this->clearParamValues('type', $matches);
+        }
     }
     
     /**

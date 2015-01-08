@@ -821,6 +821,21 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('image/gif', $photo->getMediaType());
     }
 
+    /**
+     * @group default
+     * @group vcard30
+     * @depends testImportVCardFN
+     * @expectedException EVought\vCardTools\Exceptions\IllegalParameterValueException
+     */
+    public function testImportMediaTypeInType40()
+    {
+        $input =	self::$vcard_begin . "\r\n"
+			. 'VERSION:4.0' . "\r\n"
+			. 'PHOTO;TYPE=GIF:http\://example.com/photo.gif' . "\r\n"
+			. self::$vcard_end . "\r\n";
+
+        $vcards = $this->parser->importCards($input);
+    }
     
     /**
      * @group default

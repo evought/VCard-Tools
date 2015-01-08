@@ -520,6 +520,15 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                                    'mediatype'=>['image/jpeg']],
                                 'value'         =>  \base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA')
                             ]
+                        ],
+            'SOUND' =>
+                        ['SOUND;TYPE=BASIC;ENCODING=b:MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0',
+                            [
+                                'group'         =>'',
+                                'name'          =>'sound',
+                                'parameters'    =>['mediatype' => ['audio/basic']],
+                                'value'         => \base64_decode('MIICajCCAdOgAwIBAgICBEUwDQYJKoZIhvcNAQEEBQAwdzELMAkGA1UEBhMCVVMxLDAqBgNVBAoTI05ldHNjYXBlIENvbW11bmljYXRpb25zIENvcnBvcmF0aW9uMRwwGgYDVQQLExNJbmZvcm1hdGlvbiBTeXN0')
+                            ]
                         ]
             ];
     }
