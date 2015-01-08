@@ -517,7 +517,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                                 'group'         =>'',
                                 'name'          =>'photo',
                                 'parameters'    =>['x-abcrop-rectangle'=>['ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g=='],
-                                                   'type'=>['jpeg']],
+                                                   'mediatype'=>['image/jpeg']],
                                 'value'         =>  \base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA')
                             ]
                         ]
@@ -599,7 +599,7 @@ class VCardLineTest extends \PHPUnit_Framework_TestCase
                     'group'         =>'',
                     'name'          =>'photo',
                     'parameters'    =>['x-abcrop-rectangle'=>['ABClipRect_1&-9&20&283&283&WGHe9zKmBvRvhyIyYvN/1g=='],
-                                        'type'=>['jpeg']],
+                                        'mediatype'=>['image/jpeg']],
                     'value'         =>\base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/4gQUSUNDX1BST0ZJTEUAAQEAAAQEYXBwbAIAAABtbnRyUkdCIFhZWiAH2QADAA0AFQAWACNhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGzV7zp1myHv5rYyPVUXGqoJAAAAAAAAAAAAAAA')
                 ]
             ],

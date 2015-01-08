@@ -490,6 +490,7 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
+     * @group vcard30
      * @depends testImportVCardFN
      */
     public function testImportVCardTelPrefAsType30()
@@ -798,6 +799,26 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $test2->email);
         $this->assertEquals('sthomas@host.com', $test2->email[0]->getValue());
         $this->assertEquals(['internet'], $test2->email[0]->getTypes());
+    }
+    
+    /**
+     * @group default
+     * @group vcard30
+     * @depends testImportVCardFN
+     */
+    public function testImportMediaTypeInType30()
+    {
+        $input =	self::$vcard_begin . "\r\n"
+			. 'VERSION:3.0' . "\r\n"
+			. 'PHOTO;TYPE=GIF:http\://example.com/photo.gif' . "\r\n"
+			. self::$vcard_end . "\r\n";
+
+        $vcards = $this->parser->importCards($input);
+        $this->assertCount(1, $vcards);
+        $this->assertCount(1, $vcards[0]->photo);
+        $photo = $vcards[0]->photo[0];
+	$this->assertEquals('http://example.com/photo.gif', $photo->getValue());
+        $this->assertEquals('image/gif', $photo->getMediaType());
     }
 
     

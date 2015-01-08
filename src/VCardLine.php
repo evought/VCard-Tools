@@ -105,6 +105,25 @@ class VCardLine
      * @var string 
      */
     private $version;
+    
+    /**
+     * @var string[]
+     */
+    private static $imageMediaTypes =
+        [
+            'cgm', 'example', 'fits', 'g3fax', 'image/g3fax', 'gif', 'ief',
+            'jp2', 'jpeg', 'jpm', 'jpx', 'ktx', 'naplps', 'png', 'prs.btif',
+            'prs.pti', 'pwg-raster', 'svg+xml', 't38', 'tiff', 'tiff-fx',
+            'vnd.adobe.photoshop', 'vnd.airzip.accelerator.azv',
+            'vnd.cns.inf2', 'vnd.dece.graphic', 'vnd.djvu', 'vnd.dwg',
+            'vnd.dxf', 'vnd.dvb.subtitle', 'vnd.fastbidsheet', 'vnd.fpx',
+            'vnd.fst', 'vnd.fujixerox.edmics-mmr', 'vnd.fujixerox.edmics-rlc',
+            'vnd.globalgraphics.pgb', 'vnd.mix', 'vnd.ms-modi',
+            'vnd.net-fpx', 'vnd.radiance', 'vnd.sealed.png',
+            'vnd.sealedmedia.softseal.gif', 'vnd.sealedmedia.softseal.jpg',
+            'vnd.svf', 'vnd.tencent.tap', 'vnd.valve.source.texture',
+            'vnd.wap.wbmp', 'vnd.xiff'
+        ];
 
     /**
      * Construct a new, empty VCardLine with $version as the target VCard
@@ -257,6 +276,8 @@ class VCardLine
             // NOTE: \array_diff(..) does reindex, array_values(..) does.
             $this->parameters[$parameter]
                 = \array_values(\array_diff($this->parameters[$parameter], $values));
+            if (empty($this->parameters[$parameter]))
+                unset($this->parameters[$parameter]);
         }
         return $this;
     }
@@ -382,7 +403,28 @@ class VCardLine
             }
         }
         
-        $this->lowercaseParameters(['type', 'encoding', 'value']);
+        $this->lowercaseParameters(['type', 'encoding', 'value', 'mediatype']);
+        
+        // VCard 3.0 MEDIATYPES in TYPE parameter
+        if ($this->hasParameter('type'))
+        {
+            $matches = \array_intersect( $this->getParameter('type'),
+                                            self::$imageMediaTypes );
+            
+            if (!empty($matches))
+            {
+                if (!\in_array($this->getVersion(), ['2.1', '3.0']))
+                    throw new Exceptions\MalformedParameterException(
+                        'One or more MEDIATYPEs, ' .  \implode(',', $matches)
+                        . ', are stored in TYPE and version is not 2.1/3.0' );
+            
+                foreach ($matches as $imageType)
+                {
+                    $this->pushParameter('mediatype', 'image/'.$imageType);
+                }
+                $this->clearParamValues('type', $matches);
+            }
+        }
         
         if ( $this->hasParameter('type')
              && in_array('pref', $this->getParameter('type')) )
@@ -402,6 +444,7 @@ class VCardLine
                     . ' and VERSION is not 2.1 or 3.0' );
             }
         }
+
         return $this;
     }
     
