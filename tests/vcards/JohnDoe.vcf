@@ -9,5 +9,5 @@ EMAIL;TYPE=PREF,INTERNET:forrestgump@example.com
 EMAIL;TYPE=INTERNET:example@example.com
 ADR;TYPE=HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America
 URL:https://www.google.com/
-PHOTO;VALUE=URL;TYPE=PNG:http://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Example_svg.svg/200px-Example_svg.svg.png
+PHOTO;VALUE=URI;TYPE=PNG:http://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Example_svg.svg/200px-Example_svg.svg.png
 END:VCARD
