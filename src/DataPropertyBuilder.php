@@ -60,7 +60,17 @@ class DataPropertyBuilder
         $this->setBuilderFromLine($line);
         $this->setTypesFromLine($line);
         $this->setMediaTypeFromLine($line);
-        $this->setValue(\stripcslashes($line->getValue()));
+        if ( (($line->getVersion() === '3.0') || ($line->getVersion() === '2.1'))
+             && ($this->getValueType() !== 'uri' ) )
+        {
+            $uri = new \DataUri( $this->getMediaType(),
+                                 $line->getValue(),
+                                 \DataUri::ENCODING_BASE64 );
+            $this->setValue($uri->toString());
+            $this->setMediaType(null);
+        } else {
+            $this->setValue(\stripcslashes($line->getValue()));
+        }
         return $this;
     }
     
@@ -85,8 +95,9 @@ class DataPropertyBuilder
     public function setValue($value)
     {
         \assert(null !== $value);
+        
         $url = \filter_var($value, \FILTER_VALIDATE_URL);
-        if (false === $url)
+        if ((false === $url) && (false == \DataUri::isParsable($value)))
             throw new \DomainException($value . ' is not a valid url.');
         else
             $this->value = $value;

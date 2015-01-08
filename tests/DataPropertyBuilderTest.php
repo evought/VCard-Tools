@@ -205,6 +205,40 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @param \EVought\vCardTools\PropertySpecification $specification
      * @depends testSetAndBuild
+     */
+    public function testSetFromVCardLine30Binary(PropertySpecification $specification)
+    {
+        $data = 'GIF000000000000000000000000000000000000';
+        $vcardLine = new VCardLine('3.0');
+        $vcardLine  ->setGroup('')
+                    ->setName('logo')
+                    ->setValue($data)
+                    ->setParameter('type', ['work'])
+                    ->setParameter('mediatype', ['image/gif']);
+        $builder = $specification->getBuilder();
+        $builder->setFromVCardLine($vcardLine);
+
+        $this->assertEquals(['work'], $builder->getTypes());
+
+        $uri = $builder->getValue();
+        $this->assertTrue(\DataUri::isParsable($uri));
+        
+        /* @var \DataUri $dataUri */
+        $dataUri = null;
+        $this->assertTrue(\DataUri::tryParse($uri, $dataUri));
+        
+        $this->assertEquals('image/gif', $dataUri->getMediaType());
+        $this->assertEquals(\DataUri::ENCODING_BASE64, $dataUri->getEncoding());
+        
+        $decodedData = '';
+        $this->assertTrue($dataUri->tryDecodeData($decodedData));
+        $this->assertEquals($data, $decodedData);
+    }
+    
+    /**
+     * @group default
+     * @param \EVought\vCardTools\PropertySpecification $specification
+     * @depends testSetAndBuild
      * @expectedException \DomainException
      */
     public function testSetFromVCardLineBadUrl(

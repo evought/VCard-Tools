@@ -56,6 +56,12 @@ trait MediaTypePropertyBuilderTrait
      */
     public function setMediaType($value)
     {
+        if (null === $value)
+        {
+            $this->mediaType = null;
+            return;
+        }
+        
         $mediaType = \filter_var(
             $value, FILTER_VALIDATE_REGEXP,
             ['options'=>['regexp'=>  MediaTypePropertyBuilder::MEDIATYPE_REGEX]]

@@ -810,7 +810,7 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
     {
         $input =	self::$vcard_begin . "\r\n"
 			. 'VERSION:3.0' . "\r\n"
-			. 'PHOTO;TYPE=GIF:http\://example.com/photo.gif' . "\r\n"
+			. 'PHOTO;VALUE=URI;TYPE=GIF:http\://example.com/photo.gif' . "\r\n"
 			. self::$vcard_end . "\r\n";
 
         $vcards = $this->parser->importCards($input);
