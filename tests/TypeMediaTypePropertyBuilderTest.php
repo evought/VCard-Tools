@@ -1,6 +1,6 @@
 <?php
 /**
- * MediaTypePropertyBuilderTest.php
+ * TypeMediaTypePropertyBuilderTest.php
  *
  * @link https://github.com/evought/VCard-Tools
  * @author Eric Vought
@@ -35,11 +35,11 @@
 namespace EVought\vCardTools;
 
 /**
- * Description of MediaTypePropertyBuilderTest
+ * Tests for TypeMediaTypePropertyBuilder
  *
  * @author evought
  */
-class MediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
+class TypeMediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
 {
     protected $specification;
     
@@ -52,11 +52,12 @@ class MediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->specification = new PropertySpecification(
                 'logo',
                 PropertySpecification::MULTIPLE_PROPERTY,
-                __NAMESPACE__ . '\MediaTypePropertyBuilderImpl',
+                __NAMESPACE__ . '\TypeMediaTypePropertyBuilder',
                 PropertySpecification::$cardinalities['Zero To N'],
                 [
                     'allowedValueTypes'=>['uri'],
-                    'valueTypeDefault'=>'uri'
+                    'valueTypeDefault'=>'uri',
+                    'allowedTypes'=>['work', 'home']
                 ]
             );
     }
@@ -69,7 +70,8 @@ class MediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         
     }
-    
+
+        
     /**
      * @group default
      */
@@ -77,11 +79,14 @@ class MediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $builder = $this->specification->getBuilder();
         $property = $builder->setValue('http://example.com')
-                            ->setMediaType('image/jpeg')->build();
+                            ->setMediaType('image/jpeg')
+                            ->setTypes(['home'])->build();
         $this->assertEquals('image/jpeg', $builder->getMediaType());
         $this->assertEquals('image/jpeg', $property->getMediaType());
+        $this->assertEquals('http://example.com', $property->getValue());
+        $this->assertEquals(['home'], $property->getTypes());
     }
-    
+
     /**
      * @group default
      * @expectedException EVought\vCardTools\Exceptions\MalformedParameterException
@@ -97,6 +102,18 @@ class MediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testSetAndBuild
+     * @expectedException \DomainException
+     */
+    public function testAddInvalidType()
+    {
+        $builder = $this->specification->getBuilder();
+        $builder->setValue('999-555-1212')
+                ->addType('skadgamagoozie');
+    }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
      */
     public function testSetFromVCardLine()
     {
@@ -104,11 +121,14 @@ class MediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $vcardLine = new VCardLine('4.0');
         $vcardLine  ->setName('logo')
                     ->setValue($url)
-                    ->setParameter('mediatype', ['image/jpeg']);
+                    ->setParameter('mediatype', ['image/jpeg'])
+                    ->setParameter('type', ['home']);
         $builder = $this->specification->getBuilder();
         $builder->setFromVCardLine($vcardLine);
         
+        $this->assertEquals($url, $builder->getValue());
         $this->assertEquals('image/jpeg', $builder->getMediaType());
+        $this->assertEquals(['home'], $builder->getTypes());
     }
     
     /**
