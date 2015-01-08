@@ -69,7 +69,7 @@ class VCard implements PropertyContainer
             new PropertySpecification(
                 'source',
                 PropertySpecification::MULTIPLE_PROPERTY,
-                __NAMESPACE__ . '\SimplePropertyBuilder',
+                __NAMESPACE__ . '\MediaTypePropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
                 [
                     'allowedValueTypes'=>['uri'],
@@ -366,7 +366,7 @@ class VCard implements PropertyContainer
             new PropertySpecification(
                 'member',
                 PropertySpecification::MULTIPLE_PROPERTY,
-                __NAMESPACE__ . '\SimplePropertyBuilder',
+                __NAMESPACE__ . '\MediaTypePropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
                 [
                     'allowedValueTypes'=>['uri'],
@@ -468,7 +468,7 @@ class VCard implements PropertyContainer
                 __NAMESPACE__ . '\SimplePropertyBuilder',
                 PropertySpecification::$cardinalities['Zero or One'],
                 [
-                    'allowedValueTypes'=>['uri'],
+                    'allowedValueTypes'=>['uri', 'text'],
                     'valueTypeDefault'=>'uri'
                 ]
             )

@@ -50,7 +50,7 @@ namespace EVought\vCardTools;
  * @see https://tools.ietf.org/html/rfc6350#section-5.7
  * @see MediaTypeProperty
  */
-interface MediaTypePropertyBuilder
+interface MediaTypePropertyBuilder extends PropertyBuilder
 {
     /**
      * Regular expression for matching a RFC 4288 Media-type

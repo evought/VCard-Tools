@@ -54,7 +54,7 @@ class MediaTypePropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->specification = new PropertySpecification(
                 'logo',
                 PropertySpecification::MULTIPLE_PROPERTY,
-                __NAMESPACE__ . '\DataPropertyBuilder',
+                __NAMESPACE__ . '\MediaTypePropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
                 ['allowedTypes'=>['work', 'home']]
             );
