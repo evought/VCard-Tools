@@ -349,7 +349,6 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      * @depends testImportEmptyVCard
-     * @expectedException EVought\vCardTools\Exceptions\UndefinedPropertyException
      */
     public function testImportVCardUndefinedProperty()
     {
@@ -358,7 +357,13 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
 			. 'FOO:bar' . "\r\n"
 			. self::$vcard_end . "\r\n";
 
-        $this->parser->importCards($input);
+        $vcards = $this->parser->importCards($input);
+        
+        $this->assertCount(1, $vcards);
+        $this->assertCount(1, $vcards[0]);
+        
+        $this->assertNotNull($vcards[0]->foo);
+        $this->assertEquals('bar', $vcards[0]->foo[0]->getValue());
     }
     
     /**

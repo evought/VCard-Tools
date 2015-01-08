@@ -1162,7 +1162,7 @@ class VCard implements PropertyContainer
         $count = 0;
         foreach ($this->data as $key=>$values)
         {
-            if ($this->getSpecification($key)->allowsMultipleProperties())
+            if (is_array($this->data[$key]))
                 $count += count($values);
             else
                 $count += 1;

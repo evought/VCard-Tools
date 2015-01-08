@@ -254,13 +254,9 @@ EOD;
             
             if (null === $vcardLine)
 	        continue;
-
-            // FIXME: #25 Deal gracefully with unknown and X-properties
-            if (!VCard::isSpecified($vcardLine->getName()))
-                throw new Exceptions\UndefinedPropertyException(
-                    $vcardLine->getName() . ' is not a defined property.');
             
-            $specification = VCard::getSpecification($vcardLine->getName());
+            $specification = VCard::getSpecification(
+                                $vcardLine->getName(), false );
            
             
             if ($specification->allowsCommaProperties())
