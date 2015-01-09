@@ -994,6 +994,19 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @group default
      */
+    public function testImportJohnDoeFromFile()
+    {
+        $path = __DIR__ . '/vcards/JohnDoe.vcf';
+   	// $vcard = $this->getJohnDoe();
+   	 
+        $vcards = $this->parser->importFromFile($path);
+        $this->assertCount(1, $vcards);
+        // $this->assertEquals($vcard, $vcards[0], $vcards[0]->getUID());
+    }
+    
+    /**
+     * @group default
+     */
     public function testGetCardBody()
     {
         $input =   'BEGIN:VCARD'."\n"

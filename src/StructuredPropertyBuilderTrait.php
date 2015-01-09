@@ -54,10 +54,10 @@ trait StructuredPropertyBuilderTrait
         /* @var $fieldStrs array */
         $fieldStrs = \preg_split(VCardLine::SEMICOLON_SPLIT, $line->getValue());
         
-        if (\count($fieldStrs) != \count($fields))
+        if (\count($fieldStrs) > \count($fields))
             throw new \DomainException(
                 'Field count, ' . \count($fieldStrs)
-                . 'differs from the number of fields defined ('
+                . 'is greater than the number of fields defined ('
                 . \count($fields) . ') for property '
                 . $this->getName() . " : " . $line->getValue() );
         foreach($fieldStrs as $index=>$value)

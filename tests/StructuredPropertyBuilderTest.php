@@ -260,7 +260,6 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
      * @group default
      * @param \EVought\vCardTools\PropertySpecification $specification
      * @depends testSetAndBuild
-     * @expectedException \DomainException
      */
     public function testSetFromVCardLineNoFields(
                                         PropertySpecification $specification )
@@ -271,23 +270,27 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         /* @var StructuredPropertyBuilder $builder */
         $builder = $specification->getBuilder();
         $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals([], $builder->getValue());
     }
     
     /**
      * @group default
      * @param \EVought\vCardTools\PropertySpecification $specification
      * @depends testSetAndBuild
-     * @expectedException \DomainException
      */
     public function testSetFromVCardLineTooFewFields(
                                         PropertySpecification $specification )
     {
         $vcardLine = new VCardLine('4.0');
-        $vcardLine  ->setName('adr')->setValue(';');
+        $vcardLine  ->setName('adr')->setValue('a;b');
         
         /* @var StructuredPropertyBuilder $builder */
         $builder = $specification->getBuilder();
         $builder->setFromVCardLine($vcardLine);
+        
+        $this->assertEquals('a', $builder->getField('StreetAddress'));
+        $this->assertEquals('b', $builder->getField('Locality'));
     }
     
     /**
