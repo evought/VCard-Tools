@@ -3,21 +3,17 @@
 <database name="VCARD">
 	<table_data name="CONTACT">
 	</table_data>
-	<table_data name="CONTACT_AGENT">
-	</table_data>
 	<table_data name="CONTACT_CATEGORIES">
 	</table_data>
-	<table_data name="CONTACT_DATA">
+        <table_data name="CONTACT_CATEGORIES_REL_TYPES">
 	</table_data>
-	<table_data name="CONTACT_DATA_REL_ENCODING_TYPES">
+	<table_data name="CONTACT_DATA">
 	</table_data>
 	<table_data name="CONTACT_DATA_REL_TYPES">
 	</table_data>
 	<table_data name="CONTACT_EMAIL">
 	</table_data>
 	<table_data name="CONTACT_EMAIL_REL_TYPES">
-	</table_data>
-	<table_data name="CONTACT_ENCODING_TYPES">
 	</table_data>
         <table_data name="CONTACT_GEO">
         </table_data>

@@ -158,7 +158,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
                 ->addType('work')->addType('voice');
         $property = $builder->build();
         
-        $this->assertEquals( 'TEL;TYPE=WORK,VOICE:1-800-PHP-KING'."\n",
+        $this->assertEquals( 'TEL;TYPE=VOICE,WORK:1-800-PHP-KING'."\n",
                              $property->output() );
     }
 

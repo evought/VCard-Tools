@@ -59,7 +59,11 @@ trait TypedPropertyTrait
     protected function setTypesFromBuilder(TypedPropertyBuilder $builder)
     {
         $this->types = $builder->getTypes();
-        if (!empty($this->types)) $this->hasParameters  = true;
+        if (!empty($this->types))
+        {
+            $this->hasParameters  = true;
+            \sort($this->types); // Make comparisons stable
+        }
     }
     
     /**

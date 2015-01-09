@@ -21,6 +21,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     private $raithSeinar = null;
     private $seinarAPL = null;
     private $ddBinks = null;
+    private $johnDoe = null;
 
     /**
      * @return PHPUnit_Extensions_Database_DB_IDatabaseConnection
@@ -137,7 +138,7 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	}
 	return $this->seinarAPL;
     }
-	
+    	
     /**
      * Some cards for testing.
      * @return an individual VCard.
@@ -155,6 +156,26 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
     	}
 	return $this->ddBinks;
     }
+    
+    /**
+     * Some cards for testing.
+     * @return an organization VCard.
+     */
+    public function getJohnDoe()
+    {
+    	if (null === $this->johnDoe)
+    	{
+	    $path = __DIR__ . '/vcards/JohnDoe.vcf';
+            
+            $parser = new VCardParser();
+            $vcards = $parser->importFromFile($path);
+            
+            $this->assertCount(1, $vcards);
+            $this->johnDoe = $vcards[0];
+    	}
+	return $this->johnDoe;
+    }
+
     
     /**
      * Ensure that we can instantiate a VCardDB instance.
@@ -909,6 +930,38 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
         $this->compareVCards($dDBinks, $vcards[$dDBContactID]);
         
     	return $vcardDB;
+    }
+
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveJohnDoe(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts( [ 'CONTACT'=>0, 'CONTACT_N'=>0,
+                                 'CONTACT_ORG'=>0, 'CONTACT_CATEGORIES'=>0,
+                                 'CONTACT_TEL'=>0, 'CONTACT_TEL_REL_TYPES'=>0,
+                                 'CONTACT_EMAIL'=>0,
+                                 'CONTACT_EMAIL_REL_TYPES'=>0,
+                                 'CONTACT_ADR'=>0, 'CONTACT_ADR_REL_TYPES'=>0,
+                                 'CONTACT_DATA'=>0,'CONTACT_DATA_REL_TYPES'=>0
+                               ]); // pre-condition
+
+    	$johnDoe = $this->getJohnDoe();
+    	$contactID = $vcardDB->store($johnDoe);
+
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,
+                                 'CONTACT_ORG'=>0, 'CONTACT_CATEGORIES'=>0,
+                                 'CONTACT_TEL'=>3, 'CONTACT_TEL_REL_TYPES'=>6,
+                                 'CONTACT_EMAIL'=>2,
+                                 'CONTACT_EMAIL_REL_TYPES'=>2,
+                                 'CONTACT_ADR'=>1, 'CONTACT_ADR_REL_TYPES'=>1,
+                                 'CONTACT_DATA'=>1,'CONTACT_DATA_REL_TYPES'=>0
+                               ]);
+        
+        $vcards = $vcardDB->fetchAll();
+        $this->assertCount(1, $vcards);
+        $this->compareVCards($johnDoe, $vcards[$contactID]);
     }
     
     /**

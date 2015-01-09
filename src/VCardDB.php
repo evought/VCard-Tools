@@ -249,6 +249,7 @@ class VCardDB
                     $this->getQueryInfo('store', $property->getName()) );
         
         $stmt->bindValue(':uid', $uid);
+        $stmt->bindValue(':valuetype', $property->getValueType(false));
         if ($property->getSpecification()->isCardinalityToN())
             $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
     	foreach($property->getAllowedFields() as $key)
@@ -312,11 +313,15 @@ class VCardDB
     	
         $stmt->bindValue(':uid', $uid);
     	$stmt->bindValue(':value', $property->getValue());
-        $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
+        $stmt->bindValue(':valuetype', $property->getValueType(false));
+        $stmt->bindValue(':pref', $property->getPref(false), \PDO::PARAM_INT);
         if ($property instanceof MediaTypeProperty)
             $stmt->bindValue (':mediatype', $property->getMediaType());
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
+        
+        if ($property instanceof TypedProperty)
+            $this->i_associateTypes($property, $propertyID);
 
     	return $propertyID;
     } // i_storeBasicProperty()
@@ -340,6 +345,7 @@ class VCardDB
         $stmt->bindValue(':uid', $uid);
         $stmt->bindValue(':name', $property->getName());
     	$stmt->bindValue(':value', $property->getValue());
+        $stmt->bindValue(':valuetype', $property->getValueType(false));
         $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
         $stmt->bindValue (':mediatype', $property->getMediaType());
     	$stmt->execute();
@@ -615,6 +621,15 @@ class VCardDB
                 $builder->setPref($result['pref']);
             unset($result['pref']);
             
+            if ( array_key_exists('mediatype', $result)
+                 && (null !== $result['mediatype']) )
+                $builder->setMediaType($result['mediatype']);
+            unset($result['mediatype']);
+            
+            if (null !== $result['valuetype'])
+                $builder->setValueType($result['valuetype']);
+            unset($result['valuetype']);
+            
             \assert($builder instanceof StructuredPropertyBuilder);            
             $builder->setValue(\array_filter($result, '\strlen'));
             
@@ -662,9 +677,14 @@ class VCardDB
             $propertyID = $result['pid'];
             if (null !== $result['pref'])
                 $builder->setPref($result['pref']);
+            if (null !== $result['valuetype'])
+                $builder->setValueType($result['valuetype']);
             if ( array_key_exists('mediatype', $result)
                  && (null !== $result['mediatype']) )
                 $builder->setMediaType($result['mediatype']);
+            
+            if ($builder instanceof TypedPropertyBuilder)
+                $this->i_fetchTypesForPropertyID($builder, $propertyID);
 
             $properties[] = $builder->build();            
         }
@@ -706,6 +726,9 @@ class VCardDB
                 $builder->setPref($result['pref']);
             if (null !== $result['mediatype'])
                 $builder->setMediaType($result['mediatype']);
+            if (null !== $result['valuetype'])
+                $builder->setValueType($result['valuetype']);
+
 
             $properties[] = $builder->build();            
         }
