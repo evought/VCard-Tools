@@ -98,24 +98,24 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
     public function getJohnDoeInputs()
     {
     	$inputs = [
+                'uid'   => 'urn:uuid:090301ca-97aa-11e4-83c8-40167e365cc1',
                 'n'     => [
                         'GivenName'         => 'John',
                         'FamilyName'        => 'Doe',
-                        'AdditionalNames'   => 'Q., Public'
+                        'AdditionalNames'   => 'Q.,Public'
                     ],
 		'fn'                => 'John Doe',
-		'fn_charset'        => 'UTF-8',
 		'tel1'		    => '(111) 555-1212',
-		'tel1_type'	    => 'WORK, VOICE',
+		'tel1_type'	    => ['work', 'voice'],
 		'tel2'              => '(404) 555-1212',
-		'tel2_type'         => 'HOME, VOICE',
+		'tel2_type'         => ['home', 'voice'],
 		'tel3'              => '(404) 555-1213',
-		'tel3_type1'        => 'HOME',
-		'tel3_type2'        => 'VOICE',
+		'tel3_type'        => ['home', 'voice'],
 		'email1'            => 'forrestgump@example.com',
-		'email1_type'       => 'PREF, INTERNET',
+		'email1_type'       => ['internet'],
+                'email1_pref'       => 1,
 		'email2'            => 'example@example.com',
-		'email2_type'       => 'INTERNET',
+		'email2_type'       => ['internet'],
                 'adr'   => [
                         'StreetAddress' => '42 Plantation St.',
                         'Locality'      => 'Baytown',
@@ -123,13 +123,52 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
                         'PostalCode'    => '30314',
                         'Country'       => 'United States of America'
                     ],
-		'adr_type'          => 'HOME',
+		'adr_type'          => ['home'],
 		'url'               => 'https://www.google.com/',
 		'photo'             => 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Example_svg.svg/200px-Example_svg.svg.png',
-		'photo_parameters'   => ['VALUE' => 'URL', 'TYPE' => 'PNG']			
+		'photo_value'       => 'uri',
+                'photo_mediatype'   => 'image/png'			
     	];
     	
     	return $inputs;    	   
+    }
+    
+    /**
+     * Return a sample VCard for testing.
+     */
+    public function getJohnDoe()
+    {
+    	$inputs = $this->getJohnDoeInputs();
+    	
+    	$vcard = new VCard();
+        
+        $vcard->setUID('urn:uuid:090301ca-97aa-11e4-83c8-40167e365cc1');
+        VCard::builder('n')->setValue($inputs['n'])->pushTo($vcard);
+        VCard::builder('fn')->setValue($inputs['fn'])->pushTo($vcard);
+        VCard::builder('tel')
+                ->setValue($inputs['tel1'])
+                ->setTypes($inputs['tel1_type'])->pushTo($vcard)
+                ->setValue($inputs['tel2'])
+                ->setTypes($inputs['tel2_type'])->pushTo($vcard)
+                ->setValue($inputs['tel3'])
+                ->setTypes($inputs['tel3_type'])->pushTo($vcard);
+        Vcard::builder('email')
+                ->setValue($inputs['email1'])
+                ->setTypes($inputs['email1_type'])
+                ->setPref($inputs['email1_pref'])->pushTo($vcard);
+        Vcard::builder('email')
+                ->setValue($inputs['email2'])
+                ->setTypes($inputs['email2_type'])->pushTo($vcard);
+        VCard::builder('adr')
+                ->setValue($inputs['adr'])
+                ->setTypes($inputs['adr_type'])->pushTo($vcard);
+        VCard::builder('url')->setValue($inputs['url'])->pushTo($vcard);
+        VCard::builder('photo')
+                ->setValue($inputs['photo'])
+                ->setMediaType($inputs['photo_mediatype'])
+                ->setValueType($inputs['photo_value'])->pushTo($vcard);
+        
+        return $vcard;
     }
     
     /**
@@ -552,9 +591,7 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
 		. self::$vcard_end . "\r\n";
 
         $expectedAdr = VCard::builder('adr')
-            ->setValue($jDoeInputs['adr'])
-            ->addType(strtolower($jDoeInputs['adr_type']))
-            ->build();
+            ->setValue($jDoeInputs['adr'])->addType('home')->build();
 
         $vcards = $this->parser->importCards($input);
         $this->assertCount(1, $vcards);
@@ -577,9 +614,7 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
 		. self::$vcard_end . "\r\n";
 
         $expectedAdr = VCard::builder('adr')
-            ->setValue($jDoeInputs['adr'])
-            ->addType(strtolower($jDoeInputs['adr_type']))
-            ->build();
+            ->setValue($jDoeInputs['adr'])->addType('home')->build();
 
         $vcards = $this->parser->importCards($input);
         $this->assertCount(1, $vcards);
@@ -997,11 +1032,11 @@ class VCardParserTest extends \PHPUnit_Framework_TestCase
     public function testImportJohnDoeFromFile()
     {
         $path = __DIR__ . '/vcards/JohnDoe.vcf';
-   	// $vcard = $this->getJohnDoe();
+   	$vcard = $this->getJohnDoe();
    	 
         $vcards = $this->parser->importFromFile($path);
         $this->assertCount(1, $vcards);
-        // $this->assertEquals($vcard, $vcards[0], $vcards[0]->getUID());
+        $this->assertEquals($vcard, $vcards[0], print_r($vcards[0]->getUID(), true));
     }
     
     /**
