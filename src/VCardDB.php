@@ -313,6 +313,8 @@ class VCardDB
         $stmt->bindValue(':uid', $uid);
     	$stmt->bindValue(':value', $property->getValue());
         $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
+        if ($property instanceof MediaTypeProperty)
+            $stmt->bindValue (':mediatype', $property->getMediaType());
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
 
@@ -339,6 +341,7 @@ class VCardDB
         $stmt->bindValue(':name', $property->getName());
     	$stmt->bindValue(':value', $property->getValue());
         $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
+        $stmt->bindValue (':mediatype', $property->getMediaType());
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
 
@@ -659,6 +662,9 @@ class VCardDB
             $propertyID = $result['pid'];
             if (null !== $result['pref'])
                 $builder->setPref($result['pref']);
+            if ( array_key_exists('mediatype', $result)
+                 && (null !== $result['mediatype']) )
+                $builder->setMediaType($result['mediatype']);
 
             $properties[] = $builder->build();            
         }
@@ -698,6 +704,8 @@ class VCardDB
             $propertyID = $result['pid'];
             if (null !== $result['pref'])
                 $builder->setPref($result['pref']);
+            if (null !== $result['mediatype'])
+                $builder->setMediaType($result['mediatype']);
 
             $properties[] = $builder->build();            
         }

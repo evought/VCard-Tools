@@ -52,7 +52,7 @@ trait MediaTypePropertyBuilderTrait
      * the URL scheme does not otherwise provide a means to determine (e.g.
      * ftp).
      * @param string $value
-     * @return \EVought\vCardTools\DataPropertyBuilder
+     * @return \EVought\vCardTools\MediaTypePropertyBuilder
      */
     public function setMediaType($value)
     {

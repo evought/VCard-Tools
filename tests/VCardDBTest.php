@@ -661,7 +661,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     public function testStoreAndRetrieveWLogo(VCardDB $vcardDB)
     {
-        $this->checkRowCounts(['CONTACT'=>0]);
+        $this->checkRowCounts([ 'CONTACT'=>0, 'CONTACT_ORG'=>0,
+                                'CONTACT_DATA'=>0 ]);
 
         $expected = [
                         'org_name'    => 'Seinar Fleet Systems',
@@ -671,16 +672,55 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 			'logo' => 'http://img1.wikia.nocookie.net/__cb20080311192948/starwars/images/3/39/Sienar.svg'
                      ];
         $vcard = new VCard();
-	$vcard->push(VCard::builder('fn')->setValue($expected['fn'])->build());
-        $vcard->push(
-            VCard::builder('org')
+	VCard::builder('fn')->setValue($expected['fn'])->pushTo($vcard);
+        VCard::builder('org')
                 ->setField('Name', $expected['org_name'])
                 ->setField('Unit1', $expected['org_unit1'])
                 ->setField('Unit2', $expected['org_unit2'])
-                ->build() );
-        $vcard->push(
-            VCard::builder('logo')->setValue($expected['logo'])
-                ->build() );
+                ->pushTo($vcard);
+        VCard::builder('logo')->setValue($expected['logo'])
+                ->pushTo($vcard);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_ORG'=>1,
+                                 'CONTACT_DATA'=>1 ],
+                               $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+        $this->compareVCards($vcard, $resultVCard);
+    } //testStoreAndRetrieveWLogo()
+    
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWLogoDataMediaType(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts([ 'CONTACT'=>0, 'CONTACT_ORG'=>0,
+                                'CONTACT_DATA'=>0 ]);
+
+        $expected = [
+                        'org_name'    => 'Seinar Fleet Systems',
+                        'org_unit1'   => 'Seinar Advanced Projects Laboratory',
+			'org_unit2'   => 'TIE AO1X Division',
+                        'fn'          => 'Seinar APL TIE AO1X Division',
+			'logo' => '|-0-|'
+                     ];
+        $vcard = new VCard();
+        
+        $dataUri = new \DataUri( 'image/example', $expected['logo'],
+                \DataUri::ENCODING_BASE64 );
+        
+	VCard::builder('fn')->setValue($expected['fn'])->pushTo($vcard);
+        VCard::builder('org')
+                ->setField('Name', $expected['org_name'])
+                ->setField('Unit1', $expected['org_unit1'])
+                ->setField('Unit2', $expected['org_unit2'])
+                ->pushTo($vcard);
+        VCard::builder('logo')
+                ->setValue($dataUri->toString())
+                ->setMediaType('image/example')
+                ->pushTo($vcard);
 
         $contactID = $vcardDB->store($vcard);
         $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_ORG'=>1,

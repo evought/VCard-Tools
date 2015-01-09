@@ -44,7 +44,7 @@ namespace EVought\vCardTools;
  * this interface.
  * @author evought
  */
-interface MediaTypeProperty
+interface MediaTypeProperty extends Property
 {
     /**
      * Returns the media-type associated with the URL if-and-only-if such has

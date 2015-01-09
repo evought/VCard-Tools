@@ -648,7 +648,7 @@ class VCard implements PropertyContainer
         return new PropertySpecification(
             $name,
             PropertySpecification::MULTIPLE_PROPERTY,
-            __NAMESPACE__ . '\SimplePropertyBuilder',
+            __NAMESPACE__ . '\MediaTypePropertyBuilderImpl',
             PropertySpecification::$cardinalities['Zero To N']
         );
     }
