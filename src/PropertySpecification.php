@@ -207,7 +207,7 @@ class PropertySpecification
      */
     public function getCardinality()
     {
-        \assert(in_array($cardinality, self::$cardinalities));
+        \assert(in_array($this->cardinality, self::$cardinalities));
         return $this->cardinality;
     }
     
