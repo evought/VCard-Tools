@@ -215,7 +215,8 @@ If it is in the path, the full test suite can be run with the *test* phing task:
 
 This will also generate a test coverage report in the reports/ directory.
 
-_NOTE_: See Issue #59 if you have failing testcases.
+_NOTE_: See Issue [#59](https://github.com/evought/VCard-Tools/issues/59) if
+you have failing testcases.
 
 A phpunit.xml file is provided to run tests manually from the command-line:
 
