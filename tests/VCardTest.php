@@ -29,7 +29,7 @@ class VCardTest extends \PHPUnit_Framework_TestCase
      */
     public function checkAndRemoveSkeleton($vcard_string)
     {
-	$lines = explode("\n", $vcard_string);
+	$lines = explode("\n", VCardParser::unfold4($vcard_string));
 	$this->assertGreaterThan(4, count($lines));
 
         $line = array_pop($lines);
@@ -1146,6 +1146,54 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals((string) $org, $vcard->fn[0]->getValue());
         
         return $vcard->clear();
+    }
+    
+    public function foldProvider()
+    {
+        $string10 = '0123456789';
+        $string20 = $string10 . $string10;
+        $string70 = $string20 . $string20 . $string20 . $string10;
+        $string80 = $string70 . $string10;
+        $string150 = $string80 . $string70;
+        $string160 = $string150 . $string10;
+
+        return [
+            'string20' =>  [$string20,  $string20],
+            'string70' =>  [$string70,  $string70],
+            'string80' =>  [$string80,  $string70 . '01234' . "\n" . ' 56789'],
+            'string150' => [$string150, $string70 . '01234' . "\n"
+                                        . ' 56789' . $string70 ],
+            'string160' => [$string160, $string70 . '01234' . "\n"
+                                        . ' 56789' . $string70 . "\n"
+                                        . ' ' . $string10 ]
+        ];
+    }
+    
+    /**
+     * @group default
+     * @dataProvider foldProvider
+     */
+    public function testFoldLine($unfolded, $folded)
+    {
+        $this->assertEquals($folded, VCard::foldLine($unfolded));
+    }
+    
+    /**
+     * @group default
+     * @depends testFoldLine
+     */
+    public function testFoldOutput()
+    {
+        $inputStr = '';
+        $foldedStr = '';
+        
+        foreach ($this->foldProvider() as $input)
+        {
+            $inputStr .= $input[0] . "\n";
+            $foldedStr .= $input[1] . "\n";
+        }
+        
+        $this->assertEquals($foldedStr, VCard::foldOutput($inputStr));
     }
 
     /**

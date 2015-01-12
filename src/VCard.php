@@ -999,6 +999,51 @@ class VCard implements PropertyContainer
     } // setFNAppropriately()
 
     /**
+     * Fold a single output line as per RFC6350 3.2.
+     * Line should not have a trailing line break.
+     * If line is longer than 75 bytes, line will be folded at character
+     * boundaries until no internal line is greater than 75 bytes.
+     * @param string $line
+     * @return string
+     * @see https://tools.ietf.org/html/rfc6350#section-3.2
+     */
+    public static function foldLine($line)
+    {
+        if (\strlen($line) <= 75) return $line;
+        
+        $length = 17;
+        while (strlen(\iconv_substr($line, 0, $length + 1, 'UTF-8')) <= 75)
+        {
+            $length += 1;
+        }
+        
+        $firstLine = \iconv_substr($line, 0, $length, 'UTF-8');
+        $rest = \iconv_substr($line, $length, \iconv_strlen($line, 'UTF-8'), 'UTF-8');
+        
+        return $firstLine . self::endl . " " . self::foldLine($rest);
+    }
+
+    /**
+     * Fold all output lines as per RFC 6350 3.2.
+     * @param string $output
+     * @return string
+     * @see https://tools.ietf.org/html/rfc6350#section-3.2
+     * @see foldLine()
+     */
+    public static function foldOutput($output)
+    {
+        $wrapped = '';
+        
+        $lines = \array_filter(\explode("\n", $output), 'strlen');
+        foreach ($lines as $line)
+        {
+            $wrapped .= self::foldLine($line) . self::endl;
+        }
+        
+        return $wrapped;
+    }
+    
+    /**
      * Magic method for getting vCard content out
      *
      * @return string Raw vCard content
@@ -1011,7 +1056,6 @@ class VCard implements PropertyContainer
 
     /**
      * Format VCard as the raw VCard (.vcf) text format.
-     * @todo #65 : Output folding as per RFC6350
      * @return string
      */
     public function output()
@@ -1039,7 +1083,7 @@ class VCard implements PropertyContainer
         }
 
 	$text .= 'END:VCARD'.self::endl;
-	return $text;
+	return self::foldOutput($text);
     }
 
     // !Helper methods
