@@ -9,6 +9,10 @@
         }
     ],
     "require-dev": {
+        "phing/phing": "2.*",
+        "phpmd/phpmd" : "@stable",
+        "pdepend/pdepend" : "2.0.4",
+        "phploc/phploc": "*",
         "phpunit/phpunit": "4.3.*",
         "phpunit/php-invoker": "~1.1",
         "phpunit/dbunit": ">=1.2",
