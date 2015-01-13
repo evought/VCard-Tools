@@ -11,4 +11,9 @@
     <groups>
         <exclude><group>openIssues</group></exclude>
     </groups>
+    <testsuites>
+        <testsuite name="Default Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
 </phpunit>
