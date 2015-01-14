@@ -1,5 +1,6 @@
 # Phing generated files
 database.php
+phinx.yml
 
 /dist/
 /docs/api/

@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2142f582bf63072f0e36ba6d810e8f10",
+    "hash": "f6ebc74552ce89b35e7d778780252ea1",
     "packages": [
         {
             "name": "evought/data-uri",
@@ -440,16 +440,16 @@
         },
         {
             "name": "erusev/parsedown",
-            "version": "1.3.0",
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erusev/parsedown.git",
-                "reference": "3eb6d349f0bae5e73fba5e6d68d696f811feba5c"
+                "reference": "0d288083922576bcd55389bcf1cd8ac1db7adaa7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erusev/parsedown/zipball/3eb6d349f0bae5e73fba5e6d68d696f811feba5c",
-                "reference": "3eb6d349f0bae5e73fba5e6d68d696f811feba5c",
+                "url": "https://api.github.com/repos/erusev/parsedown/zipball/0d288083922576bcd55389bcf1cd8ac1db7adaa7",
+                "reference": "0d288083922576bcd55389bcf1cd8ac1db7adaa7",
                 "shasum": ""
             },
             "type": "library",
@@ -475,7 +475,7 @@
                 "markdown",
                 "parser"
             ],
-            "time": "2015-01-12 00:58:08"
+            "time": "2015-01-12 21:24:13"
         },
         {
             "name": "herrera-io/json",
@@ -2571,6 +2571,63 @@
             "time": "2012-12-21 11:40:51"
         },
         {
+            "name": "robmorgan/phinx",
+            "version": "v0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/robmorgan/phinx.git",
+                "reference": "9096024ab7d6985ae541eb09aaf480e8f95a342c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/robmorgan/phinx/zipball/9096024ab7d6985ae541eb09aaf480e8f95a342c",
+                "reference": "9096024ab7d6985ae541eb09aaf480e8f95a342c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.2",
+                "symfony/class-loader": "~2.5.0",
+                "symfony/config": "~2.5.0",
+                "symfony/console": "~2.5.0",
+                "symfony/yaml": "~2.5.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.*",
+                "squizlabs/php_codesniffer": "dev-phpcs-fixer"
+            },
+            "bin": [
+                "bin/phinx"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Phinx": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Rob Morgan",
+                    "email": "robbym@gmail.com",
+                    "homepage": "http://robmorgan.id.au",
+                    "role": "Lead Developer"
+                }
+            ],
+            "description": "Phinx makes it ridiculously easy to manage the database migrations for your PHP app.",
+            "homepage": "https://phinx.org",
+            "keywords": [
+                "database",
+                "database migrations",
+                "db",
+                "migrations",
+                "phinx"
+            ],
+            "time": "2014-12-14 13:06:08"
+        },
+        {
             "name": "sebastian/comparator",
             "version": "1.1.0",
             "source": {
@@ -2968,6 +3025,56 @@
             "time": "2015-01-04 21:18:15"
         },
         {
+            "name": "symfony/class-loader",
+            "version": "v2.5.9",
+            "target-dir": "Symfony/Component/ClassLoader",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/ClassLoader.git",
+                "reference": "abad64f8379f65a24f64eb2478ec012d3d6ddcb4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/ClassLoader/zipball/abad64f8379f65a24f64eb2478ec012d3d6ddcb4",
+                "reference": "abad64f8379f65a24f64eb2478ec012d3d6ddcb4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "symfony/finder": "~2.0,>=2.0.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.5-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Symfony\\Component\\ClassLoader\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Symfony Community",
+                    "homepage": "http://symfony.com/contributors"
+                },
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                }
+            ],
+            "description": "Symfony ClassLoader Component",
+            "homepage": "http://symfony.com",
+            "time": "2015-01-05 08:51:41"
+        },
+        {
             "name": "symfony/config",
             "version": "v2.5.9",
             "target-dir": "Symfony/Component/Config",
@@ -3017,17 +3124,17 @@
         },
         {
             "name": "symfony/console",
-            "version": "v2.6.3",
+            "version": "v2.5.9",
             "target-dir": "Symfony/Component/Console",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Console.git",
-                "reference": "6ac6491ff60c0e5a941db3ccdc75a07adbb61476"
+                "reference": "754f4b6de7b4a1d442f9b6a728bfb7adef54592c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Console/zipball/6ac6491ff60c0e5a941db3ccdc75a07adbb61476",
-                "reference": "6ac6491ff60c0e5a941db3ccdc75a07adbb61476",
+                "url": "https://api.github.com/repos/symfony/Console/zipball/754f4b6de7b4a1d442f9b6a728bfb7adef54592c",
+                "reference": "754f4b6de7b4a1d442f9b6a728bfb7adef54592c",
                 "shasum": ""
             },
             "require": {
@@ -3035,18 +3142,16 @@
             },
             "require-dev": {
                 "psr/log": "~1.0",
-                "symfony/event-dispatcher": "~2.1",
-                "symfony/process": "~2.1"
+                "symfony/event-dispatcher": "~2.1"
             },
             "suggest": {
                 "psr/log": "For using the console logger",
-                "symfony/event-dispatcher": "",
-                "symfony/process": ""
+                "symfony/event-dispatcher": ""
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.6-dev"
+                    "dev-master": "2.5-dev"
                 }
             },
             "autoload": {
@@ -3070,7 +3175,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-06 17:50:02"
+            "time": "2015-01-06 17:40:45"
         },
         {
             "name": "symfony/dependency-injection",
@@ -3506,17 +3611,17 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.3",
+            "version": "v2.5.9",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018"
+                "reference": "522b6c2f45504521fd411a6b1632958bfee20845"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/82462a90848a52c2533aa6b598b107d68076b018",
-                "reference": "82462a90848a52c2533aa6b598b107d68076b018",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/522b6c2f45504521fd411a6b1632958bfee20845",
+                "reference": "522b6c2f45504521fd411a6b1632958bfee20845",
                 "shasum": ""
             },
             "require": {
@@ -3525,7 +3630,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.6-dev"
+                    "dev-master": "2.5-dev"
                 }
             },
             "autoload": {
@@ -3549,7 +3654,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2015-01-03 15:33:07"
+            "time": "2015-01-03 14:48:25"
         },
         {
             "name": "theseer/fdomdocument",

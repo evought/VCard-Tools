@@ -28,11 +28,20 @@
 
   <filterchain id="db.unittest.filterset">
     <replacetokens begintoken="@" endtoken="@">
-    <token key="db.unittest.user"   value="${db.unittest.user}"/>
-    <token key="db.unittest.passwd" value="${db.unittest.passwd}"/>
-    <token key="db.unittest.passwd" value="${db.unittest.passwd}"/>
-    <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
-    <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
+        <token key="db.unittest.user"   value="${db.unittest.user}"/>
+        <token key="db.unittest.host" value="${db.unittest.host}"/>
+        <token key="db.unittest.passwd" value="${db.unittest.passwd}"/>
+        <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
+        <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
+    </replacetokens>
+  </filterchain>
+  <filterchain id="db.devel.filterset">
+    <replacetokens begintoken="@" endtoken="@">
+      <token key="db.devel.user"   value="${db.devel.user}"/>
+      <token key="db.unittest.host" value="${db.unittest.host}"/>
+      <token key="db.devel.passwd" value="${db.devel.passwd}"/>
+      <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
+      <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
     </replacetokens>
   </filterchain>
 
@@ -45,12 +54,15 @@
 
   <!-- list of generated configuration files -->
   <fileset id="configFiles.fileset" dir="${project.basedir}"
-           includes="database.php"/>
+           includes="database.php, phinx.yml"/>
 
   <target name="config"
           description="Substitute macros to create needed configuration files">
     <copy file="${project.basedir}/database.php.in" toFile="${project.basedir}/database.php">
       <filterchain refid="db.unittest.filterset"/>
+    </copy>
+    <copy file="${project.basedir}/phinx.yml.in" toFile="${project.basedir}/phinx.yml">
+      <filterchain refid="db.devel.filterset"/>
     </copy>
   </target>
 
