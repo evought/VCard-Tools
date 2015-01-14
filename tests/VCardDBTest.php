@@ -309,7 +309,9 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
                   VCard::builder('url')->setValue($expected['url'])->build() );
 
         $contactID = $vcardDB->store($vcard);
-        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>0],
+        $this->checkRowCounts( [
+                                'CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>0,
+                                'CONTACT_URL'=>1 ],
                                $vcard );
         $resultVCard = $vcardDB->fetchOne($contactID);
 

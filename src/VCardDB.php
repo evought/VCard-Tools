@@ -158,7 +158,7 @@ class VCardDB
             }
         }
         
-        foreach ( ['photo', 'logo', 'sound', 'key', 'note', 'tel', 'geo',
+        foreach ( ['url','photo', 'logo', 'sound', 'key', 'note', 'tel', 'geo',
         		'email', 'categories', 'related'] as $propertyName )
         {
             if (empty($vcard->$propertyName)) continue;
@@ -207,10 +207,10 @@ class VCardDB
                                 \PDO::PARAM_STR );
         }
 
-        // HACK: #51, #52, #53, #54, #55: VCard and the spec think URL,
+        // HACK: #52, #53, #54, #55: VCard and the spec think URL,
         // NICKNAME, etc. are multiple.
         // Database doesn't. Arbitrarily take the first value.
-        foreach ([ 'url', 'nickname', 'role', 'title', 'tz', 'fn', 'bday',
+        foreach ([ 'nickname', 'role', 'title', 'tz', 'fn', 'bday',
                    'anniversary' ] as $hackMultiple)
         {
             assert(!($vcard->getSpecification($hackMultiple)->requiresSingleProperty()),
@@ -523,7 +523,7 @@ class VCardDB
 
         // FIXME: fetch columns explicitly instead of "SELECT *" and map
         $simpleCols = [ 'KIND', 'FN', 'NICKNAME', 'BDAY', 'ANNIVERSARY',
-                        'TITLE', 'ROLE', 'REV', 'URL', 'VERSION' ];
+                        'TITLE', 'ROLE', 'REV', 'VERSION' ];
         foreach ($simpleCols as $col)
         {
             if (!empty($row[$col]))
@@ -544,7 +544,7 @@ class VCardDB
         }
         
         // Basic Properties
-        foreach ( ['note', 'email', 'tel', 'categories', 'geo', 'logo',
+        foreach ( ['url', 'note', 'email', 'tel', 'categories', 'geo', 'logo',
         		'photo', 'sound', 'key', 'related'] as $property )
         {
             $vcard->$property
