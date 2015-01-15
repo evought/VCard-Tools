@@ -3,9 +3,11 @@
 use Phinx\Migration\AbstractMigration;
 
 class VcardToolsCreateUrlTable extends AbstractMigration
-{
-    
-    public function change()
+{   
+    /**
+     * Migrate Up.
+     */
+    public function up()
     {
         $table = $this->table('CONTACT_URL', ['id'=>'URL_ID']);
         $table  ->addColumn('UID', 'string', ['limit'=>45])
@@ -36,20 +38,16 @@ class VcardToolsCreateUrlTable extends AbstractMigration
         $table = $this->table('CONTACT');
         $table->removeColumn('URL')->update();
     }
-    
-    /**
-     * Migrate Up.
-     */
-    /* public function up()
-    {
-    
-    }*/
 
     /**
      * Migrate Down.
      */
-    /*public function down()
+    public function down()
     {
-
-    }*/
+        $this->dropTable('CONTACT_URL');
+        $this->dropTable('CONTACT_URL_REL_TYPES');
+        $table = $this->table('CONTACT');
+        $table  ->addColumn('URL', 'string', ['null'=>true])
+                ->update();
+    }
 }

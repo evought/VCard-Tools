@@ -7,6 +7,14 @@ class VcardToolsCreateNicknameTable extends AbstractMigration
     
     public function change()
     {
+        
+    }
+    
+    /**
+     * Migrate Up.
+     */
+    public function up()
+    {
         $table = $this->table('CONTACT_NICKNAME', ['id'=>'NICKNAME_ID']);
         $table  ->addColumn('UID', 'string', ['limit'=>45])
                 ->addColumn('NICKNAME', 'string')
@@ -35,20 +43,16 @@ class VcardToolsCreateNicknameTable extends AbstractMigration
         $table = $this->table('CONTACT');
         $table->removeColumn('NICKNAME')->update();
     }
-    
-    /**
-     * Migrate Up.
-     */
-    /* public function up()
-    {
-    
-    }*/
 
     /**
      * Migrate Down.
      */
-    /*public function down()
+    public function down()
     {
-
-    }*/
+        $this->dropTable('CONTACT_NICKNAME');
+        $this->dropTable('CONTACT_NICKNAME_REL_TYPES');
+        $table = $this->table('CONTACT');
+        $table  ->addColumn('NICKNAME', 'string', ['null'=>true])
+                ->update();
+    }
 }
