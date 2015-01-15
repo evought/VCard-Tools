@@ -137,7 +137,7 @@
     </pdosqlexec>
   </target>
   
-  <target name="migrateDevelopment" depends="createUnitDB"
+  <target name="migrateDevelopment"
           description="Database Migrations for development environment"> 
     <!-- execute phinx in migrate mode -->
     <exec command="${vendor.bin.dir}/phinx migrate"
@@ -146,7 +146,7 @@
         />
   </target>
 
-  <target name="rollbackDevelopment" depends="createUnitDB"
+  <target name="rollbackDevelopment"
           description="Roll back database migrations for development environment"> 
     <!-- execute phinx in migrate mode -->
     <exec command="${vendor.bin.dir}/phinx rollback"
