@@ -163,14 +163,19 @@ Running 'phing config' will build the configuration files (such as database.php)
 
 To force them to be rebuilt. You can then:
 
-    $ phing unitDBSchema
+    $ phing migrateDevelopment
 
 This will automatically invoke "phing createUnitDB" to create the database and
-grant permissions to your test user (SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*) and then it will load the schema definitions from sql/vcard.sql. If you need to, you can always load vcard.sql manually from a terminal or by pasting it into a query in PHPMyAdmin.
+grant permissions to your test user (SELECT, INSERT, UPDATE, and DELETE
+privileges on VCARD.*) and then it will run all database schema migrations to
+bring the database up to the current state.
 
-The unit tests will automatically delete new rows and reset the table state after each run, so you *should not* have to clean and reset the database yourself unless something has happened to disrupt its state or you have intentionally made changes to the data or the schema. If that happens:
+The unit tests will automatically delete new rows and reset the table state
+after each run, so you *should not* have to clean and reset the database\
+yourself unless something has happened to disrupt its state or you have
+intentionally made changes to the data or the schema. If that happens:
 
-   $ phing dropUnitDB && phing createUnitDB
+   $ phing rollbackDevelopment && phing migrateDevelopment
 
 Will recreate the tables. The unit tests rely on an xml table dump to set/reset
 the initial state for the testcases. If the schema has changed, you will want to recreate this file by running (e.g.):
@@ -178,6 +183,28 @@ the initial state for the testcases. If the schema has changed, you will want to
     $mysqldump --xml -t -u [username] -p [database] > tests/emptyVCARDDB.xml
 
 See the PHPUnit Manual, [Database Testing Chapter](https://phpunit.de/manual/current/en/database.html#database.available-implementations) for more information.
+
+## Database Migrations ##
+
+VCardTools uses [Phinx](https://github.com/robmorgan/phinx) to manage changes to
+the database schema. Database changesets ("migrations") are defined in
+src/sql/migrations as ordered php scripts.
+The script template for each migration is created by running the
+["phinx create"](http://docs.phinx.org/en/latest/commands.html#the-create-command)
+command and then filling in the up()/down() or change() methods in the template.
+
+All non-applied migrations are applied by running the phing task
+"phing migrateDevelopment" by calling "phinx migrate development" and all
+defined migrations are rolled back by the "phing rollbackDevelopment" task
+which runs "phinx rollback development".
+"phinx status" will display a list of which migrations have been applied against
+the current database.
+"phing migrate" and "phing rollback" with appropriate arguments will bring the
+database to a specific state.
+
+All changes to the database schema, therefore, should be done (or at least
+made permanent after being prototyped) by adding appropriate migrations scripts
+to the project.
 
 ## Customizing Queries##
 
