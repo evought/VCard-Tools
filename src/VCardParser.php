@@ -41,9 +41,7 @@ namespace EVought\vCardTools;
  * @author evought
  */
 class VCardParser
-{
-    // FIXME: Convert AGENT
-    
+{   
     /**
      * An associative array of VCards which have already been loaded, indexed
      * by UID. This is used, in particular, to figure out when embedded VCards

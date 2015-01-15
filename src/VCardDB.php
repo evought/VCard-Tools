@@ -139,7 +139,6 @@ class VCardDB
     /**
      * Store the whole vcard to the database, calling sub-functions to store
      * related tables (e.g. address) as necessary.
-     * FIXME: None of these routines deal with ENCODING.
      * @param VCard $vcard The record to store.
      * @return integer The new contact id.
      */
