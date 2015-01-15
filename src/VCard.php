@@ -138,9 +138,10 @@ class VCard implements PropertyContainer
             new PropertySpecification(
                 'nickname',
                 PropertySpecification::MULTIPLE_PROPERTY,
-                __NAMESPACE__ . '\SimplePropertyBuilder',
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
                 PropertySpecification::$cardinalities['Zero To N'],
                 [
+                    'allowedTypes'=>['work', 'home'],
                     'allowedValueTypes'=>['text'],
                     'valueTypeDefault'=>'text'
                 ]
