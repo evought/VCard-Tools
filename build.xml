@@ -136,16 +136,24 @@
           TO '${db.unittest.user}'@'${db.unittest.host}'; 
     </pdosqlexec>
   </target>
+  
+  <target name="migrateDevelopment" depends="createUnitDB"
+          description="Database Migrations for development environment"> 
+    <!-- execute phinx in migrate mode -->
+    <exec command="${vendor.bin.dir}/phinx migrate"
+        checkreturn="true"
+        passthru="true"
+        />
+  </target>
 
-  <target name="unitDBSchema" depends="createUnitDB"
-          description="Load the table definitions for unit test database.">
-    <pdosqlexec
-      url="${db.unittest.dsn};dbname=${db.unittest.dbname}" 
-      userid="${db.devel.user}" 
-      password="${db.devel.passwd}"
-      autocommit="true"
-      src="${sql.dir}/vcard.sql" />
-  </target> 
+  <target name="rollbackDevelopment" depends="createUnitDB"
+          description="Roll back database migrations for development environment"> 
+    <!-- execute phinx in migrate mode -->
+    <exec command="${vendor.bin.dir}/phinx rollback"
+        checkreturn="true"
+        passthru="true"
+        />
+  </target>
 
   <target name="dropUnitDB" depends="config"
       description="Create the database for unit testing">
