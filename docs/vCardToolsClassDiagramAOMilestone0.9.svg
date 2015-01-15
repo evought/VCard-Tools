@@ -93,8 +93,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="280.84459"
-     inkscape:cy="794.28571"
+     inkscape:cx="127.97838"
+     inkscape:cy="817.69504"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -358,15 +358,15 @@
        xml:space="preserve"
        id="flowRoot3926"
        style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
-       transform="translate(-80,183)"><flowRegion
+       transform="translate(-133,183)"><flowRegion
          id="flowRegion3928"><rect
            id="rect3930"
-           width="83"
-           height="27"
+           width="123"
+           height="17"
            x="339"
            y="230.36218"
            style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
-         id="flowPara3932">\VCardTools</flowPara></flowRoot>    <path
+         id="flowPara3932">\EVought\vCardTools</flowPara></flowRoot>    <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;marker-end:url(#EmptyTriangleOutL)"
        d="M 104,112.36218 43,49.362183"
        id="path4091"
@@ -451,10 +451,10 @@
            sodipodi:cy="156.86218"
            sodipodi:rx="16"
            sodipodi:ry="11.5"
-           d="m 390,156.86218 a 16,11.5 0 1 1 -32,0 16,11.5 0 1 1 32,0 z"
+           d="m 390,156.86218 c 0,6.35128 -7.16344,11.5 -16,11.5 -8.83656,0 -16,-5.14872 -16,-11.5 0,-6.35127 7.16344,-11.5 16,-11.5 8.83656,0 16,5.14873 16,11.5 z"
            transform="translate(-0.5,0)" />
         <path
-           d="m 390,156.86218 a 16,11.5 0 1 1 -32,0 16,11.5 0 1 1 32,0 z"
+           d="m 390,156.86218 c 0,6.35128 -7.16344,11.5 -16,11.5 -8.83656,0 -16,-5.14872 -16,-11.5 0,-6.35127 7.16344,-11.5 16,-11.5 8.83656,0 16,5.14873 16,11.5 z"
            sodipodi:ry="11.5"
            sodipodi:rx="16"
            sodipodi:cy="156.86218"
