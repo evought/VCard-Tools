@@ -14,7 +14,10 @@
    id="svg8208"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="Property_PropertyBuilder_relationshipsAOMilestone0.2015_01_15_17_21_25.1.svg">
+   sodipodi:docname="Property_PropertyBuilder_relationshipsAOMilestone0.9.3.svg"
+   inkscape:export-filename="/home/evought/Projects/VCardTools/docs/Property_PropertyBuilder_relationshipsAOMilestone0.9.3.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <title
      id="title12775">vCardTools Class Diagram a/o milestone 0.9.3</title>
   <defs
@@ -80,13 +83,13 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="125.9671"
-     inkscape:cy="760.77186"
+     inkscape:cx="271.31687"
+     inkscape:cy="796.31566"
      inkscape:document-units="px"
      inkscape:current-layer="g3765"
      showgrid="false"
-     inkscape:window-width="815"
-     inkscape:window-height="698"
+     inkscape:window-width="930"
+     inkscape:window-height="691"
      inkscape:window-x="8"
      inkscape:window-y="1107"
      inkscape:window-maximized="0" />
@@ -500,7 +503,29 @@
              x="387"
              y="488.36218"
              style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
-           id="flowPara12773">\EVought\vCardTools</flowPara></flowRoot>    </g>
+           id="flowPara12773">\EVought\vCardTools</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-1-8-2"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(-9.52051,166.24772)"><flowRegion
+           id="flowRegion5113-8-4-7-4"><rect
+             id="rect5115-5-5-0-5"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0">«interface»</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-1-8-2-1"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(203.06738,-7.75228)"><flowRegion
+           id="flowRegion5113-8-4-7-4-7"><rect
+             id="rect5115-5-5-0-5-1"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-3">«interface»</flowPara></flowRoot>    </g>
     <flowRoot
        xml:space="preserve"
        id="flowRoot8249"
