@@ -83,15 +83,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="271.31687"
+     inkscape:cx="342.64318"
      inkscape:cy="796.31566"
      inkscape:document-units="px"
      inkscape:current-layer="g3765"
      showgrid="false"
      inkscape:window-width="930"
      inkscape:window-height="691"
-     inkscape:window-x="8"
-     inkscape:window-y="1107"
+     inkscape:window-x="96"
+     inkscape:window-y="1117"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata8213">
@@ -357,7 +357,7 @@
              x="341"
              y="41.362183" /></flowRegion><flowPara
            id="flowPara5329">«static»</flowPara></flowRoot>      <path
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
          d="m 210,74.362183 313,0"
          id="path10328"
          inkscape:connector-curvature="0"
@@ -399,13 +399,13 @@
          transform="translate(104.5,-111.5)"
          sodipodi:nodetypes="cc" />
       <path
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
          d="m 182,93.362183 41,21.999997 157,45"
          id="path11694"
          inkscape:connector-curvature="0"
          transform="translate(104.5,-111.5)" />
       <path
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
          d="m 224,117.36218 5,40"
          id="path11884"
          inkscape:connector-curvature="0"
@@ -422,7 +422,7 @@
              x="341"
              y="41.362183" /></flowRegion><flowPara
            id="flowPara5329-0-2">«uses»</flowPara></flowRoot>      <path
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
          d="m 353.5,127.86218 132,0"
          id="path12101"
          inkscape:connector-curvature="0"
@@ -450,13 +450,13 @@
              x="341"
              y="41.362183" /></flowRegion><flowPara
            id="flowPara5329-0-2-8-9">«defined by»</flowPara></flowRoot>      <path
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
          d="m 408,301.36218 0,96 -133,0"
          id="path12345"
          inkscape:connector-curvature="0"
          transform="translate(104.5,-111.5)" />
       <path
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL);stroke-miterlimit:4;stroke-dasharray:1,1;stroke-dashoffset:0"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend);stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0"
          d="m 407,398.36218 -130,-140"
          id="path12535"
          inkscape:connector-curvature="0"
