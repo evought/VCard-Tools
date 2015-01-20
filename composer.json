@@ -32,7 +32,7 @@
         "robmorgan/phinx": "*"
     },
     "require": {
-        "php": ">=5.3.0",
+        "php": ">=5.5.0",
         "rhumsaa/uuid": "~2.8",
         "evought/data-uri": "*@dev"
     },
