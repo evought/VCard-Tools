@@ -77,6 +77,10 @@ The project was developed against
 * PHP 5.5 (5.5.18)
 * MySQL 5.5 (5.5.38)
 
+The library is known to _not_ work with PHP 5.4, but the Continuous Integration
+server does regularly test against [hhvm](http://hhvm.com/) (Hip Hop Virtual
+Machine).
+
 Dependencies are tracked through [Composer](https://getcomposer.org/).
 The Composer tool, with its configuration in composer.json obtains, tracks, and
 installs the components needed to build and use VCardTools.
@@ -104,7 +108,9 @@ To develop and run tests, composer will also install:
 
 and their dependencies.
 
-I am doing most of my development on a Intel-based Fedora Linux 20 workstation.
+I am doing most of my development on a Intel-based Fedora Linux 20 workstation
+and the Continuous Integration server regularly tests the code in a clean
+Ubuntu Linux environment.
 
 # Installation of Sources #
 
@@ -149,13 +155,11 @@ You may then create the desired account and grant it privileges:
     mysql> grant all on VCARD.* to 'developer'@'localhost' with grant option;
 
 Substituting whatever is appropriate for 'developer' and 'password'.
-At the same time, create a *test account* for actually running the tests:
-
-    mysql> create user 'test-vcard'@'localhost' identified by 'password';
 
 Create a ${env.USER}.properties file in your project folder, copying and editing
 values from db.properties to set the username, password, host, database name, etc., for your database. (In other words, I would put these settings in 'evought.properties'). As your personal property file will not be under control of git, you won't have to worry about committing your settings (and password!) back to the repository. The phing build script, build.xml will use these settings
 to build some configuration files, initialize the database, and run the tests.
+Notice the settings for a unit test user and see below.
 
 Running 'phing config' will build the configuration files (such as database.php) needed. Anytime you change these settings, you will want to run:
 
@@ -163,22 +167,38 @@ Running 'phing config' will build the configuration files (such as database.php)
 
 To force them to be rebuilt. You can then:
 
+    $ phing createUnitDBUser
+
+To create the unit test user for you according to the db.properties settings
+using the development user credentials.
+If your development user is permitted to create users and grant privileges, then
+you should not need to modify these values. Otherwise, override the settings in
+your ${env.USER}.properties file and use whatever process you used to create the
+development user to do the same with the unit test user. Appropriate privileges
+for that user will be granted in the next step.
+
+    $ phing creatUnitDB
     $ phing migrateDevelopment
 
-This will automatically invoke "phing createUnitDB" to create the database and
-grant permissions to your test user (SELECT, INSERT, UPDATE, and DELETE
-privileges on VCARD.*) and then it will run all database schema migrations to
-bring the database up to the current state.
+To create the database and grant permissions to your test user
+(SELECT, INSERT, UPDATE, and DELETE privileges on VCARD.*) and then run all
+database schema migrations to bring the database up to the current state.
 
 The unit tests will automatically delete new rows and reset the table state
-after each run, so you *should not* have to clean and reset the database\
+after each run, so you *should not* have to clean and reset the database
 yourself unless something has happened to disrupt its state or you have
 intentionally made changes to the data or the schema. If that happens:
 
    $ phing rollbackDevelopment && phing migrateDevelopment
 
-Will recreate the tables. The unit tests rely on an xml table dump to set/reset
-the initial state for the testcases. If the schema has changed, you will want to recreate this file by running (e.g.):
+Will recreate the tables, or, in an extreme case:
+
+   $ phing dropUnitDB
+   $ phing createUnitDB && phing migrateDevelopment
+
+The unit tests rely on an xml table dump to set/reset the initial state for the
+testcases. If the schema has changed, you will want to recreate this file by
+running (e.g.):
 
     $mysqldump --xml -t -u [username] -p [database] > tests/emptyVCARDDB.xml
 
