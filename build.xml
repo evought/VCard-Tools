@@ -138,7 +138,7 @@
      - it is best to run tests with the minimal permissions necessary to avoid
      - introducing permission-related errors in a production environment.
      -->
-  <target name="createUnitDBUser" depends="config">
+  <target name="createUnitDBUser" depends="config"
       description="Create the DB user for unit testing using the development DB credentials">
     <pdosqlexec
       url="${db.unittest.dsn}" 
