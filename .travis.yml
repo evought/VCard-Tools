@@ -8,6 +8,7 @@ install:
     - composer install
     
 before_script:
+    - ./vendor/bin/phing createUnitDBUser
     - ./vendor/bin/phing createUnitDB
     - ./vendor/bin/phing migrateDevelopment
     
