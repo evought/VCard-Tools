@@ -1,6 +1,17 @@
 {
     "name": "evought/vcard-tools",
     "description": "PHP tools for manipulating VCards, including database persistence and html templating. ",
+    "type": "library",
+    "keywords": ["vcard", "rfc6350", "contact"],
+    "homepage": "https://github.com/evought/VCard-Tools",
+    "authors" : [
+        {
+            "name": "Eric Vought",
+            "email": "evought@pobox.com",
+            "homepage": "http://radishsaltant.blogspot.com",
+            "role": "Developer"
+        }
+    ],
     "license": "MIT",
     "repositories": [
         {
@@ -21,6 +32,7 @@
         "robmorgan/phinx": "*"
     },
     "require": {
+        "php": ">=5.3.0",
         "rhumsaa/uuid": "~2.8",
         "evought/data-uri": "*@dev"
     },
