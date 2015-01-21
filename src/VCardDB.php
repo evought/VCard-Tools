@@ -112,7 +112,7 @@ class VCardDB implements VCardRepository
     {
     	assert(isset($this->connection));
     	
-    	$stmt = $this->connection->prepare($this->getQueryInfo('search', 'all'));
+    	$stmt = $this->prepareCannedQuery('search', 'all');
     	$stmt->bindValue(":kind", $kind);
 
         $stmt->execute();
@@ -214,8 +214,7 @@ class VCardDB implements VCardRepository
     	assert(!empty($organizationName));
     	assert(is_string($organizationName));
     	
-        $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('search', 'organization') );
+        $stmt = $this->prepareCannedQuery('search', 'organization');
         $stmt->bindValue(':organizationName', $organizationName);
         $stmt->bindValue(':kind', $kind);
         $stmt->execute();
@@ -238,8 +237,7 @@ class VCardDB implements VCardRepository
     	assert(!empty($category));
     	assert(is_string($category));
     	
-        $stmt = $this->connection->prepare(
-                        $this->getQueryInfo('search', 'categories') );
+        $stmt = $this->prepareCannedQuery('search', 'categories');
         $stmt->bindValue(":category", $category);
         $stmt->bindValue(':kind', $kind);
         $stmt->execute();
@@ -279,8 +277,7 @@ class VCardDB implements VCardRepository
     	assert(!empty($uid));
     	assert(is_string($uid));
     	
-        $stmt = $this->connection->prepare(
-                        $this->getQueryInfo('fetch', 'contact') );
+        $stmt = $this->prepareCannedQuery('fetch', 'contact');
         $stmt->bindValue(":uid", $uid);
         $stmt->execute();
         assert($stmt->rowCount() <= 1);
@@ -310,8 +307,7 @@ class VCardDB implements VCardRepository
         \assert(!empty($uid));
         \assert(\is_string($uid));
         
-        $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('delete', 'contact') );
+        $stmt = $this->prepareCannedQuery('delete', 'contact');
         $stmt->bindValue(':uid', $uid);
         $stmt->execute();
         $rows = $stmt->rowCount();
@@ -320,8 +316,13 @@ class VCardDB implements VCardRepository
         return (1 === $rows);
     }
     
-    /* Private methods 
+    /* Private methods */
 
+    protected function prepareCannedQuery($section, $key)
+    {
+        return $this->connection->prepare($this->getQueryInfo($section, $key));
+    }
+    
     /**
      * Returns information about a configured query by section and key.
      * The returned value will be taken from the custom .ini supplied at
@@ -331,7 +332,7 @@ class VCardDB implements VCardRepository
      * @return string|mixed
      * @throws \ErrorException If a configured value does not exist.
      */
-    private function getQueryInfo($section, $key)
+    protected function getQueryInfo($section, $key)
     {
         assert(null !== VCardDB::$sharedQueries);
         assert(null !== $section);
