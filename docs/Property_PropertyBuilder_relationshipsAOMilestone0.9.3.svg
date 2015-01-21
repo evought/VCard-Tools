@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg8208"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="Property_PropertyBuilder_relationshipsAOMilestone0.9.3.svg"
+   inkscape:export-filename="/home/evought/Projects/VCardTools/docs/Property_PropertyBuilder_relationshipsAOMilestone0.9.3.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <title
+     id="title12775">vCardTools Class Diagram a/o milestone 0.9.3</title>
+  <defs
+     id="defs8210">
+    <marker
+       inkscape:stockid="DiamondL"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="DiamondL"
+       style="overflow:visible">
+      <path
+         id="path9387"
+         d="M 0,-7.0710768 L -7.0710894,0 L 0,7.0710589 L 7.0710462,0 L 0,-7.0710768 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         transform="scale(0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="TriangleOutL"
+       style="overflow:visible">
+      <path
+         id="path9450"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         transform="scale(0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path9311"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="EmptyDiamondL"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="EmptyDiamondL"
+       style="overflow:visible">
+      <path
+         id="path9414"
+         d="M 0,-7.0710768 L -7.0710894,0 L 0,7.0710589 L 7.0710462,0 L 0,-7.0710768 z "
+         style="fill-rule:evenodd;fill:#FFFFFF;stroke:#000000;stroke-width:1.0pt"
+         transform="scale(0.8)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="342.64318"
+     inkscape:cy="796.31566"
+     inkscape:document-units="px"
+     inkscape:current-layer="g3765"
+     showgrid="false"
+     inkscape:window-width="930"
+     inkscape:window-height="691"
+     inkscape:window-x="96"
+     inkscape:window-y="1117"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata8213">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>vCardTools Class Diagram a/o milestone 0.9.3</dc:title>
+        <cc:license
+           rdf:resource="http://opensource.org/licenses/MIT" />
+        <dc:date>2015-01-15</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Eric Vought</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:source>https://github.com/evought</dc:source>
+        <dc:relation>https://github.com/evought/VCard-Tools/releases/tag/v0.9.3</dc:relation>
+        <dc:language>en</dc:language>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>UML</rdf:li>
+            <rdf:li>class diagram</rdf:li>
+            <rdf:li>vCardTools</rdf:li>
+            <rdf:li>vCard</rdf:li>
+            <rdf:li>PHP</rdf:li>
+            <rdf:li>RFC6350</rdf:li>
+            <rdf:li>Property</rdf:li>
+            <rdf:li>PropertySpecification</rdf:li>
+            <rdf:li>PropertyBuilder</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>A diagram describing relationships between the PropertySpecification class and the PropertyBuilder/Property interfaces in the vCardTools PHP package (https://github.com/evought/VCard-Tools) a/o Milestone 0.9.3 (pre-release). Describes the refactoring of Properties as first-class types and the resulting VCard structure.</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g3765"
+       transform="translate(-104.5,111.5)">
+      <g
+         id="g8259"
+         transform="translate(-14,-23)">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot2987"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"><flowRegion
+             id="flowRegion2989"><rect
+               id="rect2991"
+               width="37"
+               height="20"
+               x="169"
+               y="81.362183"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara2993">VCard</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect2995"
+           width="45"
+           height="23"
+           x="163"
+           y="77.362183" />
+      </g>
+      <g
+         id="g8292"
+         transform="translate(-14,-49)">
+        <flowRoot
+           transform="translate(104.5,-111.5)"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           id="flowRoot8266"
+           xml:space="preserve"><flowRegion
+             id="flowRegion8268"><rect
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+               y="219.36218"
+               x="182"
+               height="23"
+               width="130"
+               id="rect8270" /></flowRegion><flowPara
+             id="flowPara8272">PropertySpecification</flowPara></flowRoot>        <rect
+           y="99.914673"
+           x="279"
+           height="89.895027"
+           width="133.44751"
+           id="rect8274"
+           style="fill:none;stroke:#000000;stroke-width:1.12432003;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+        <flowRoot
+           transform="translate(105.5,-106.5)"
+           style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           id="flowRoot8276"
+           xml:space="preserve"><flowRegion
+             id="flowRegion8278"><rect
+               y="239.36218"
+               x="181"
+               height="76"
+               width="128"
+               id="rect8280" /></flowRegion><flowPara
+             id="flowPara8282">getName()</flowPara><flowPara
+             id="flowPara8284">requiresSingleProperty()</flowPara><flowPara
+             id="flowPara8286">...</flowPara><flowPara
+             id="flowPara8288">getBuilder()</flowPara></flowRoot>        <path
+           sodipodi:nodetypes="cc"
+           transform="translate(104.5,-111.5)"
+           inkscape:connector-curvature="0"
+           id="path8290"
+           d="m 175,236.36218 132,0"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <g
+         id="g8317"
+         transform="translate(152,12)">
+        <flowRoot
+           transform="translate(104.5,-111.5)"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           id="flowRoot8307"
+           xml:space="preserve"><flowRegion
+             id="flowRegion8309"><rect
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+               y="56.362183"
+               x="386"
+               height="19"
+               width="28"
+               id="rect8311" /></flowRegion><flowPara
+             id="flowPara8313">File</flowPara></flowRoot>        <rect
+           y="-61.137817"
+           x="482.5"
+           height="23"
+           width="35"
+           id="rect8315"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+      </g>
+      <g
+         id="g9282"
+         transform="translate(26,-4)">
+        <flowRoot
+           transform="translate(116.5,-109.5)"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           id="flowRoot8324"
+           xml:space="preserve"><flowRegion
+             id="flowRegion8326"><rect
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+               y="166.36218"
+               x="357"
+               height="20"
+               width="94"
+               id="rect8328" /></flowRegion><flowPara
+             id="flowPara8330">PropertyBuilder</flowPara></flowRoot>        <flowRoot
+           transform="translate(118.5,-108.5)"
+           style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           id="flowRoot8332"
+           xml:space="preserve"><flowRegion
+             id="flowRegion8334"><rect
+               y="188.36218"
+               x="355"
+               height="111"
+               width="107"
+               id="rect8336" /></flowRegion><flowPara
+             id="flowPara8338">getSpecification()</flowPara><flowPara
+             id="flowPara8340">setValue()</flowPara><flowPara
+             id="flowPara8342">setValueType()</flowPara><flowPara
+             id="flowPara8344">setGroup()</flowPara><flowPara
+             id="flowPara8348">...</flowPara><flowPara
+             id="flowPara8350">setFromVCardLine()</flowPara><flowPara
+             id="flowPara8352" /><flowPara
+             id="flowPara8354">build()</flowPara><flowPara
+             id="flowPara8346" /></flowRoot>        <rect
+           y="53.862183"
+           x="466.5"
+           height="135"
+           width="112"
+           id="rect8356"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path8358"
+           d="m 465.5,74.86218 112,0"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <g
+         id="g9236"
+         transform="translate(103,12)">
+        <flowRoot
+           transform="translate(73.5,-97.5)"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           id="flowRoot8416"
+           xml:space="preserve"><flowRegion
+             id="flowRegion8418"><rect
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+               y="315.36218"
+               x="104"
+               height="17"
+               width="56"
+               id="rect8420" /></flowRegion><flowPara
+             id="flowPara8422">Property</flowPara></flowRoot>        <flowRoot
+           transform="translate(104.5,-111.5)"
+           style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           id="flowRoot8424"
+           xml:space="preserve"><flowRegion
+             id="flowRegion8426"><rect
+               y="350.36218"
+               x="72"
+               height="107"
+               width="94"
+               id="rect8428" /></flowRegion><flowPara
+             id="flowPara8430">getName()</flowPara><flowPara
+             id="flowPara8434">getSpecification()</flowPara><flowPara
+             id="flowPara8432">getValue()</flowPara><flowPara
+             id="flowPara8438">getValueType()</flowPara><flowPara
+             id="flowPara8440">getGroup()</flowPara><flowPara
+             id="flowPara8442">...</flowPara><flowPara
+             id="flowPara8444">compareValue()</flowPara><flowPara
+             id="flowPara8436">output()</flowPara></flowRoot>        <rect
+           transform="translate(104.5,-111.5)"
+           y="323.36218"
+           x="65"
+           height="133"
+           width="105"
+           id="rect9232"
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0" />
+        <path
+           transform="translate(104.5,-111.5)"
+           inkscape:connector-curvature="0"
+           id="path9234"
+           d="m 64,345.36218 105,-1"
+           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot9255"
+         style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:10px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+           id="flowRegion9257"><rect
+             id="rect9259"
+             width="98"
+             height="39"
+             x="268"
+             y="381.36218" /></flowRegion><flowPara
+           id="flowPara9261" /></flowRoot>      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#EmptyDiamondL);marker-end:none"
+         d="m 120,74.362183 -45,1 1,88.999997"
+         id="path9302"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)"
+         sodipodi:nodetypes="ccc" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#EmptyDiamondL)"
+         d="m 96,181.36218 62,0"
+         id="path10112"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)"
+         sodipodi:nodetypes="cc" />
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(-124.64453,12.997718)"><flowRegion
+           id="flowRegion5113"><rect
+             id="rect5115"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329">«static»</flowPara></flowRoot>      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+         d="m 210,74.362183 313,0"
+         id="path10328"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)"
+         sodipodi:nodetypes="cc" />
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(9.355469,-93.00228)"><flowRegion
+           id="flowRegion5113-8"><rect
+             id="rect5115-5"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0">«reads»</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-1"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(-157.49512,-43.752282)"><flowRegion
+           id="flowRegion5113-8-4"><rect
+             id="rect5115-5-5"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-8">«builds»</flowPara></flowRoot>      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:none;marker-start:url(#DiamondL)"
+         d="m 76,194.36218 0,193 88,-1"
+         id="path10936"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#EmptyDiamondL)"
+         d="m 215,330.36218 0,-74"
+         id="path11314"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)"
+         sodipodi:nodetypes="cc" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+         d="m 182,93.362183 41,21.999997 157,45"
+         id="path11694"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+         d="m 224,117.36218 5,40"
+         id="path11884"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)" />
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-9"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(-26.495117,-59.752282)"><flowRegion
+           id="flowRegion5113-8-1"><rect
+             id="rect5115-5-9"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-2">«uses»</flowPara></flowRoot>      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+         d="m 353.5,127.86218 132,0"
+         id="path12101"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cc" />
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-9-1"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(63.916992,43.249183)"><flowRegion
+           id="flowRegion5113-8-1-0"><rect
+             id="rect5115-5-9-4"
+             width="86"
+             height="48"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-2-8">«returns implementation of»</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-9-1-1"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(-89.538086,134.95963)"><flowRegion
+           id="flowRegion5113-8-1-0-2"><rect
+             id="rect5115-5-9-4-3"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-2-8-9">«defined by»</flowPara></flowRoot>      <path
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+         d="m 408,301.36218 0,96 -133,0"
+         id="path12345"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend);stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0"
+         d="m 407,398.36218 -130,-140"
+         id="path12535"
+         inkscape:connector-curvature="0"
+         transform="translate(104.5,-111.5)" />
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-1-8"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(134.47949,248.24772)"><flowRegion
+           id="flowRegion5113-8-4-7"><rect
+             id="rect5115-5-5-0"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5">«builds»</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-1-5"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(76.47949,119.24772)"><flowRegion
+           id="flowRegion5113-8-4-0"><rect
+             id="rect5115-5-5-6"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-8-9">«according to»</flowPara></flowRoot>      <rect
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
+         id="rect12765"
+         width="486"
+         height="439"
+         x="27"
+         y="40.362183"
+         transform="translate(104.5,-111.5)" />
+      <flowRoot
+         xml:space="preserve"
+         id="flowRoot12767"
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         transform="translate(118.5,-114.5)"><flowRegion
+           id="flowRegion12769"><rect
+             id="rect12771"
+             width="126"
+             height="16"
+             x="387"
+             y="488.36218"
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+           id="flowPara12773">\EVought\vCardTools</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-1-8-2"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(-9.52051,166.24772)"><flowRegion
+           id="flowRegion5113-8-4-7-4"><rect
+             id="rect5115-5-5-0-5"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0">«interface»</flowPara></flowRoot>      <flowRoot
+         xml:space="preserve"
+         id="flowRoot5111-7-1-8-2-1"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         transform="translate(203.06738,-7.75228)"><flowRegion
+           id="flowRegion5113-8-4-7-4-7"><rect
+             id="rect5115-5-5-0-5-1"
+             width="70"
+             height="26"
+             x="341"
+             y="41.362183" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-3">«interface»</flowPara></flowRoot>    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8249"
+       style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"><flowRegion
+         id="flowRegion8251"><rect
+           id="rect8253"
+           width="77"
+           height="29"
+           x="133"
+           y="69.362183"
+           style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+         id="flowPara8255">VCardParser</flowPara></flowRoot>    <rect
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect8257"
+       width="84"
+       height="29"
+       x="126"
+       y="61.362183" />
+  </g>
+</svg>

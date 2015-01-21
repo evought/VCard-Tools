@@ -1,0 +1,1055 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg3291"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="PropertyHierarchy.svg"
+   inkscape:export-filename="/home/evought/Projects/VCardTools/docs/PropertyHierarchy.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <title
+     id="title12155">Property/PropertyBuilder Class Hierarchy</title>
+  <defs
+     id="defs3293">
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lstart"
+       style="overflow:visible">
+      <path
+         id="path6767"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         transform="scale(0.8) translate(12.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path6770"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="EmptyTriangleOutL"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="EmptyTriangleOutL"
+       style="overflow:visible">
+      <path
+         id="path6927"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;fill:#FFFFFF;stroke:#000000;stroke-width:1.0pt"
+         transform="scale(0.8) translate(-6,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="TriangleOutL"
+       style="overflow:visible">
+      <path
+         id="path6909"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         transform="scale(0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="EmptyTriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="EmptyTriangleOutL-2"
+       style="overflow:visible">
+      <path
+         inkscape:connector-curvature="0"
+         id="path6927-1"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(0.8,0,0,0.8,-4.8,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="408.70564"
+     inkscape:cy="845.79509"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1017"
+     inkscape:window-height="660"
+     inkscape:window-x="0"
+     inkscape:window-y="1131"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata3296">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Property/PropertyBuilder Class Hierarchy</dc:title>
+        <dc:date>2015-01-16</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Eric Vought</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:source>https://github.com/evought</dc:source>
+        <dc:relation>https://github.com/evought/VCard-Tools/releases/tag/v0.9.3</dc:relation>
+        <dc:language>en</dc:language>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>UML</rdf:li>
+            <rdf:li>class diagram</rdf:li>
+            <rdf:li>vCardTools</rdf:li>
+            <rdf:li>vCard</rdf:li>
+            <rdf:li>PHP</rdf:li>
+            <rdf:li>RFC6350</rdf:li>
+            <rdf:li>Property</rdf:li>
+            <rdf:li>PropertySpecification</rdf:li>
+            <rdf:li>PropertyBuilder</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>A class diagram showing the Property/PropertyBuilder hierarchy of interfaces, classes, and traits in the VCardTools PHP library as introduced in Milestone 0.9.3. Multiple inheritance via PHP interfaces is used to reproduce the complex RFC 6350 property behaviors while PHP traits provide the implementation inheritance to reduce code duplication. The Property and PropertyBuilder hierarchies closely mirror each other with each pair of Property/PropertyBuilder tightly coupled.</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3299"
+       style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#000000;font-family:Sans;-inkscape-font-specification:Sans Bold;stroke-opacity:1"><flowRegion
+         id="flowRegion3301"><rect
+           id="rect3303"
+           width="49"
+           height="21"
+           x="149"
+           y="87.362183"
+           style="font-weight:bold;-inkscape-font-specification:Sans Bold;stroke:#000000;stroke-opacity:1" /></flowRegion><flowPara
+         id="flowPara3305">Property</flowPara></flowRoot>    <g
+       id="g4319"
+       transform="translate(131,1)">
+      <flowRoot
+         transform="translate(400,81)"
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4129"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4131"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="24.362183"
+             x="21"
+             height="16"
+             width="56"
+             id="rect4133" /></flowRegion><flowPara
+           id="flowPara4135">Property</flowPara></flowRoot>      <rect
+         y="100.36218"
+         x="417"
+         height="26"
+         width="58"
+         id="rect4137"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0" />
+      <flowRoot
+         transform="translate(82.56738,42.747718)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5111-7-1-8-2"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5113-8-4-7-4"><rect
+             y="41.362183"
+             x="341"
+             height="26"
+             width="70"
+             id="rect5115-5-5-0-5" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0">«interface»</flowPara></flowRoot>    </g>
+    <g
+       id="g4187"
+       transform="translate(-59,-122)">
+      <flowRoot
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4177"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4179"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="174.36218"
+             x="154"
+             height="20"
+             width="128"
+             id="rect4181" /></flowRegion><flowPara
+           id="flowPara4183">PropertySpecification</flowPara></flowRoot>      <rect
+         y="169.36218"
+         x="149"
+         height="25"
+         width="133"
+         id="rect4185"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    </g>
+    <g
+       id="g4294"
+       transform="translate(21,-96)">
+      <flowRoot
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4194"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4196"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="199.36218"
+             x="203"
+             height="20"
+             width="96"
+             id="rect4198" /></flowRegion><flowPara
+           id="flowPara4200">PropertyBuilder</flowPara></flowRoot>      <rect
+         y="196.36218"
+         x="200"
+         height="22"
+         width="97"
+         id="rect4202"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0" />
+      <flowRoot
+         transform="translate(-103.43262,137.74772)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5111-7-1-8-2-9"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5113-8-4-7-4-9"><rect
+             y="41.362183"
+             x="341"
+             height="26"
+             width="70"
+             id="rect5115-5-5-0-5-4" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-7">«interface»</flowPara></flowRoot>    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4577"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:10px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion4579"><rect
+           id="rect4581"
+           width="109"
+           height="33"
+           x="224"
+           y="333.36218" /></flowRegion><flowPara
+         id="flowPara4583" /></flowRoot>    <g
+       id="g4659"
+       transform="translate(42,-1)">
+      <g
+         transform="translate(-30,-12)"
+         id="g4595">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4585"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           transform="translate(-1,0)"><flowRegion
+             id="flowRegion4587"><rect
+               id="rect4589"
+               width="134"
+               height="19"
+               x="255"
+               y="317.36218"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara4591">TypedPropertyBuilder</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
+           id="rect4593"
+           width="133"
+           height="22"
+           x="249"
+           y="313.36218" />
+      </g>
+      <flowRoot
+         transform="translate(-46.43262,244.74772)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5111-7-1-8-2-6-1"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5113-8-4-7-4-5-6"><rect
+             y="41.362183"
+             x="341"
+             height="26"
+             width="70"
+             id="rect5115-5-5-0-5-44-5" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-9-7">«interface»</flowPara></flowRoot>    </g>
+    <g
+       id="g4684"
+       transform="translate(333,-53)">
+      <flowRoot
+         transform="translate(-3,0)"
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4622"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4624"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="357.36218"
+             x="247"
+             height="21"
+             width="90"
+             id="rect4626" /></flowRegion><flowPara
+           id="flowPara4628">TypedProperty</flowPara></flowRoot>      <rect
+         y="352.36218"
+         x="237"
+         height="23"
+         width="95"
+         id="rect4630"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0" />
+      <flowRoot
+         transform="translate(-66.432617,295.74772)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5111-7-1-8-2-6-2"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5113-8-4-7-4-5-64"><rect
+             y="41.362183"
+             x="341"
+             height="26"
+             width="70"
+             id="rect5115-5-5-0-5-44-0" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-9-2">«interface»</flowPara></flowRoot>    </g>
+    <g
+       id="g4705"
+       transform="translate(41,-18)">
+      <flowRoot
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4695"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4697"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="373.36218"
+             x="250"
+             height="19"
+             width="153"
+             id="rect4699" /></flowRegion><flowPara
+           id="flowPara4701">TypedPropertyBuilderImpl</flowPara></flowRoot>      <rect
+         y="368.36218"
+         x="246"
+         height="22"
+         width="156"
+         id="rect4703"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    </g>
+    <g
+       id="g4722"
+       transform="translate(80,12)">
+      <flowRoot
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4712"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4714"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="340.36218"
+             x="512"
+             height="20"
+             width="121"
+             id="rect4716" /></flowRegion><flowPara
+           id="flowPara4718">TypedPropertyImpl</flowPara></flowRoot>      <rect
+         y="337.36218"
+         x="507"
+         height="21"
+         width="119"
+         id="rect4720"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    </g>
+    <g
+       id="g4778"
+       transform="translate(-1,4)">
+      <flowRoot
+         transform="translate(-8,7)"
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4729"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4731"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="395.36218"
+             x="270"
+             height="17"
+             width="159"
+             id="rect4733" /></flowRegion><flowPara
+           id="flowPara4735">StructuredPropertyBuilder</flowPara></flowRoot>      <rect
+         y="397.36218"
+         x="257"
+         height="23"
+         width="160"
+         id="rect4737"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0" />
+      <flowRoot
+         transform="translate(20.56738,341.74772)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5111-7-1-8-2-6-9"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5113-8-4-7-4-5-9"><rect
+             y="41.362183"
+             x="341"
+             height="26"
+             width="70"
+             id="rect5115-5-5-0-5-44-9" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-9-9">«interface»</flowPara></flowRoot>    </g>
+    <g
+       id="g4816"
+       transform="translate(126,59)">
+      <flowRoot
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4806"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4808"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="444.36218"
+             x="256"
+             height="17"
+             width="123"
+             id="rect4810" /></flowRegion><flowPara
+           id="flowPara4812">DataPropertyBuilder</flowPara></flowRoot>      <rect
+         y="438.36218"
+         x="253"
+         height="24"
+         width="123"
+         id="rect4814"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    </g>
+    <g
+       id="g4833"
+       transform="translate(33,-37)">
+      <flowRoot
+         transform="translate(-4,0)"
+         style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         id="flowRoot4823"
+         xml:space="preserve"><flowRegion
+           id="flowRegion4825"><rect
+             style="font-weight:bold;-inkscape-font-specification:Sans Bold"
+             y="496.36218"
+             x="249"
+             height="19"
+             width="187"
+             id="rect4827" /></flowRegion><flowPara
+           id="flowPara4829">TypedStructuredPropertyBuilder</flowPara></flowRoot>      <rect
+         y="490.36218"
+         x="242"
+         height="23"
+         width="190"
+         id="rect4831"
+         style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    </g>
+    <g
+       id="g7888"
+       transform="translate(0,7)">
+      <g
+         transform="translate(-1,-3)"
+         id="g4611">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4447"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           transform="translate(168,-75)"><flowRegion
+             id="flowRegion4449"><rect
+               id="rect4451"
+               width="126"
+               height="24"
+               x="122"
+               y="284.36218"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara4453">PropertyBuilderTrait</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
+           id="rect4455"
+           width="123"
+           height="25"
+           x="286"
+           y="203.36218" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot5111-7-1-8-2-6-7-0"
+           style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           transform="translate(33.44238,147.74772)"><flowRegion
+             id="flowRegion5113-8-4-7-4-5-8-4"><rect
+               id="rect5115-5-5-0-5-44-4-85"
+               width="70"
+               height="26"
+               x="341"
+               y="41.362183" /></flowRegion><flowPara
+             id="flowPara5329-0-8-5-0-9-3-5">«trait»</flowPara></flowRoot>      </g>
+      <g
+         transform="translate(-11,-51)"
+         id="g4532">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4495"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           transform="translate(5,2)"><flowRegion
+             id="flowRegion4497"><rect
+               id="rect4499"
+               width="169"
+               height="23"
+               x="319"
+               y="303.36218"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara4501">SimplePropertyBuilderTrait</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
+           id="rect4503"
+           width="169"
+           height="25"
+           x="317"
+           y="299.36218" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot5111-7-1-8-2-6-7-2"
+           style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           transform="translate(111.44238,242.74772)"><flowRegion
+             id="flowRegion5113-8-4-7-4-5-8-2"><rect
+               id="rect5115-5-5-0-5-44-4-854"
+               width="70"
+               height="26"
+               x="341"
+               y="41.362183" /></flowRegion><flowPara
+             id="flowPara5329-0-8-5-0-9-3-89">«trait»</flowPara></flowRoot>      </g>
+      <g
+         transform="translate(-16,8)"
+         id="g4553">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4543"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"><flowRegion
+             id="flowRegion4545"><rect
+               id="rect4547"
+               width="136"
+               height="17"
+               x="280"
+               y="144.36218"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara4549">SimplePropertyBuilder</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect4551"
+           width="136"
+           height="27"
+           x="276"
+           y="137.36218" />
+      </g>
+      <path
+         inkscape:connector-curvature="0"
+         id="path6761"
+         d="m 395,157.36218 55,0 -1,74"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path7207"
+         d="m 448,212.36218 -38,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)" />
+      <flowRoot
+         transform="translate(76.416992,101.74918)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5111-7-1-8-2-6-7-7-7"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5113-8-4-7-4-5-8-20-9"><rect
+             y="41.362183"
+             x="341"
+             height="26"
+             width="70"
+             id="rect5115-5-5-0-5-44-4-2-3" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-9-3-1-2">«uses»</flowPara></flowRoot>    </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot7445"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:10px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion7447"><rect
+           id="rect7449"
+           width="78"
+           height="26"
+           x="377"
+           y="18.362183" /></flowRegion><flowPara
+         id="flowPara7451" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-70"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-162.58301,157.74918)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-6"><rect
+           id="rect5115-5-5-0-5-44-4-2-5"
+           width="70"
+           height="26"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-29">«extends»</flowPara></flowRoot>    <g
+       id="g7922"
+       transform="translate(52,6)">
+      <g
+         transform="translate(311,-1)"
+         id="g4369">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4330"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           transform="translate(-2,0)"><flowRegion
+             id="flowRegion4332"><rect
+               id="rect4334"
+               width="121"
+               height="52"
+               x="218"
+               y="207.36218"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara4336">PropertyTrait</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
+           id="rect4338"
+           width="85"
+           height="24"
+           x="211"
+           y="202.36218" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot5111-7-1-8-2-6-7-9"
+           style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           transform="translate(-81.557617,145.74772)"><flowRegion
+             id="flowRegion5113-8-4-7-4-5-8-7"><rect
+               id="rect5115-5-5-0-5-44-4-8"
+               width="70"
+               height="26"
+               x="341"
+               y="41.362183" /></flowRegion><flowPara
+             id="flowPara5329-0-8-5-0-9-3-8">«trait»</flowPara></flowRoot>      </g>
+      <g
+         transform="translate(336,43)"
+         id="g4417">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4380"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           transform="translate(-2,0)"><flowRegion
+             id="flowRegion4382"><rect
+               id="rect4384"
+               width="124"
+               height="25"
+               x="226"
+               y="210.36218"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara4386">SimplePropertyTrait</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
+           id="rect4388"
+           width="127"
+           height="25"
+           x="218"
+           y="205.36218" />
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot5111-7-1-8-2-6-7-6"
+           style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+           transform="translate(-30.557617,148.74772)"><flowRegion
+             id="flowRegion5113-8-4-7-4-5-8-70"><rect
+               id="rect5115-5-5-0-5-44-4-0"
+               width="70"
+               height="26"
+               x="341"
+               y="41.362183" /></flowRegion><flowPara
+             id="flowPara5329-0-8-5-0-9-3-4">«trait»</flowPara></flowRoot>      </g>
+      <g
+         transform="translate(39,10)"
+         id="g4570">
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot4560"
+           style="font-size:10px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+           transform="translate(8,4)"><flowRegion
+             id="flowRegion4562"><rect
+               id="rect4564"
+               width="94"
+               height="21"
+               x="469"
+               y="136.36218"
+               style="font-weight:bold;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+             id="flowPara4566">SimpleProperty</flowPara></flowRoot>        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect4568"
+           width="103"
+           height="27"
+           x="471"
+           y="134.36218" />
+      </g>
+      <path
+         inkscape:connector-curvature="0"
+         id="path7493"
+         d="m 614,158.36218 44,0 0,72"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path7677"
+         d="m 657,214.36218 -47,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleOutL)" />
+      <flowRoot
+         transform="translate(284.41699,101.74918)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot5111-7-1-8-2-6-7-7-7-2"
+         xml:space="preserve"><flowRegion
+           id="flowRegion5113-8-4-7-4-5-8-20-9-7"><rect
+             y="41.362183"
+             x="341"
+             height="26"
+             width="70"
+             id="rect5115-5-5-0-5-44-4-2-3-8" /></flowRegion><flowPara
+           id="flowPara5329-0-8-5-0-9-3-1-2-1">«uses»</flowPara></flowRoot>    </g>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL)"
+       d="m 285,151.36218 0,-26"
+       id="path7956"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-4-6"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-49.708008,88.77848)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-96-9"><rect
+           id="rect5115-5-5-0-5-44-4-2-6-0"
+           width="74"
+           height="18"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-5-8">«implements»</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-4-6-7"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(248.29199,88.77848)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-96-9-8"><rect
+           id="rect5115-5-5-0-5-44-4-2-6-0-9"
+           width="74"
+           height="18"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-5-8-4">«implements»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL)"
+       d="m 583,151.36218 0,-26"
+       id="path7956-8"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL-2)"
+       d="m 255,413.36218 -20,0 0,-288"
+       id="path8222"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 258,311.36218 -24,0"
+       id="path8410"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL-2)"
+       d="m 571,412.36218 -15,0 0,-282"
+       id="path8426"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 568,308.36218 -13,0"
+       id="path8614"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-70-3-1"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(159.94043,156.74772)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-6-9-5"><rect
+           id="rect5115-5-5-0-5-44-4-2-5-7-1"
+           width="70"
+           height="26"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-29-8-7">«extends»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL-2)"
+       d="m 327,349.36218 0,-28"
+       id="path8670"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-4-2"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-10.708008,287.77848)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-96-3"><rect
+           id="rect5115-5-5-0-5-44-4-2-6-8"
+           width="74"
+           height="18"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-5-6">«implements»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL-2)"
+       d="m 616,348.36218 0,-27"
+       id="path8885"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-4-2-2"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(279.29199,287.77848)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-96-3-4"><rect
+           id="rect5115-5-5-0-5-44-4-2-6-8-5"
+           width="74"
+           height="18"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-5-6-9">«implements»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL-2)"
+       d="m 458,453.36218 0,-132 -64,0"
+       id="path9100"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL-2)"
+       d="m 457,412.36218 -40,0"
+       id="path9288"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#EmptyTriangleOutL-2)"
+       d="m 478,496.36218 0,-189 -83,0"
+       id="path9476"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-4-2-8"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(41.291992,384.77848)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-96-3-2"><rect
+           id="rect5115-5-5-0-5-44-4-2-6-8-7"
+           width="74"
+           height="18"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-5-6-1">«implements»</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-2-6-7-7-4-2-8-0"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(140.29199,376.77848)"><flowRegion
+         id="flowRegion5113-8-4-7-4-5-8-20-96-3-2-7"><rect
+           id="rect5115-5-5-0-5-44-4-2-6-8-7-3"
+           width="74"
+           height="18"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-0-9-3-1-5-6-1-9">«implements»</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot9718"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-12,3)"><flowRegion
+         id="flowRegion9720"><rect
+           id="rect9722"
+           width="63"
+           height="29"
+           x="586"
+           y="402.36218" /></flowRegion><flowPara
+         id="flowPara9724">..., etc.</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot9718-6"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-364.33643,43.949378)"><flowRegion
+         id="flowRegion9720-3"><rect
+           id="rect9722-8"
+           width="63"
+           height="29"
+           x="586"
+           y="402.36218" /></flowRegion><flowPara
+         id="flowPara9724-0">..., etc.</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 234,414.36218 0,30"
+       id="path9753"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-9-1"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(-209.90479,29.95963)"><flowRegion
+         id="flowRegion5113-8-1-0"><rect
+           id="rect5115-5-9-4"
+           width="86"
+           height="48"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-2-8">«returns implementation of»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 121,73.362183 0,35.999997 99,0"
+       id="path9782"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 319,110.36218 225,0"
+       id="path9974"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(40.979492,51.747718)"><flowRegion
+         id="flowRegion5113-8-4-7"><rect
+           id="rect5115-5-5-0"
+           width="70"
+           height="26"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5">«builds»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 394,153.36218 c 52.86308,1.19641 67.13962,-36.19371 165,10"
+       id="path10191"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-5"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(118.97949,83.747718)"><flowRegion
+         id="flowRegion5113-8-4-7-1"><rect
+           id="rect5115-5-5-0-1"
+           width="70"
+           height="26"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-1">«builds»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 442,362.36218 c 38.70139,-10.90351 56.61124,-52.07001 142,-4"
+       id="path10408"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-5-0"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(151.97949,277.74772)"><flowRegion
+         id="flowRegion5113-8-4-7-1-8"><rect
+           id="rect5115-5-5-0-1-9"
+           width="70"
+           height="26"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-1-3">«builds»</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 466,464.36218 c 47.28243,-13.73681 95.38066,-12.92476 124,0"
+       id="path10639"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5111-7-1-8-5-0-5"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(168.97949,397.74772)"><flowRegion
+         id="flowRegion5113-8-4-7-1-8-2"><rect
+           id="rect5115-5-5-0-1-9-0"
+           width="70"
+           height="26"
+           x="341"
+           y="41.362183" /></flowRegion><flowPara
+         id="flowPara5329-0-8-5-1-3-0">«builds»</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot9718-7"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       transform="translate(7.663574,56.949379)"><flowRegion
+         id="flowRegion9720-0"><rect
+           id="rect9722-81"
+           width="63"
+           height="29"
+           x="586"
+           y="402.36218" /></flowRegion><flowPara
+         id="flowPara9724-4">..., etc.</flowPara></flowRoot>    <g
+       id="g10993">
+      <flowRoot
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot10883"
+         xml:space="preserve"><flowRegion
+           id="flowRegion10885"><rect
+             y="16.362183"
+             x="320"
+             height="44"
+             width="160"
+             id="rect10887" /></flowRegion><flowPara
+           id="flowPara10889">Property/PropertyBuilder hierarchies closely mirror each other.</flowPara></flowRoot>      <path
+         inkscape:connector-curvature="0"
+         id="path10893"
+         d="m 314,10.362183 0,52 170,0 0,-41 -11,-11 z"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path10895"
+         d="m 471,11.362183 0,11 11,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <g
+       id="g11001">
+      <flowRoot
+         transform="translate(8,7)"
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot10897"
+         xml:space="preserve"><flowRegion
+           id="flowRegion10899"><rect
+             y="12.362183"
+             x="499"
+             height="50"
+             width="196"
+             id="rect10901" /></flowRegion><flowPara
+           id="flowPara10903">Traits are used internally to reuse code within the hierarchy. Most traits not shown.</flowPara></flowRoot>      <path
+         inkscape:connector-curvature="0"
+         id="path10893-3"
+         d="m 500,12.362183 0,52 220.42697,0 0,-41 -14.26292,-11 z"
+         style="fill:none;stroke:#000000;stroke-width:1.13869631px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path10895-1"
+         d="m 705.5,12.862183 0,11 11,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <g
+       id="g10985">
+      <flowRoot
+         style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="flowRoot10941"
+         xml:space="preserve"><flowRegion
+           id="flowRegion10943"><rect
+             y="573.36218"
+             x="225"
+             height="34"
+             width="208"
+             id="rect10945" /></flowRegion><flowPara
+           id="flowPara10947">Interfaces and traits used as mix-ins to simulate multiple inheritance.</flowPara></flowRoot>      <path
+         inkscape:connector-curvature="0"
+         id="path10893-4"
+         d="m 217,563.36218 0,43.49543 223.31143,0 0,-34.29447 -14.44957,-9.20096 z"
+         style="fill:none;stroke:#000000;stroke-width:1.04821682px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path10895-5"
+         d="m 427.5,563.86218 0,11 11,0"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <path
+       style="fill:none;stroke:#0000ff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:2, 1;stroke-dashoffset:0;marker-start:url(#Arrow1Lstart);marker-end:url(#Arrow1Lend)"
+       d="m 321,97.362183 c 13.93285,-13.626862 37.78644,-25.685422 65,-34 62.75396,8.06585 141.45105,11.75306 165,36.999997"
+       id="path11009"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#0000ff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Lend);stroke-miterlimit:4;stroke-dasharray:2, 1;stroke-dashoffset:0"
+       d="m 553,64.362183 c -60.36969,2.95153 -84.31335,54.471087 -97,120.999997"
+       id="path11579"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#0000ff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:2, 1;stroke-dashoffset:0;marker-end:url(#Arrow1Lend)"
+       d="m 313,559.36218 c -10.23688,-31.69787 -3.67018,-55.92749 10,-77"
+       id="path11771"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#0000ff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:2, 1;stroke-dashoffset:0;marker-end:url(#Arrow1Lend)"
+       d="m 549,64.362183 c 53.16172,9.029656 164.80463,1.069814 155,81.999997"
+       id="path11963"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+  </g>
+</svg>

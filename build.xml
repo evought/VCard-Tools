@@ -123,6 +123,32 @@
       </fileset>
     </delete>
   </target>
+  
+  <!-- Task to create a minimal-permissions user for unit testing.
+     - It shold be possible to run this before or after createUnitDB as long as
+     - it happens before tests are run.
+     - This is separated out and not run automatically because
+     - 1) it need not be done more than once per database install, and
+     - 2) the development user credentials may not have permission to create
+     - users in some environments.
+     - In the latter case, the unit test user will need to be created
+     - out-of-band and its credentials put into the user-specific
+     - properties file. As a worst-case, the same credentials can be used for
+     - both "development" and "unit-test" purposes, but, as a principle,
+     - it is best to run tests with the minimal permissions necessary to avoid
+     - introducing permission-related errors in a production environment.
+     -->
+  <target name="createUnitDBUser" depends="config"
+      description="Create the DB user for unit testing using the development DB credentials">
+    <pdosqlexec
+      url="${db.unittest.dsn}" 
+      userid="${db.devel.user}" 
+      password="${db.devel.passwd}"
+      autocommit="true"> 
+      CREATE USER '${db.unittest.user}'@'${db.unittest.host}'
+        IDENTIFIED BY '${db.unittest.passwd}'; 
+    </pdosqlexec>
+  </target>
 
   <target name="createUnitDB" depends="config"
       description="Create the database for unit testing">

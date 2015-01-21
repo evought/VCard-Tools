@@ -4,12 +4,7 @@ use Phinx\Migration\AbstractMigration;
 
 class VcardToolsCreateNicknameTable extends AbstractMigration
 {
-    
-    public function change()
-    {
         
-    }
-    
     /**
      * Migrate Up.
      */

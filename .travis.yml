@@ -1,0 +1,21 @@
+## YAML Template.
+---
+language: php
+php:
+  - 5.5
+  - hhvm
+  
+install:
+    - composer install
+    
+before_script:
+    - ./vendor/bin/phing createUnitDBUser
+    - ./vendor/bin/phing createUnitDB
+    - ./vendor/bin/phing migrateDevelopment
+    
+script:
+    - ./vendor/bin/phpunit
+  
+notifications:
+    email:
+        - evought@pobox.com
