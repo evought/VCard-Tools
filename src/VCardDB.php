@@ -122,7 +122,7 @@ class VCardDB implements VCardRepository
 
         while ($row = $stmt->fetch())
         {
-	    $vcards[$row["UID"]] = $this->i_fetchVCard($row);
+	    $vcards[$row["UID"]] = $this->fetchVCard($row);
         } // while
 
         $stmt->closeCursor();
@@ -140,14 +140,14 @@ class VCardDB implements VCardRepository
     {
         assert(!empty($this->connection));
 
-        $uid = $this->i_storeJustContact($vcard);
+        $uid = $this->storeJustContact($vcard);
 
         foreach ( ['n', 'adr', 'org'] as $propertyName)
         {
             if (empty($vcard->$propertyName)) continue;
             foreach ($vcard->$propertyName as $property)
             {
-            	$this->i_storeStructuredProperty($property, $uid);
+            	$this->storeStructuredProperty($property, $uid);
             }
         }
         
@@ -158,13 +158,13 @@ class VCardDB implements VCardRepository
             if (empty($vcard->$propertyName)) continue;
 	    foreach ($vcard->$propertyName as $property)
     	    {
-    	    	$this->i_storeBasicProperty($property, $uid);
+    	    	$this->storeBasicProperty($property, $uid);
     	    }
         }
         
         foreach ($vcard->getUndefinedProperties() as $property)
         {
-            $this->i_storeXtendedProperty($property, $uid);
+            $this->storeXtendedProperty($property, $uid);
         }
 
         return $uid;
@@ -290,13 +290,13 @@ class VCardDB implements VCardRepository
         $vcard = false;
 
         $row = $stmt->fetch();
-        if ($row != false) $vcard = $this->i_fetchVCard($row);
+        if ($row != false) $vcard = $this->fetchVCard($row);
         $stmt->closeCursor();
 
         return $vcard;
     } // fetchOne()
     
-    /* Private methods */
+    /* Private methods 
 
     /**
      * Returns information about a configured query by section and key.
@@ -341,7 +341,7 @@ class VCardDB implements VCardRepository
      * @param VCard $vcard The record to store.
      * @return string The new uid.
      */
-    private function i_storeJustContact(VCard $vcard)
+    private function storeJustContact(VCard $vcard)
     {
         assert(!empty($this->connection));
 
@@ -395,7 +395,7 @@ class VCardDB implements VCardRepository
      * stored under.
      * @return integer The new property record id.
      */
-    private function i_storeStructuredProperty( StructuredProperty $property,
+    private function storeStructuredProperty( StructuredProperty $property,
     		                                $uid )
     {
     	assert($this->connection !== null);
@@ -418,7 +418,7 @@ class VCardDB implements VCardRepository
     	$propertyID = $this->connection->lastInsertId();
     	
         if ($property instanceof TypedProperty)
-            $this->i_associateTypes($property, $propertyID);
+            $this->associateTypes($property, $propertyID);
         return $propertyID;
     } // i_storeStructuredProperty()
         
@@ -430,7 +430,7 @@ class VCardDB implements VCardRepository
      * @param type $propertyID The id of the property within the appropriate
      * property specific table to associate types with.
      */
-    private function i_associateTypes(TypedProperty $property, $propertyID)
+    private function associateTypes(TypedProperty $property, $propertyID)
     {
     	assert($this->connection !== null);
     	assert($propertyID !== null);
@@ -459,7 +459,7 @@ class VCardDB implements VCardRepository
      * record with.
      * @return integer The ID of the newly created record.
      */
-    private function i_storeBasicProperty(Property $property, $uid)
+    private function storeBasicProperty(Property $property, $uid)
     {
     	assert($this->connection !== null);
     	assert(!empty($uid));
@@ -478,7 +478,7 @@ class VCardDB implements VCardRepository
     	$propertyID = $this->connection->lastInsertId();
         
         if ($property instanceof TypedProperty)
-            $this->i_associateTypes($property, $propertyID);
+            $this->associateTypes($property, $propertyID);
 
     	return $propertyID;
     } // i_storeBasicProperty()
@@ -490,7 +490,7 @@ class VCardDB implements VCardRepository
      * record with.
      * @return integer The ID of the newly created record.
      */
-    private function i_storeXtendedProperty(Property $property, $uid)
+    private function storeXtendedProperty(Property $property, $uid)
     {
     	assert($this->connection !== null);
     	assert(!empty($uid));
@@ -516,7 +516,7 @@ class VCardDB implements VCardRepository
      * @param array $row The associative array row returned from the db. Not empty.
      * @return VCard The finished vcard.
      */
-    protected function i_fetchVCard(Array $row)
+    protected function fetchVCard(Array $row)
     {
     	assert(isset($this->connection));
     	assert(!empty($row));
@@ -542,7 +542,7 @@ class VCardDB implements VCardRepository
         foreach (['org', 'adr', 'n'] as $structuredProperty)
         {
             $vcard->$structuredProperty
-                = $this->i_fetchStructuredProperty( $structuredProperty,
+                = $this->fetchStructuredProperty( $structuredProperty,
                                                     $vcard->getUID() );
         }
         
@@ -552,10 +552,10 @@ class VCardDB implements VCardRepository
                     as $property )
         {
             $vcard->$property
-                = $this->i_fetchBasicProperty($property, $vcard->getUID());
+                = $this->fetchBasicProperty($property, $vcard->getUID());
         }
         
-        $xtended = $this->i_fetchXtendedProperties($vcard->getUID());
+        $xtended = $this->fetchXtendedProperties($vcard->getUID());
         if (null !== $xtended) $vcard->push($xtended);
 
         return $vcard;
@@ -568,7 +568,7 @@ class VCardDB implements VCardRepository
      * the property-specific sub-table.
      * @return bool true if-and-only-if types were fetched.
      */
-    private function i_fetchTypesForPropertyID( TypedPropertyBuilder $builder,
+    private function fetchTypesForPropertyID( TypedPropertyBuilder $builder,
                                                 $propertyID )
     {
         assert(null !== $propertyID);
@@ -597,7 +597,7 @@ class VCardDB implements VCardRepository
      * @return NULL|StructuredProperty[] An array of the properties or null if
      * none available.
      */
-    private function i_fetchStructuredProperty($propertyName, $uid)
+    private function fetchStructuredProperty($propertyName, $uid)
     {
     	assert(isset($this->connection));
     	assert($propertyName !== null);
@@ -638,7 +638,7 @@ class VCardDB implements VCardRepository
             $builder->setValue(\array_filter($result, '\strlen'));
             
             if ($builder instanceof TypedPropertyBuilder)
-                $this->i_fetchTypesForPropertyID($builder, $propertyID);
+                $this->fetchTypesForPropertyID($builder, $propertyID);
             
             $propList[] = $builder->build();
     	}
@@ -656,7 +656,7 @@ class VCardDB implements VCardRepository
      * @return NULL|Property[] Returns an array of associated records, or null
      * if none found.
      */
-    private function i_fetchBasicProperty($propertyName, $uid)
+    private function fetchBasicProperty($propertyName, $uid)
     {
     	assert(isset($this->connection));
     	assert($propertyName !== null);
@@ -688,7 +688,7 @@ class VCardDB implements VCardRepository
                 $builder->setMediaType($result['mediatype']);
             
             if ($builder instanceof TypedPropertyBuilder)
-                $this->i_fetchTypesForPropertyID($builder, $propertyID);
+                $this->fetchTypesForPropertyID($builder, $propertyID);
 
             $properties[] = $builder->build();            
         }
@@ -705,7 +705,7 @@ class VCardDB implements VCardRepository
      * @return NULL|Property[] Returns an array of associated records, or null
      * if none found.
      */
-    private function i_fetchXtendedProperties($uid)
+    private function fetchXtendedProperties($uid)
     {
     	assert(isset($this->connection));
     	assert(!empty($uid));
