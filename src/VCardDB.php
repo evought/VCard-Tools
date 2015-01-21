@@ -296,6 +296,30 @@ class VCardDB implements VCardRepository
         return $vcard;
     } // fetchOne()
     
+    /**
+     * Deletes a CONTACT from the database by uid. Should delete all dependent
+     * records (e.g. properties) for that CONTACT as well.
+     * @param integer $uid The uid of the record to delete. Numeric,
+     * not null.
+     * @return bool If a record was deleted, false otherwise.
+     * @throws \PDOException On database failure.
+     */
+    public function deleteContact($uid)
+    {
+        \assert(isset($this->connection));
+        \assert(!empty($uid));
+        \assert(\is_string($uid));
+        
+        $stmt = $this->connection->prepare(
+                    $this->getQueryInfo('delete', 'contact') );
+        $stmt->bindValue(':uid', $uid);
+        $stmt->execute();
+        $rows = $stmt->rowCount();
+        $stmt->closeCursor();
+        
+        return (1 === $rows);
+    }
+    
     /* Private methods 
 
     /**
@@ -739,30 +763,6 @@ class VCardDB implements VCardRepository
         $stmt->closeCursor();
 
         return empty($properties) ? null : $properties;
-    }
-    
-    /**
-     * Deletes a CONTACT from the database by uid. Should delete all dependent
-     * records (e.g. properties) for that CONTACT as well.
-     * @param integer $uid The uid of the record to delete. Numeric,
-     * not null.
-     * @return bool If a record was deleted, false otherwise.
-     * @throws \PDOException On database failure.
-     */
-    public function deleteContact($uid)
-    {
-        \assert(isset($this->connection));
-        \assert(!empty($uid));
-        \assert(\is_string($uid));
-        
-        $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('delete', 'contact') );
-        $stmt->bindValue(':uid', $uid);
-        $stmt->execute();
-        $rows = $stmt->rowCount();
-        $stmt->closeCursor();
-        
-        return (1 === $rows);
     }
 
 } // VCardDB
