@@ -14,7 +14,7 @@ namespace EVought\vCardTools;
  * @api
  *
  */
-class VCardDB
+class VCardDB implements VCardRepository
 {
 // FIXME: Add a method to fetch all contact IDs (without loading the records).
     
@@ -100,43 +100,37 @@ class VCardDB
         unset($this->connection);
     }
     
-    /**
-     * Returns information about a configured query by section and key.
-     * The returned value will be taken from the custom .ini supplied at
-     * construction (if any) first and then from default settings.
-     * @param string $section The section name to look in. Not null.
-     * @param string $key The key to look up. Not null.
-     * @return string|mixed
-     * @throws \ErrorException If a configured value does not exist.
-     */
-    private function getQueryInfo($section, $key)
-    {
-        assert(null !== VCardDB::$sharedQueries);
-        assert(null !== $section);
-        assert(is_string($section));
-        assert(null !== $key);
-        assert(is_string($key));
-        
-        if (!empty($this->queries))
-        {
-            if ( array_key_exists($section, $this->queries)
-                    && array_key_exists($key, $this->queries[$section]) )
-            {
-                return $this->queries[$section][$key];
-            }
-        }
-        
-        if ( array_key_exists($section, VCardDB::$sharedQueries)
-                && array_key_exists($key, VCardDB::$sharedQueries[$section]) )
-        {
-            return VCardDB::$sharedQueries[$section][$key];
-        } else {
-            throw new \ErrorException( $section.':'.$key .
-                                  ' not found in configured VCardDB queries.' );
-        }
-    }
+    /* Interface methods: VCardRepository */
     
     /**
+     * Fetch all vcards from the database.
+     * @param string $kind If kind is given, only fetch those of that kind (e.g.
+     * organization).
+     * @return array An array of vCards keyed by uid.
+     */
+    public function fetchAll($kind='%')
+    {
+    	assert(isset($this->connection));
+    	
+    	$stmt = $this->connection->prepare($this->getQueryInfo('search', 'all'));
+    	$stmt->bindValue(":kind", $kind);
+
+        $stmt->execute();
+        $result = $stmt->setFetchMode(\PDO::FETCH_ASSOC);
+
+        $vcards = array();
+
+        while ($row = $stmt->fetch())
+        {
+	    $vcards[$row["UID"]] = $this->i_fetchVCard($row);
+        } // while
+
+        $stmt->closeCursor();
+
+        return $vcards;
+    } // fetchAll()
+    
+        /**
      * Store the whole vcard to the database, calling sub-functions to store
      * related tables (e.g. address) as necessary.
      * @param VCard $vcard The record to store.
@@ -176,6 +170,169 @@ class VCardDB
         return $uid;
     } // store()
 
+    /**
+     * Returns all vcards where the fn or categories match the requested search
+     * string.
+     * @param string $searchString The pattern to search for (SQL matching rules). If
+     * omitted, match all cards.
+     * @param string $kind If kind is given, return only cards of that kind (e.g.
+     * organization).
+     * @return array of vCards indexed by uid.
+     */
+    public function search($searchString='%', $kind='%')
+    {
+    	assert(isset($this->connection));
+    	
+        $stmt = $this->connection->prepare(
+                        $this->getQueryInfo('search', 'search') );
+        $stmt->bindValue(":kind", $kind);
+        $stmt->bindValue(":searchString", $searchString);
+        $stmt->execute();
+
+        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+ 
+        $uids += $this->fetchIDsForCategory( $searchString,
+        		$kind="%" );
+        if (empty($uids)) return array();
+
+        return $this->fetchByID($uids);
+    } // search()
+
+        /**
+     * Returns a list of all contact_ids where the org.name parameter matches
+     * the query.
+     * @param string $organizationName The name of the organization to search for. May
+     * be a SQL pattern. String, not empty.
+     * @param string $kind If kind is provided, limit results to a specific Kind (e.g.
+     * individual.
+     * @return array The list of contact uids. Actual vCards are not fetched.
+     */
+    public function fetchIDsForOrganization($organizationName, $kind="%")
+    {
+    	assert(isset($this->connection));
+    	assert(!empty($organizationName));
+    	assert(is_string($organizationName));
+    	
+        $stmt = $this->connection->prepare(
+                    $this->getQueryInfo('search', 'organization') );
+        $stmt->bindValue(':organizationName', $organizationName);
+        $stmt->bindValue(':kind', $kind);
+        $stmt->execute();
+        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+
+        return $uids;
+    } // fetchIDsForOrganization()
+
+    /**
+     * Returns a list of all contact uids in a given category.
+     * @param string $category The string representing the category to search for.
+     * May be a SQL pattern. Not empty.
+     * @param string $kind If given, the kind (e.g. individual) to filter by.
+     * @return array An array of contact uids. No vCards are fetched.
+     */
+    public function fetchIDsForCategory($category, $kind="%")
+    {
+    	assert(isset($this->connection));
+    	assert(!empty($category));
+    	assert(is_string($category));
+    	
+        $stmt = $this->connection->prepare(
+                        $this->getQueryInfo('search', 'categories') );
+        $stmt->bindValue(":category", $category);
+        $stmt->bindValue(':kind', $kind);
+        $stmt->execute();
+        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $stmt->closeCursor();
+
+        return $uids;
+    } // fetchIDsForCategory()
+
+    /**
+     * Retrieve vCard records for the given Contact IDs.
+     * @param array $uids A list of contact uids to fetch.
+     * @return array An array of vCards indexed by uid.
+     */
+    public function fetchByID(Array $uids)
+    {
+    	assert(isset($this->connection));
+    	assert(!empty($uids));
+    	
+        $vcards = array();
+        foreach($uids as $uid)
+        {
+	    $vcards[$uid] = $this->fetchOne($uid);
+        }
+
+        return $vcards;
+    } // fetchByID()
+
+    /**
+     * Fetch a single vcard given a contact uid.
+     * @param string $uid The ID of the record to fetch. String, not empty.
+     * @return VCard|null The completed vcard or false if none found.
+     */
+    public function fetchOne($uid)
+    {
+    	assert(isset($this->connection));
+    	assert(!empty($uid));
+    	assert(is_string($uid));
+    	
+        $stmt = $this->connection->prepare(
+                        $this->getQueryInfo('fetch', 'contact') );
+        $stmt->bindValue(":uid", $uid);
+        $stmt->execute();
+        assert($stmt->rowCount() <= 1);
+                
+        $result = $stmt->setFetchMode(\PDO::FETCH_ASSOC);
+
+        $vcard = false;
+
+        $row = $stmt->fetch();
+        if ($row != false) $vcard = $this->i_fetchVCard($row);
+        $stmt->closeCursor();
+
+        return $vcard;
+    } // fetchOne()
+    
+    /* Private methods */
+
+    /**
+     * Returns information about a configured query by section and key.
+     * The returned value will be taken from the custom .ini supplied at
+     * construction (if any) first and then from default settings.
+     * @param string $section The section name to look in. Not null.
+     * @param string $key The key to look up. Not null.
+     * @return string|mixed
+     * @throws \ErrorException If a configured value does not exist.
+     */
+    private function getQueryInfo($section, $key)
+    {
+        assert(null !== VCardDB::$sharedQueries);
+        assert(null !== $section);
+        assert(is_string($section));
+        assert(null !== $key);
+        assert(is_string($key));
+        
+        if (!empty($this->queries))
+        {
+            if ( array_key_exists($section, $this->queries)
+                    && array_key_exists($key, $this->queries[$section]) )
+            {
+                return $this->queries[$section][$key];
+            }
+        }
+        
+        if ( array_key_exists($section, VCardDB::$sharedQueries)
+                && array_key_exists($key, VCardDB::$sharedQueries[$section]) )
+        {
+            return VCardDB::$sharedQueries[$section][$key];
+        } else {
+            throw new \ErrorException( $section.':'.$key .
+                                  ' not found in configured VCardDB queries.' );
+        }
+    }
 
     /**
      * Saves the vcard contact data to the database, returns the id of the
@@ -354,160 +511,6 @@ class VCardDB
     	return $propertyID;
     }
     
-    /**
-     * Fetch all vcards from the database.
-     * @param string $kind If kind is given, only fetch those of that kind (e.g.
-     * organization).
-     * @return array An array of vCards keyed by uid.
-     */
-    public function fetchAll($kind='%')
-    {
-    	assert(isset($this->connection));
-    	
-    	$stmt = $this->connection->prepare($this->getQueryInfo('search', 'all'));
-    	$stmt->bindValue(":kind", $kind);
-
-        $stmt->execute();
-        $result = $stmt->setFetchMode(\PDO::FETCH_ASSOC);
-
-        $vcards = array();
-
-        while ($row = $stmt->fetch())
-        {
-	    $vcards[$row["UID"]] = $this->i_fetchVCard($row);
-        } // while
-
-        $stmt->closeCursor();
-
-        return $vcards;
-    } // fetchAll()
-
-    /**
-     * Returns all vcards where the fn or categories match the requested search
-     * string.
-     * @param string $searchString The pattern to search for (SQL matching rules). If
-     * omitted, match all cards.
-     * @param string $kind If kind is given, return only cards of that kind (e.g.
-     * organization).
-     * @return array of vCards indexed by uid.
-     */
-    public function search($searchString='%', $kind='%')
-    {
-    	assert(isset($this->connection));
-    	
-        $stmt = $this->connection->prepare(
-                        $this->getQueryInfo('search', 'search') );
-        $stmt->bindValue(":kind", $kind);
-        $stmt->bindValue(":searchString", $searchString);
-        $stmt->execute();
-
-        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
- 
-        $uids += $this->fetchIDsForCategory( $searchString,
-        		$kind="%" );
-        if (empty($uids)) return array();
-
-        return $this->fetchByID($uids);
-    } // search()
-
-    /**
-     * Returns a list of all contact_ids where the org.name parameter matches
-     * the query.
-     * @param string $organizationName The name of the organization to search for. May
-     * be a SQL pattern. String, not empty.
-     * @param string $kind If kind is provided, limit results to a specific Kind (e.g.
-     * individual.
-     * @return array The list of contact uids. Actual vCards are not fetched.
-     */
-    public function fetchIDsForOrganization($organizationName, $kind="%")
-    {
-    	assert(isset($this->connection));
-    	assert(!empty($organizationName));
-    	assert(is_string($organizationName));
-    	
-        $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('search', 'organization') );
-        $stmt->bindValue(':organizationName', $organizationName);
-        $stmt->bindValue(':kind', $kind);
-        $stmt->execute();
-        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        return $uids;
-    } // fetchIDsForOrganization()
-
-    /**
-     * Returns a list of all contact uids in a given category.
-     * @param string $category The string representing the category to search for.
-     * May be a SQL pattern. Not empty.
-     * @param string $kind If given, the kind (e.g. individual) to filter by.
-     * @return array An array of contact uids. No vCards are fetched.
-     */
-    public function fetchIDsForCategory($category, $kind="%")
-    {
-    	assert(isset($this->connection));
-    	assert(!empty($category));
-    	assert(is_string($category));
-    	
-        $stmt = $this->connection->prepare(
-                        $this->getQueryInfo('search', 'categories') );
-        $stmt->bindValue(":category", $category);
-        $stmt->bindValue(':kind', $kind);
-        $stmt->execute();
-        $uids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
-        $stmt->closeCursor();
-
-        return $uids;
-    } // fetchIDsForCategory()
-
-    /**
-     * Retrieve vCard records for the given Contact IDs.
-     * @param array $uids A list of contact uids to fetch.
-     * @return array An array of vCards indexed by uid.
-     */
-    public function fetchByID(Array $uids)
-    {
-    	assert(isset($this->connection));
-    	assert(!empty($uids));
-    	
-        $vcards = array();
-        foreach($uids as $uid)
-        {
-	    $vcards[$uid] = $this->fetchOne($uid);
-        }
-
-        return $vcards;
-    } // fetchByID()
-
-    /**
-     * Fetch a single vcard given a contact uid.
-     * @param string $uid The ID of the record to fetch. String, not empty.
-     * @return VCard|null The completed vcard or false if none found.
-     */
-    public function fetchOne($uid)
-    {
-    	assert(isset($this->connection));
-    	assert(!empty($uid));
-    	assert(is_string($uid));
-    	
-        $stmt = $this->connection->prepare(
-                        $this->getQueryInfo('fetch', 'contact') );
-        $stmt->bindValue(":uid", $uid);
-        $stmt->execute();
-        assert($stmt->rowCount() <= 1);
-                
-        $result = $stmt->setFetchMode(\PDO::FETCH_ASSOC);
-
-        $vcard = false;
-
-        $row = $stmt->fetch();
-        if ($row != false) $vcard = $this->i_fetchVCard($row);
-        $stmt->closeCursor();
-
-        return $vcard;
-    } // fetchOne()
-
     /**
      * Internal helper to fill in details of a vcard.
      * @param array $row The associative array row returned from the db. Not empty.
