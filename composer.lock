@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f6ebc74552ce89b35e7d778780252ea1",
+    "hash": "ae5c727f196e275db5d6be3ccc6e32a5",
     "packages": [
         {
             "name": "evought/data-uri",
@@ -4393,6 +4393,8 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": ">=5.5.0"
+    },
     "platform-dev": []
 }

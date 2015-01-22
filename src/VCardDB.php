@@ -44,7 +44,7 @@ class VCardDB implements VCardRepository
      * @var array
      */
     private $queries = null;
-
+    
     /**
      * Retrieve the current \PDO connection.
      */
@@ -60,8 +60,7 @@ class VCardDB implements VCardRepository
      * .ini provided with the package shall be used. This can be used
      * (carefully) to adapt queries to a specific database. Keys not found in
      * the custom .ini will still be loaded from the shared queries.
-     * @throws \ErrorException if the default .ini cannot be accessed.
-     * @throws \DomainException if the custom .ini file cannot be accessed.
+     * @throws \DomainException if an .ini file cannot be accessed.
      */
     public function __construct(\PDO $connection, $iniFilePath = null)
     {
@@ -71,24 +70,12 @@ class VCardDB implements VCardRepository
         if (null === VCardDB::$sharedQueries)
         {
             $defaultINI = __DIR__ . '/sql/VCardDBQueries.ini';
-            if (\is_readable($defaultINI))
-            {
-                VCardDB::$sharedQueries = \parse_ini_file($defaultINI, true);
-            } else {
-                throw new \ErrorException( 'Default .ini, ' . $defaultINI
-                                            . ' cannot be loaded.' );
-            }
+            VCardDB::$sharedQueries = $this->readQueryIniFile($defaultINI);
         }
         
         if (!(empty($iniFilePath)))
         {
-            if (\is_readable($iniFilePath))
-            {
-                $this->queries = \parse_ini_file($iniFilePath, true);
-            } else {
-                throw new \DomainException( 'Custom .ini, ' . $iniFilePath
-                                            . ' cannot be loaded.' );
-            }
+            $this->queries = $this->readQueryIniFile($iniFilePath);
         }
     }
 
@@ -183,8 +170,7 @@ class VCardDB implements VCardRepository
     {
     	assert(isset($this->connection));
     	
-        $stmt = $this->connection->prepare(
-                        $this->getQueryInfo('search', 'search') );
+        $stmt = $this->prepareCannedQuery('search', 'search');
         $stmt->bindValue(":kind", $kind);
         $stmt->bindValue(":searchString", $searchString);
         $stmt->execute();
@@ -318,9 +304,27 @@ class VCardDB implements VCardRepository
     
     /* Private methods */
 
+    /**
+     * Looks up the SQL for a canned (pre-configured) query, prepares it
+     * against the connection, and returns it.
+     * May perform various kinds of caching behind the scenes and therefore
+     * may return a previously-prepared statement if one is available.
+     * @param string $section The section name to look in. Not null.
+     * @param string $key The key to look up. Not null.
+     * @return PDOStatement
+     */
     protected function prepareCannedQuery($section, $key)
     {
-        return $this->connection->prepare($this->getQueryInfo($section, $key));
+        $query = $this->getQueryInfo($section, $key);
+        $stmt = $query->getStatement();
+        if (null !== $stmt)
+        {
+            return $stmt;
+        } else {
+            $stmt = $this->connection->prepare($query->getSQL());
+            $query->setStatement($stmt);
+            return $stmt;
+        }
     }
     
     /**
@@ -358,6 +362,35 @@ class VCardDB implements VCardRepository
                                   ' not found in configured VCardDB queries.' );
         }
     }
+    
+    /**
+     * Reads a .ini file with pre-defined SQL queries organized by section
+     * and returns an array of arrays (also organized by section) containing
+     * RDBMSQuery instances.
+     * @param string $filename
+     * @return array
+     * @throws \ErrorException If the file cannot be loaded.
+     */
+    private function readQueryIniFile($filename)
+    {
+        if (\is_readable($filename))
+        {
+            $queries = [];
+            $queryStrings = \parse_ini_file($filename, true);
+            foreach ($queryStrings as $sectionName=>$section)
+            {
+                $queries[$sectionName] = [];
+                foreach ($section as $key=>$sql)
+                {
+                    $queries[$sectionName][$key] = new RDBMSQuery($sql);
+                }
+            }
+            return $queries;
+        } else {
+            throw new \DomainException( 'Query .ini, ' . $defaultINI
+                                        . ' cannot be loaded.' );
+        }
+    }
 
     /**
      * Saves the vcard contact data to the database, returns the id of the
@@ -373,8 +406,7 @@ class VCardDB implements VCardRepository
         $vcard->setFNAppropriately();
         $uid = $vcard->checkSetUID();
 
-        $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('store', 'contact') );
+        $stmt = $this->prepareCannedQuery('store', 'contact');
         
         $stmt->bindValue(':uid', $uid);
 
@@ -427,8 +459,7 @@ class VCardDB implements VCardRepository
     	assert(!empty($uid));
     	assert(is_string($uid));
     	    	
-    	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('store', $property->getName()) );
+    	$stmt = $this->prepareCannedQuery('store', $property->getName());
         
         $stmt->bindValue(':uid', $uid);
         $stmt->bindValue(':valuetype', $property->getValueType(false));
@@ -463,8 +494,7 @@ class VCardDB implements VCardRepository
 
         if (empty($property->getTypes())) {return;}
         
-        $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('associateTypes', $property->getName()) );
+        $stmt = $this->prepareCannedQuery('associateTypes', $property->getName());
         
         foreach ($property->getTypes() as $type)
         {
@@ -490,8 +520,7 @@ class VCardDB implements VCardRepository
     	assert(!empty($uid));
     	assert(is_string($uid));
     	
-    	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('store', $property->getName()) );
+    	$stmt = $this->prepareCannedQuery('store', $property->getName());
     	
         $stmt->bindValue(':uid', $uid);
     	$stmt->bindValue(':value', $property->getValue());
@@ -521,8 +550,7 @@ class VCardDB implements VCardRepository
     	assert(!empty($uid));
     	assert(is_string($uid));
     	
-    	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('store', 'xtended') );
+    	$stmt = $this->prepareCannedQuery('store', 'xtended');
     	
         $stmt->bindValue(':uid', $uid);
         $stmt->bindValue(':name', $property->getName());
@@ -599,8 +627,7 @@ class VCardDB implements VCardRepository
         assert(null !== $propertyID);
         assert(is_numeric($propertyID));
         
-        $stmt = $this->connection->prepare(
-                    $this->getQueryInfo('fetchTypes', $builder->getName()) );
+        $stmt = $this->prepareCannedQuery('fetchTypes', $builder->getName());
     	$stmt->bindValue(":id", $propertyID);
     	$stmt->execute();
     	
@@ -633,8 +660,7 @@ class VCardDB implements VCardRepository
     	// Fetch each $propertyName record in turn    	
     	$propList = [];
 
-    	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('fetch', $propertyName) );
+    	$stmt = $this->prepareCannedQuery('fetch', $propertyName);
         $stmt->bindValue(":id", $uid);
         $stmt->execute();
         
@@ -690,8 +716,7 @@ class VCardDB implements VCardRepository
     	assert(is_string($uid));
     	
     	// Fetch each property record in turn
-    	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('fetch', $propertyName) );
+    	$stmt = $this->prepareCannedQuery('fetch', $propertyName);
         $stmt->bindValue(':id', $uid);
         $stmt->execute();
         
@@ -737,8 +762,7 @@ class VCardDB implements VCardRepository
     	assert(is_string($uid));
     	
     	// Fetch each property record in turn
-    	$stmt = $this->connection->prepare(
-                    $this->getQueryInfo('fetch', 'xtended') );
+    	$stmt = $this->prepareCannedQuery('fetch', 'xtended');
         $stmt->bindValue(':id', $uid);
         $stmt->execute();
         

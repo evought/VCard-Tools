@@ -36,6 +36,9 @@
         "rhumsaa/uuid": "~2.8",
         "evought/data-uri": "*@dev"
     },
+    "suggest": {
+        "pecl-weakref": "Permits caching of prepared statements."
+    },
     "autoload": {
         "psr-4": {
             "EVought\\vCardTools\\": "src/",
