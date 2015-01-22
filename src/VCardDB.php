@@ -94,6 +94,7 @@ class VCardDB implements VCardRepository
      * @param string $kind If kind is given, only fetch those of that kind (e.g.
      * organization).
      * @return array An array of vCards keyed by uid.
+     * @throws \PDOException on database error.
      */
     public function fetchAll($kind='%')
     {
@@ -117,41 +118,51 @@ class VCardDB implements VCardRepository
         return $vcards;
     } // fetchAll()
     
-        /**
+    /**
      * Store the whole vcard to the database, calling sub-functions to store
      * related tables (e.g. address) as necessary.
      * @param VCard $vcard The record to store.
      * @return integer The new contact id.
+     * @throws \PDOException on database error.
      */
     function store(VCard $vcard)
     {
         assert(!empty($this->connection));
 
-        $uid = $this->storeJustContact($vcard);
+        try {
+            $this->connection->beginTransaction();
+            
+            $uid = $this->storeJustContact($vcard);
 
-        foreach ( ['n', 'adr', 'org'] as $propertyName)
-        {
-            if (empty($vcard->$propertyName)) continue;
-            foreach ($vcard->$propertyName as $property)
+            foreach ( ['n', 'adr', 'org'] as $propertyName)
             {
-            	$this->storeStructuredProperty($property, $uid);
+                if (empty($vcard->$propertyName)) continue;
+                foreach ($vcard->$propertyName as $property)
+                {
+                    $this->storeStructuredProperty($property, $uid);
+                }
             }
-        }
         
-        foreach ( [ 'nickname', 'url' ,'photo', 'logo', 'sound', 'key', 'note',
+            foreach ( [ 'nickname', 'url' ,'photo', 'logo', 'sound', 'key', 'note',
                     'tel', 'geo', 'email', 'categories', 'related' ]
                     as $propertyName )
-        {
-            if (empty($vcard->$propertyName)) continue;
-	    foreach ($vcard->$propertyName as $property)
-    	    {
-    	    	$this->storeBasicProperty($property, $uid);
-    	    }
-        }
+            {
+                if (empty($vcard->$propertyName)) continue;
+                foreach ($vcard->$propertyName as $property)
+                {
+                    $this->storeBasicProperty($property, $uid);
+                }
+            }
         
-        foreach ($vcard->getUndefinedProperties() as $property)
-        {
-            $this->storeXtendedProperty($property, $uid);
+            foreach ($vcard->getUndefinedProperties() as $property)
+            {
+                $this->storeXtendedProperty($property, $uid);
+            }
+            
+            $this->connection->commit();
+        } catch (PDOException $e) {
+            $this->connection->rollBack();
+            throw $e;
         }
 
         return $uid;
@@ -165,6 +176,7 @@ class VCardDB implements VCardRepository
      * @param string $kind If kind is given, return only cards of that kind (e.g.
      * organization).
      * @return array of vCards indexed by uid.
+     * @throws \PDOException on database error.
      */
     public function search($searchString='%', $kind='%')
     {
@@ -193,6 +205,7 @@ class VCardDB implements VCardRepository
      * @param string $kind If kind is provided, limit results to a specific Kind (e.g.
      * individual.
      * @return array The list of contact uids. Actual vCards are not fetched.
+     * @throws \PDOException on database error.
      */
     public function fetchIDsForOrganization($organizationName, $kind="%")
     {
@@ -216,6 +229,7 @@ class VCardDB implements VCardRepository
      * May be a SQL pattern. Not empty.
      * @param string $kind If given, the kind (e.g. individual) to filter by.
      * @return array An array of contact uids. No vCards are fetched.
+     * @throws \PDOException on database error.
      */
     public function fetchIDsForCategory($category, $kind="%")
     {
@@ -237,6 +251,7 @@ class VCardDB implements VCardRepository
      * Retrieve vCard records for the given Contact IDs.
      * @param array $uids A list of contact uids to fetch.
      * @return array An array of vCards indexed by uid.
+     * @throws \PDOException on database error.
      */
     public function fetchByID(Array $uids)
     {
@@ -256,6 +271,7 @@ class VCardDB implements VCardRepository
      * Fetch a single vcard given a contact uid.
      * @param string $uid The ID of the record to fetch. String, not empty.
      * @return VCard|null The completed vcard or false if none found.
+     * @throws \PDOException on database error.
      */
     public function fetchOne($uid)
     {
