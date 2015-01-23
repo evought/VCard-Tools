@@ -6,6 +6,8 @@ Eric Vought
 
 MIT License http://opensource.org/licenses/MIT
 
+Composer Package: evought/vcard-tools
+
 #What This Project Is#
 
 This effort is a set of tools for manipulating VCards (RFC 6350) in PHP,
@@ -74,7 +76,7 @@ from vendor/autoload.php.
 ##Requirements##
 
 The project was developed against
-* PHP 5.5 (5.5.18)
+* PHP 5.5 (5.5.20)
 * MySQL 5.5 (5.5.38)
 
 The library is known to _not_ work with PHP 5.4, but the Continuous Integration
@@ -98,7 +100,9 @@ Composer will locate and install two other php libraries required by VCardTools,
 RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).
 
 * [evought/data-uri](https://gist.github.com/evought/b817103313f5ddff5817): 
-A convenient class for working with Data URIs in PHP
+A convenient class for working with Data URIs in PHP. This class is loaded from
+a Gist and currently requires a custom repostory definition
+([Issue #103](https://github.com/evought/VCard-Tools/issues/103), see below.)
 
 To develop and run tests, composer will also install:
 
@@ -111,6 +115,55 @@ and their dependencies.
 I am doing most of my development on a Intel-based Fedora Linux 20 workstation
 and the Continuous Integration server regularly tests the code in a clean
 Ubuntu Linux environment.
+
+# Including Via Composer #
+
+To include this library in a larger project via Composer, you first must have
+a [composer.json](https://getcomposer.org/doc/00-intro.md) for your project.
+That file must include the following extra settings:
+
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://gist.github.com/b817103313f5ddff5817.git"
+        }
+    ],
+    "require": {
+            "evought/data-uri": "*@dev",
+            "evought/vcard-tools": "dev-master"
+        }
+
+The repositories section is required to fetch the data-uri package directly from
+github because it is not yet available through packagist, Composer's default
+repository ([Issue #103](https://github.com/evought/VCard-Tools/issues/103)).
+For security reasons, Composer will not automatically load a package from a
+non-standard repository unless you tell it explicitly to do so.
+For the same reason, your require section has to include both evought/data-uri
+and evought/vcard-tools along with any other dependencies your package may
+require.
+
+If you are only using the non-database portions of VCard-Tools, this should
+be sufficient to get you going and a "composer install" should fetch and install
+this package. If you are also using the database portions, things are a bit
+more complicated because you will have to install the database schema into
+your database as well and be able to update the schema as you upgrade to
+new versions of VCard-Tools. VCard-Tools provides utilities to make that
+process easier and allows you to customize the process if your situation is
+unusual. You will want to read the Database Setup section thoroughly.
+If you check out the sources for this package in a separate
+directory, set it up, and run its tests to see how it works stand-alone, that
+may help you understand how to set up your project around it.
+
+If using the database components, you will need to add additional dependencies
+to your project's composer.json file:
+
+    "require-dev": {
+        "phing/phing": "2.*",
+        "robmorgan/phinx": "*"
+    },
+
+These settings will install the Phing project automation tool and the Phinx
+database migration tool.
 
 # Installation of Sources #
 
@@ -132,8 +185,13 @@ required.
 To use the software, a database (e.g. VCARD) will be needed to contain the
 tables and a user with appropriate permissions to access it.
 Given appropriate settings and a user with appropriate permissions in the
-database, phing will do the actual loading of the schema for you from the schema
-definition in src/sql/vcard.sql.
+database, phing and phinx will do the actual loading of the schema for you.
+
+These notes are targeted at the user working with the checked-out source of
+VCard-Tools. In that case, the tasks to setup the database are already in
+the build.xml file. If you are including this library in another project,
+you will need to make your own build.xml. Notes on how to do that are in
+the section "Your Project's build.xml".
 
 First off, you need a MySQL user account with permissions to create a database and
 grant privileges on that database to a test user.
@@ -157,11 +215,18 @@ You may then create the desired account and grant it privileges:
 Substituting whatever is appropriate for 'developer' and 'password'.
 
 Create a ${env.USER}.properties file in your project folder, copying and editing
-values from db.properties to set the username, password, host, database name, etc., for your database. (In other words, I would put these settings in 'evought.properties'). As your personal property file will not be under control of git, you won't have to worry about committing your settings (and password!) back to the repository. The phing build script, build.xml will use these settings
+values from db.properties to set the username, password, host, database name,
+etc., for your database.
+(In other words, I would put these settings in 'evought.properties').
+As your personal property file will not be under control of git, you won't have
+to worry about committing your settings (and password!) back to the repository.
+The phing build script, build.xml will use these settings
 to build some configuration files, initialize the database, and run the tests.
 Notice the settings for a unit test user and see below.
 
-Running 'phing config' will build the configuration files (such as database.php) needed. Anytime you change these settings, you will want to run:
+Running 'phing config' will build the configuration files (such as database.php)
+needed.
+Any time you change these settings, you will want to run:
 
     $ phing cleanConfig && phing config
 
@@ -240,6 +305,60 @@ Within that constraint, it should be possible to join/split tables or invoke
 stored procedures if desired to integrate VCardDB into a larger application
 schema.
 
+## Your Project's build.xml ##
+
+If you are including this library in a larger project, you will want a
+[build.xml](http://www.phing.info/docs/master/hlhtml/index.html#d5e837) to tell
+phing how to automate your project tasks.
+VCard-Tools provides a build file which you can include in your build.xml to
+automate the database portions needed to use VCard-Tools.
+To do this, you use the import task in your build.xml:
+
+    <property name="vcardtools.dir" value="${vendor.dir}/evought/vcard-tools"/>
+    <import file="${vcardtools.dir}/phingDBTasks.xml"/>
+
+Import will load the xml file we provide, setting properties and tasks for you,
+such as the createUnitDB task we mention in the Database Setup section above.
+Your project's build.xml might therefore look something like this:
+
+    <project name="project" default="dist" basedir="."
+         description="Project including VCard-Tools">
+      <!-- get dependencies from Composer -->
+      <php expression="include('vendor/autoload.php')"/>
+
+      <!-- set global properties for this build -->
+      <property name="src.dir" value="src"/>
+      <property name="test.dir" value="tests"/>
+      <property name="dist.dir"  value="dist"/>
+      <property name="doc.dir"  value="docs"/>
+      <property name="apidoc.dir" value="docs/api"/>
+      <property name="vendor.dir" value="vendor"/>
+      <property name="vendor.bin.dir" value="${vendor.dir}/bin"/>
+      <property name="reports.dir" value="reports"/>
+  
+      <!-- per-user properties for overriding settings, such as db connection -->
+      <property file="${env.USER}.properties"/>
+
+      <property name="vcardtools.dir" value="${vendor.dir}/evought/vcard-tools"/>
+      <import file="${vcardtools.dir}/phingDBTasks.xml"/>
+
+      <!-- Your project's other task definitions -->
+    </project>
+
+You can simply copy db.properties, database.php.in, and phinx.yml.in from
+vendor/evought/vcard-tools to your project directory and edit them to suit as
+described in Database Setup.
+An effort has been made to name all of the VCard-Tools properties and tasks
+so that they will not interfere with any additional database tasks your project
+may need in addition to what we provide.
+You can then define your own settings for a production database, connect to
+additional databases, or even create your own migrations (rename our phinx.yml
+file, create your own, and use the -c option to phinx to select which one to
+use). If you need to heavily customize the behavior, you may forgo including
+phingDBTasks.xml and define your own phing task, cutting and pasting from our
+example. You may, of course, also copy and modify parts of the VCard-Tools
+build.xml file as needed.
+
 #Documentation and Examples#
 
 Aside from the code comments, one of the best resources for using the classes
@@ -273,3 +392,15 @@ Should work and will give more detailed output when tests actually fail.
 I also routinely run tests under NetBeans IDE. Running the entire suite or
 individual tests under NetBeans will work smoothly if you configure the
 project to use bootstrap.php with phpunit (Project->Properties->Testing).
+
+## Continuous Integration Server ##
+
+VCard-Tools uses the [Travis Continuous Integration Server](http://docs.travis-ci.com/).
+This means that every time changes are committed to this library, Travis CI
+checks out a clean copy of the changes, builds them, sets up the database,
+and runs the unit test suite. It actually goes through this process several
+times to run the tests with different versions of PHP.
+This process helps ensure that committed changes will not break existing tests
+and that idiosyncrasies of the developer's workstation do not hide errors.
+
+If the build fails, the developer gets a cranky email telling him to fix it.
