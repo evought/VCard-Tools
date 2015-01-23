@@ -28,39 +28,51 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<project name="vcard-db-tasks" basedir=".">
+<project name="vctdbtasks" basedir=".">
   <property name="vcardtools.sql.dir"
-            value="${phing.dir.vcard-db-tasks}/src/sql"/>
+            value="${phing.dir.vctdbtasks}/src/sql"/>
   <property name="vcardtools.migrations.dir"
             value="${vcardtools.sql.dir}/migrations"/>
   <!-- database properties for testing -->
   <property file="db.properties"/>
   
-  <filterchain id="db.unittest.filterset">
+  <filterchain id="vcardtools.db.unittest.filterset">
     <replacetokens begintoken="@" endtoken="@">
-        <token key="db.unittest.user"   value="${db.unittest.user}"/>
-        <token key="db.unittest.host" value="${db.unittest.host}"/>
-        <token key="db.unittest.passwd" value="${db.unittest.passwd}"/>
-        <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
-        <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
+        <token key="vcardtools.db.unittest.user"
+               value="${vcardtools.db.unittest.user}"/>
+        <token key="vcardtools.db.unittest.host"
+               value="${vcardtools.db.unittest.host}"/>
+        <token key="vcardtools.db.unittest.passwd"
+               value="${vcardtools.db.unittest.passwd}"/>
+        <token key="vcardtools.db.unittest.dbname"
+               value="${vcardtools.db.unittest.dbname}"/>
+        <token key="vcardtools.db.unittest.dsn" value="${vcardtools.db.unittest.dsn}"/>
     </replacetokens>
   </filterchain>
-  <filterchain id="db.devel.filterset">
+  
+  <filterchain id="vcardtools.db.devel.filterset">
     <replacetokens begintoken="@" endtoken="@">
-      <token key="db.devel.user"   value="${db.devel.user}"/>
-      <token key="db.unittest.host" value="${db.unittest.host}"/>
-      <token key="db.devel.passwd" value="${db.devel.passwd}"/>
-      <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
-      <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
+      <token key="vcardtools.migrations.dir"
+             value="${vcardtools.migrations.dir}"/>
+      <token key="vcardtools.db.devel.user"
+             value="${vcardtools.db.devel.user}"/>
+      <token key="vcardtools.db.unittest.host"
+             value="${vcardtools.db.unittest.host}"/>
+      <token key="vcardtools.db.devel.passwd"
+             value="${vcardtools.db.devel.passwd}"/>
+      <token key="vcardtools.db.unittest.dbname"
+             value="${vcardtools.db.unittest.dbname}"/>
+      <token key="vcardtools.db.unittest.dsn"
+             value="${vcardtools.db.unittest.dsn}"/>
     </replacetokens>
   </filterchain>
   <target name="dbconfig"
           description="Substitute macros to create needed db configuration files">
     <copy file="${project.basedir}/database.php.in" toFile="${project.basedir}/database.php">
-      <filterchain refid="db.unittest.filterset"/>
+      <filterchain refid="vcardtools.db.unittest.filterset"/>
     </copy>
     <copy file="${project.basedir}/phinx.yml.in" toFile="${project.basedir}/phinx.yml">
-      <filterchain refid="db.devel.filterset"/>
+      <filterchain refid="vcardtools.db.devel.filterset"/>
     </copy>
   </target>
   
@@ -81,25 +93,25 @@ THE SOFTWARE.
   <target name="createUnitDBUser" depends="config"
       description="Create the DB user for unit testing using the development DB credentials">
     <pdosqlexec
-      url="${db.unittest.dsn}" 
-      userid="${db.devel.user}" 
-      password="${db.devel.passwd}"
+      url="${vcardtools.db.unittest.dsn}" 
+      userid="${vcardtools.db.devel.user}" 
+      password="${vcardtools.db.devel.passwd}"
       autocommit="true"> 
-      CREATE USER '${db.unittest.user}'@'${db.unittest.host}'
-        IDENTIFIED BY '${db.unittest.passwd}'; 
+      CREATE USER '${vcardtools.db.unittest.user}'@'${vcardtools.db.unittest.host}'
+        IDENTIFIED BY '${vcardtools.db.unittest.passwd}'; 
     </pdosqlexec>
   </target>
 
   <target name="createUnitDB" depends="config"
       description="Create the database for unit testing">
     <pdosqlexec
-      url="${db.unittest.dsn}" 
-      userid="${db.devel.user}" 
-      password="${db.devel.passwd}"
+      url="${vcardtools.db.unittest.dsn}" 
+      userid="${vcardtools.db.devel.user}" 
+      password="${vcardtools.db.devel.passwd}"
       autocommit="true"> 
-      CREATE DATABASE ${db.unittest.dbname}; 
-      GRANT SELECT, INSERT, UPDATE, DELETE on ${db.unittest.dbname}.*
-          TO '${db.unittest.user}'@'${db.unittest.host}'; 
+      CREATE DATABASE ${vcardtools.db.unittest.dbname}; 
+      GRANT SELECT, INSERT, UPDATE, DELETE on ${vcardtools.db.unittest.dbname}.*
+          TO '${vcardtools.db.unittest.user}'@'${vcardtools.db.unittest.host}'; 
     </pdosqlexec>
   </target>
   
@@ -124,11 +136,11 @@ THE SOFTWARE.
   <target name="dropUnitDB" depends="config"
       description="Create the database for unit testing">
   <pdosqlexec
-        url="${db.unittest.dsn}"
-  	userid="${db.devel.user}" 
-        password="${db.devel.passwd}"
+        url="${vcardtools.db.unittest.dsn}"
+  	userid="${vcardtools.db.devel.user}" 
+        password="${vcardtools.db.devel.passwd}"
         autocommit="true"> 
-      DROP DATABASE ${db.unittest.dbname}; 
+      DROP DATABASE ${vcardtools.db.unittest.dbname}; 
     </pdosqlexec> 
   </target>
 

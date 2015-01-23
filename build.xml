@@ -24,28 +24,6 @@
   
   <import file="phingDBTasks.xml"/>
 
-  <!-- database properties for testing -->
-  <property file="db.properties"/>
-
-  <filterchain id="db.unittest.filterset">
-    <replacetokens begintoken="@" endtoken="@">
-        <token key="db.unittest.user"   value="${db.unittest.user}"/>
-        <token key="db.unittest.host" value="${db.unittest.host}"/>
-        <token key="db.unittest.passwd" value="${db.unittest.passwd}"/>
-        <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
-        <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
-    </replacetokens>
-  </filterchain>
-  <filterchain id="db.devel.filterset">
-    <replacetokens begintoken="@" endtoken="@">
-      <token key="db.devel.user"   value="${db.devel.user}"/>
-      <token key="db.unittest.host" value="${db.unittest.host}"/>
-      <token key="db.devel.passwd" value="${db.devel.passwd}"/>
-      <token key="db.unittest.dbname" value="${db.unittest.dbname}"/>
-      <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
-    </replacetokens>
-  </filterchain>
-
   <!-- temporary files to tidy up -->
   <patternset id="backupFiles.pattern"
     includes="**/*~ **/*.bak" />
@@ -57,14 +35,8 @@
   <fileset id="configFiles.fileset" dir="${project.basedir}"
            includes="database.php, phinx.yml"/>
 
-  <target name="config"
+  <target name="config" depends="dbconfig"
           description="Substitute macros to create needed configuration files">
-    <copy file="${project.basedir}/database.php.in" toFile="${project.basedir}/database.php">
-      <filterchain refid="db.unittest.filterset"/>
-    </copy>
-    <copy file="${project.basedir}/phinx.yml.in" toFile="${project.basedir}/phinx.yml">
-      <filterchain refid="db.devel.filterset"/>
-    </copy>
   </target>
 
   <target name="cleanConfig"
@@ -125,74 +97,6 @@
     </delete>
   </target>
   
-  <!-- Task to create a minimal-permissions user for unit testing.
-     - It shold be possible to run this before or after createUnitDB as long as
-     - it happens before tests are run.
-     - This is separated out and not run automatically because
-     - 1) it need not be done more than once per database install, and
-     - 2) the development user credentials may not have permission to create
-     - users in some environments.
-     - In the latter case, the unit test user will need to be created
-     - out-of-band and its credentials put into the user-specific
-     - properties file. As a worst-case, the same credentials can be used for
-     - both "development" and "unit-test" purposes, but, as a principle,
-     - it is best to run tests with the minimal permissions necessary to avoid
-     - introducing permission-related errors in a production environment.
-     -->
-  <target name="createUnitDBUser" depends="config"
-      description="Create the DB user for unit testing using the development DB credentials">
-    <pdosqlexec
-      url="${db.unittest.dsn}" 
-      userid="${db.devel.user}" 
-      password="${db.devel.passwd}"
-      autocommit="true"> 
-      CREATE USER '${db.unittest.user}'@'${db.unittest.host}'
-        IDENTIFIED BY '${db.unittest.passwd}'; 
-    </pdosqlexec>
-  </target>
-
-  <target name="createUnitDB" depends="config"
-      description="Create the database for unit testing">
-    <pdosqlexec
-      url="${db.unittest.dsn}" 
-      userid="${db.devel.user}" 
-      password="${db.devel.passwd}"
-      autocommit="true"> 
-      CREATE DATABASE ${db.unittest.dbname}; 
-      GRANT SELECT, INSERT, UPDATE, DELETE on ${db.unittest.dbname}.*
-          TO '${db.unittest.user}'@'${db.unittest.host}'; 
-    </pdosqlexec>
-  </target>
-  
-  <target name="migrateDevelopment"
-          description="Database Migrations for development environment"> 
-    <!-- execute phinx in migrate mode -->
-    <exec command="${vendor.bin.dir}/phinx migrate"
-        checkreturn="true"
-        passthru="true"
-        />
-  </target>
-
-  <target name="rollbackDevelopment"
-          description="Roll back database migrations for development environment"> 
-    <!-- execute phinx in migrate mode -->
-    <exec command="${vendor.bin.dir}/phinx rollback"
-        checkreturn="true"
-        passthru="true"
-        />
-  </target>
-
-  <target name="dropUnitDB" depends="config"
-      description="Create the database for unit testing">
-  <pdosqlexec
-        url="${db.unittest.dsn}"
-  	userid="${db.devel.user}" 
-        password="${db.devel.passwd}"
-        autocommit="true"> 
-      DROP DATABASE ${db.unittest.dbname}; 
-    </pdosqlexec> 
-  </target>
-
   <target name="cleanDocs"
 	description="Remove generated documentation">
     <delete dir="${apidoc.dir}"/>

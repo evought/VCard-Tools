@@ -1,5 +1,5 @@
 paths:
-    migrations: %%PHINX_CONFIG_DIR%%/src/sql/migrations
+    migrations: @vcardtools.migrations.dir@
 
 environments:
     default_migration_table: phinxlog
@@ -7,10 +7,10 @@ environments:
 
     development:
         adapter: mysql
-        host: @db.unittest.host@
-        name: @db.unittest.dbname@
-        user: @db.devel.user@
-        pass: '@db.devel.passwd@'
+        host: @vcardtools.db.unittest.host@
+        name: @vcardtools.db.unittest.dbname@
+        user: @vcardtools.db.devel.user@
+        pass: '@vcardtools.db.devel.passwd@'
         port:
         charset: utf8
 
