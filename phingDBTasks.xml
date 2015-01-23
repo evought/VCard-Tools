@@ -66,6 +66,7 @@ THE SOFTWARE.
              value="${vcardtools.db.unittest.dsn}"/>
     </replacetokens>
   </filterchain>
+  
   <target name="dbconfig"
           description="Substitute macros to create needed db configuration files">
     <copy file="${project.basedir}/database.php.in" toFile="${project.basedir}/database.php">
@@ -90,7 +91,7 @@ THE SOFTWARE.
      - it is best to run tests with the minimal permissions necessary to avoid
      - introducing permission-related errors in a production environment.
      -->
-  <target name="createUnitDBUser" depends="config"
+  <target name="createUnitDBUser" depends="dbconfig"
       description="Create the DB user for unit testing using the development DB credentials">
     <pdosqlexec
       url="${vcardtools.db.unittest.dsn}" 
@@ -102,7 +103,7 @@ THE SOFTWARE.
     </pdosqlexec>
   </target>
 
-  <target name="createUnitDB" depends="config"
+  <target name="createUnitDB" depends="dbconfig"
       description="Create the database for unit testing">
     <pdosqlexec
       url="${vcardtools.db.unittest.dsn}" 
@@ -115,7 +116,7 @@ THE SOFTWARE.
     </pdosqlexec>
   </target>
   
-  <target name="migrateDevelopment"
+  <target name="migrateDevelopment" depends="dbconfig"
           description="Database Migrations for development environment"> 
     <!-- execute phinx in migrate mode -->
     <exec command="${vendor.bin.dir}/phinx migrate"
@@ -124,7 +125,7 @@ THE SOFTWARE.
         />
   </target>
 
-  <target name="rollbackDevelopment"
+  <target name="rollbackDevelopment" depends="dbconfig"
           description="Roll back database migrations for development environment"> 
     <!-- execute phinx in migrate mode -->
     <exec command="${vendor.bin.dir}/phinx rollback"
@@ -133,7 +134,7 @@ THE SOFTWARE.
         />
   </target>
 
-  <target name="dropUnitDB" depends="config"
+  <target name="dropUnitDB" depends="dbconfig"
       description="Create the database for unit testing">
   <pdosqlexec
         url="${vcardtools.db.unittest.dsn}"
