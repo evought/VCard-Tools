@@ -1,32 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
-  -  Phing build file for VCard-Tools
+  -  Phing include file for database tasks
   -  Author: Eric Vought
-  -  2014-11
+  -  2015-01
   -  License: MIT (http://opensource.org/licenses/MIT)
   -->
-<project name="VCard-Tools" default="dist" basedir="."
-	description="Phing build file for VCard-Tools project">
-  <!-- get dependencies from Composer -->
-  <php expression="include('vendor/autoload.php')"/>
+<!--
+The MIT License
 
-  <!-- set global properties for this build -->
-  <property name="src.dir" value="src"/>
-  <property name="test.dir" value="tests"/>
-  <property name="dist.dir"  value="dist"/>
-  <property name="doc.dir"  value="docs"/>
-  <property name="apidoc.dir" value="docs/api"/>
-  <property name="vendor.dir" value="vendor"/>
-  <property name="vendor.bin.dir" value="${vendor.dir}/bin"/>
-  <property name="reports.dir" value="reports"/>
-  
-  <!-- per-user properties for overriding settings, such as db connection -->
-  <property file="${env.USER}.properties"/>
-  
-  <import file="phingDBTasks.xml"/>
+Copyright 2015 evought.
 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<project name="vcard-db-tasks" basedir=".">
+  <property name="vcardtools.sql.dir"
+            value="${phing.dir.vcard-db-tasks}/src/sql"/>
+  <property name="vcardtools.migrations.dir"
+            value="${vcardtools.sql.dir}/migrations"/>
   <!-- database properties for testing -->
   <property file="db.properties"/>
-
+  
   <filterchain id="db.unittest.filterset">
     <replacetokens begintoken="@" endtoken="@">
         <token key="db.unittest.user"   value="${db.unittest.user}"/>
@@ -45,84 +54,14 @@
       <token key="db.unittest.dsn"    value="${db.unittest.dsn}"/>
     </replacetokens>
   </filterchain>
-
-  <!-- temporary files to tidy up -->
-  <patternset id="backupFiles.pattern"
-    includes="**/*~ **/*.bak" />
-	
-  <fileset id="phpapi.fileset" dir="${src.dir}"
-	includes="*.php"/>
-
-  <!-- list of generated configuration files -->
-  <fileset id="configFiles.fileset" dir="${project.basedir}"
-           includes="database.php, phinx.yml"/>
-
-  <target name="config"
-          description="Substitute macros to create needed configuration files">
+  <target name="dbconfig"
+          description="Substitute macros to create needed db configuration files">
     <copy file="${project.basedir}/database.php.in" toFile="${project.basedir}/database.php">
       <filterchain refid="db.unittest.filterset"/>
     </copy>
     <copy file="${project.basedir}/phinx.yml.in" toFile="${project.basedir}/phinx.yml">
       <filterchain refid="db.devel.filterset"/>
     </copy>
-  </target>
-
-  <target name="cleanConfig"
-          description="Remove generated configuration files." >
-    <delete>
-      <fileset refid="configFiles.fileset" />
-    </delete>
-  </target>
-
-  <target name="init" depends="config">
-    <tstamp/>
-  </target>
-
-  <target name="doc" depends="init"
-	description="Generate API docs">
-    <mkdir dir="${apidoc.dir}"/>
-    <phpdoc2 title="${phing.project.name} API Documentation"
-  	destdir="${apidoc.dir}">
-      <fileset refid="phpapi.fileset"/>
-    </phpdoc2>
-  </target>
-	
-  <target name="dist" depends="init"
-        description="generate the distribution" >
-    <mkdir dir="${dist.dir}"/>
-  </target>
-  
-  <target name="test" depends="init"
-          description="Execute PHPUnit test suite">
-  <mkdir dir="${reports.dir}"/>
-  <coverage-setup database="./reports/coverage.db">
-    <fileset refid="phpapi.fileset"/>
-  </coverage-setup>
-  <phpunit codecoverage="true" haltonfailure="false" haltonerror="true"
-    	bootstrap="bootstrap.php" excludeGroups="openIssues">
-      <formatter type="plain" usefile="false"/>
-      <batchtest>
-        <fileset dir="tests">
-    	  <include name="**/*Test*.php"/>
-        </fileset>
-      </batchtest>
-    </phpunit>
-  </target>
-  
-  <target name="test-report" depends="test"
-          description="Generate reports for tests and coverage">
-    <mkdir dir="${reports.dir}/coverage"/>
-    <coverage-report outfile="reports/coverage.xml">
-      <report todir="reports/coverage"/>
-    </coverage-report>
-  </target>
-
-  <target name="tidy" description="Get rid of temporary and backup files">
-    <delete>
-      <fileset defaultexcludes="no" dir=".">
-        <patternset refid="backupFiles.pattern"/>
-      </fileset>
-    </delete>
   </target>
   
   <!-- Task to create a minimal-permissions user for unit testing.
@@ -193,14 +132,4 @@
     </pdosqlexec> 
   </target>
 
-  <target name="cleanDocs"
-	description="Remove generated documentation">
-    <delete dir="${apidoc.dir}"/>
-  </target>
-	
-  <target name="clean" depends="tidy,cleanDocs"
-        description="clean up" >
-    <delete dir="${dist.dir}"/>
-    <delete dir="${reports.dir}"/>
-  </target>
 </project>
