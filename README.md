@@ -125,7 +125,7 @@ That file must include the following extra settings:
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://gist.github.com/b817103313f5ddff5817.git"
+            "url": "https://github.com/evought/DataURI.git"
         }
     ],
     "require": {

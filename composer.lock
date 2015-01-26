@@ -4,15 +4,21 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ae5c727f196e275db5d6be3ccc6e32a5",
+    "hash": "fa76c4987c24f674a0ac1150f9d6065e",
     "packages": [
         {
             "name": "evought/data-uri",
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://gist.github.com/b817103313f5ddff5817.git",
-                "reference": "635bdae3cf32378e63d114f2714a0b9ea3bc5b5e"
+                "url": "https://github.com/evought/DataURI.git",
+                "reference": "a7b3b87ef369f3bac71c65b2cc459487082c3bee"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/evought/DataURI/zipball/a7b3b87ef369f3bac71c65b2cc459487082c3bee",
+                "reference": "a7b3b87ef369f3bac71c65b2cc459487082c3bee",
+                "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0"
@@ -23,7 +29,7 @@
             "type": "library",
             "autoload": {
                 "classmap": [
-                    "."
+                    "src/"
                 ]
             },
             "authors": [
@@ -33,7 +39,11 @@
                 }
             ],
             "description": "A convenient class for working with Data URIs in PHP.",
-            "time": "2015-01-08 01:34:31"
+            "support": {
+                "source": "https://github.com/evought/DataURI/tree/master",
+                "issues": "https://github.com/evought/DataURI/issues"
+            },
+            "time": "2015-01-26 19:03:52"
         },
         {
             "name": "rhumsaa/uuid",
