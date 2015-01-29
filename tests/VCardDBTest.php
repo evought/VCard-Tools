@@ -9,6 +9,7 @@
 use EVought\vCardTools\VCard as VCard;
 use EVought\vCardTools\VCardDB as VCardDB;
 use EVought\vCardTools\VCardParser as VCardParser;
+use EVought\DataUri\DataUri;
 
 class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
 {
@@ -731,8 +732,8 @@ class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
                      ];
         $vcard = new VCard();
         
-        $dataUri = new \DataUri( 'image/example', $expected['logo'],
-                \DataUri::ENCODING_BASE64 );
+        $dataUri = new DataUri( 'image/example', $expected['logo'],
+                DataUri::ENCODING_BASE64 );
         
 	VCard::builder('fn')->setValue($expected['fn'])->pushTo($vcard);
         VCard::builder('org')

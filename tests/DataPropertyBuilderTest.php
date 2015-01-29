@@ -33,6 +33,7 @@
  */
 
 namespace EVought\vCardTools;
+use EVought\DataUri\DataUri;
 
 /**
  * Tests for DataPropertyBuilder/DataProperty.
@@ -221,14 +222,14 @@ class DataPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['work'], $builder->getTypes());
 
         $uri = $builder->getValue();
-        $this->assertTrue(\DataUri::isParsable($uri));
+        $this->assertTrue(DataUri::isParsable($uri));
         
-        /* @var \DataUri $dataUri */
+        /* @var DataUri $dataUri */
         $dataUri = null;
-        $this->assertTrue(\DataUri::tryParse($uri, $dataUri));
+        $this->assertTrue(DataUri::tryParse($uri, $dataUri));
         
         $this->assertEquals('image/gif', $dataUri->getMediaType());
-        $this->assertEquals(\DataUri::ENCODING_BASE64, $dataUri->getEncoding());
+        $this->assertEquals(DataUri::ENCODING_BASE64, $dataUri->getEncoding());
         
         $decodedData = '';
         $this->assertTrue($dataUri->tryDecodeData($decodedData));

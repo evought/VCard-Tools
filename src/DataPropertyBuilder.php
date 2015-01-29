@@ -33,6 +33,7 @@
  */
 
 namespace EVought\vCardTools;
+use EVought\DataUri\DataUri;
 
 /**
  * A PropertyBuilder for a DataProperty.
@@ -63,9 +64,9 @@ class DataPropertyBuilder
         if ( (($line->getVersion() === '3.0') || ($line->getVersion() === '2.1'))
              && ($this->getValueType() !== 'uri' ) )
         {
-            $uri = new \DataUri( $this->getMediaType(),
+            $uri = new DataUri( $this->getMediaType(),
                                  $line->getValue(),
-                                 \DataUri::ENCODING_BASE64 );
+                                 DataUri::ENCODING_BASE64 );
             $this->setValue($uri->toString());
             $this->setMediaType(null);
         } else {
@@ -97,7 +98,7 @@ class DataPropertyBuilder
         \assert(null !== $value);
         
         $url = \filter_var($value, \FILTER_VALIDATE_URL);
-        if ((false === $url) && (false == \DataUri::isParsable($value)))
+        if ((false === $url) && (false == DataUri::isParsable($value)))
             throw new \DomainException($value . ' is not a valid url.');
         else
             $this->value = $value;

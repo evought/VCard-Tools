@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/evought/DataURI.git",
-                "reference": "a7b3b87ef369f3bac71c65b2cc459487082c3bee"
+                "reference": "dbf2d14a5f1dae41a1d20de8b144c6546eb11539"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/evought/DataURI/zipball/a7b3b87ef369f3bac71c65b2cc459487082c3bee",
-                "reference": "a7b3b87ef369f3bac71c65b2cc459487082c3bee",
+                "url": "https://api.github.com/repos/evought/DataURI/zipball/dbf2d14a5f1dae41a1d20de8b144c6546eb11539",
+                "reference": "dbf2d14a5f1dae41a1d20de8b144c6546eb11539",
                 "shasum": ""
             },
             "require": {
@@ -28,9 +28,9 @@
             },
             "type": "library",
             "autoload": {
-                "classmap": [
-                    "src/"
-                ]
+                "psr-4": {
+                    "EVought\\DataUri\\": "src/"
+                }
             },
             "authors": [
                 {
@@ -43,7 +43,7 @@
                 "source": "https://github.com/evought/DataURI/tree/master",
                 "issues": "https://github.com/evought/DataURI/issues"
             },
-            "time": "2015-01-26 19:03:52"
+            "time": "2015-01-29 02:54:30"
         },
         {
             "name": "rhumsaa/uuid",
