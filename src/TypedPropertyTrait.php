@@ -77,6 +77,9 @@ trait TypedPropertyTrait
     
     /**
      * Return the list of types defined for this Property.
+     * If the array is empty, all types are permitted.
+     * This is used for X-tended properties for which we do not have a
+     * specification and therefore cannot enforce type constraints.
      * @return string[]
      */
     public function getAllowedTypes()

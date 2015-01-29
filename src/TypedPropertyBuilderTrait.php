@@ -67,6 +67,8 @@ trait TypedPropertyBuilderTrait
     {
         \assert(null !== $type);
         \assert(is_string($type));
+        if (empty($this->getAllowedTypes())) return true;
+        
         if (!(in_array($type, $this->getAllowedTypes())))
             throw new \DomainException( $type . ' is not an allowed type for '
                                         . $this->getName() );
@@ -84,6 +86,12 @@ trait TypedPropertyBuilderTrait
         return $this;
     }
     
+    /**
+     * If the array is empty, all types are permitted.
+     * This is used for X-tended properties for which we do not have a
+     * specification and therefore cannot enforce type constraints.
+     * @return type
+     */
     public function getAllowedTypes()
     {
         return $this->getSpecification()->getConstraints()['allowedTypes'];

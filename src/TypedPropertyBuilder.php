@@ -63,6 +63,9 @@ interface TypedPropertyBuilder extends PropertyBuilder
     
     /**
      * Return the list of allowed types for this property.
+     * If the array is empty, all types are permitted.
+     * This is used for X-tended properties for which we do not have a
+     * specification and therefore cannot enforce type constraints.
      * @return Array An array of strings.
      */
     public function getAllowedTypes();

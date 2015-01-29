@@ -47,6 +47,9 @@ interface TypedProperty extends Property
     
     /**
      * Returns the list of allowed types as specified for this property.
+     * If the array is empty, all types are permitted.
+     * This is used for X-tended properties for which we do not have a
+     * specification and therefore cannot enforce type constraints.
      * @return Array An array of string type names.
      */
     public function getAllowedTypes();

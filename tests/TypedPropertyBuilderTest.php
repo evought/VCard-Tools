@@ -212,4 +212,22 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('+1-888-GET-PAID', $builder->getValue());
         $this->assertEmpty($builder->getTypes());
     }
+    
+    /**
+     * @group default
+     * @depends testSetAndBuild
+     */
+    public function testEmptyTypesPermitsAll()
+    {
+        $specification = new PropertySpecification(
+                'tel',
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\TypedPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
+                ['allowedTypes'=>[]]
+            );
+        $builder = $specification->getBuilder();
+        $builder->setValue('999-555-1212')
+                ->addType('skadgamagoozie');
+    }
 }
