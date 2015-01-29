@@ -229,5 +229,7 @@ class TypedPropertyBuilderTest extends \PHPUnit_Framework_TestCase
         $builder = $specification->getBuilder();
         $builder->setValue('999-555-1212')
                 ->addType('skadgamagoozie');
+        $property = $builder->build();
+        $this->assertContains('skadgamagoozie', $property->getTypes());
     }
 }
