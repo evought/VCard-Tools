@@ -6,12 +6,10 @@
  * @copyright Eric Vought 2014, Some rights reserved.
  * @license MIT http://opensource.org/licenses/MIT
  */
-use EVought\vCardTools\VCard as VCard;
-use EVought\vCardTools\VCardDB as VCardDB;
-use EVought\vCardTools\VCardParser as VCardParser;
+namespace EVought\vCardTools;
 use EVought\DataUri\DataUri;
 
-class VCardDBTest extends PHPUnit_Extensions_Database_TestCase
+class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
 {
     // only instantiate pdo once for test clean-up/fixture load
     static private $pdo = null;
