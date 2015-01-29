@@ -501,8 +501,12 @@ class VCardDB implements VCardRepository
      * with.
      * @param type $propertyID The id of the property within the appropriate
      * property specific table to associate types with.
+     * @param $queryName If provided, will be used to look up the pre-configured
+     * SQL query, otherwise the property name will be used.
      */
-    private function associateTypes(TypedProperty $property, $propertyID)
+    private function associateTypes( TypedProperty $property,
+                                     $propertyID,
+                                     $queryName = null )
     {
     	assert($this->connection !== null);
     	assert($propertyID !== null);
@@ -510,7 +514,8 @@ class VCardDB implements VCardRepository
 
         if (empty($property->getTypes())) {return;}
         
-        $stmt = $this->prepareCannedQuery('associateTypes', $property->getName());
+        if (null === $queryName) $queryName = $property->getName();
+        $stmt = $this->prepareCannedQuery('associateTypes', $queryName);
         
         foreach ($property->getTypes() as $type)
         {
@@ -576,6 +581,8 @@ class VCardDB implements VCardRepository
         $stmt->bindValue (':mediatype', $property->getMediaType());
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
+        
+        $this->associateTypes($property, $propertyID, 'xtended');
 
     	return $propertyID;
     }
@@ -635,15 +642,20 @@ class VCardDB implements VCardRepository
      * @param TypedPropertyBuilder $property The builder to add types to.
      * @param type $propertyID The ID of the property to fetch types for within
      * the property-specific sub-table.
+     * @param string $queryName If provided, is the name of the pre-configured
+     * SQL query to use to fetch types for this property, otherwise the
+     * property name from the builder will be used.
      * @return bool true if-and-only-if types were fetched.
      */
     private function fetchTypesForPropertyID( TypedPropertyBuilder $builder,
-                                                $propertyID )
+                                                $propertyID,
+                                                $queryName = null )
     {
         assert(null !== $propertyID);
         assert(is_numeric($propertyID));
         
-        $stmt = $this->prepareCannedQuery('fetchTypes', $builder->getName());
+        if (null === $queryName) $queryName = $builder->getName();
+        $stmt = $this->prepareCannedQuery('fetchTypes', $queryName);
     	$stmt->bindValue(":id", $propertyID);
     	$stmt->execute();
     	
@@ -797,7 +809,7 @@ class VCardDB implements VCardRepository
                 $builder->setMediaType($result['mediatype']);
             if (null !== $result['valuetype'])
                 $builder->setValueType($result['valuetype']);
-
+            $this->fetchTypesForPropertyID($builder, $propertyID, 'xtended');
 
             $properties[] = $builder->build();            
         }

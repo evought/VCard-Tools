@@ -43,5 +43,7 @@
 	</table_data>
 	<table_data name="CONTACT_XTENDED">
 	</table_data>
+        <table_data name="CONTACT_XTENDED_REL_TYPES">
+	</table_data>
 </database>
 </mysqldump>

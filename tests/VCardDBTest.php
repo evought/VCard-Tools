@@ -542,11 +542,13 @@ class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
     
     	$vcard = new vCard();
     	VCard::builder('undefined', false)
-                            ->setValue('someValue')->pushTo($vcard);
+                            ->setValue('someValue')->addType('work')
+                            ->pushTo($vcard);
     	VCard::builder('fn')->setValue('nothingInteresting')->pushTo($vcard);
     
     	$contactID = $vcardDB->store($vcard);
-    	$this->checkRowCounts(['CONTACT'=>1, 'CONTACT_XTENDED'=>1], $vcard);
+    	$this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_XTENDED'=>1,
+                                'CONTACT_XTENDED_REL_TYPES'=>1 ], $vcard );
     	$resultVCard = $vcardDB->fetchOne($contactID);
     
     	$this->compareVCards($vcard, $resultVCard);
