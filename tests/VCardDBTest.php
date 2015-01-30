@@ -873,7 +873,34 @@ class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
 
         $resultVCard = $vcardDB->fetchOne($contactID);
 	$this->compareVCards($vcard, $resultVCard);
-    } //testStoreAndRetrieveWTel()
+    }
+    
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWTZ(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts([ 'CONTACT'=>0,
+                                'CONTACT_TZ'=>0, 'CONTACT_TZ_REL_TYPES'=>0 ]);
+
+        $expected = [
+                        'fn'          => 'Whatever',
+			'tz' => 'America/New_York'
+                     ];
+        $vcard = new VCard();
+	$vcard->push(VCard::builder('fn')->setValue($expected['fn'])->build());
+        VCard::builder('tz')->setValue($expected['tz'])
+                            ->addType('work')->pushTo($vcard);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_TZ'=>1, 'CONTACT_TZ_REL_TYPES'=>1 ],
+                               $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+	$this->compareVCards($vcard, $resultVCard);
+    }
     
     /**
      * @group default

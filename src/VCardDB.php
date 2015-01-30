@@ -143,8 +143,9 @@ class VCardDB implements VCardRepository
                 }
             }
         
-            foreach ( [ 'nickname', 'url' ,'photo', 'logo', 'sound', 'key', 'note',
-                    'tel', 'geo', 'email', 'categories', 'related' ]
+            foreach ( [ 'tz', 'nickname', 'url' ,'photo', 'logo', 'sound',
+                        'key', 'note', 'tel', 'geo', 'email', 'categories',
+                        'related' ]
                     as $propertyName )
             {
                 if (empty($vcard->$propertyName)) continue;
@@ -437,10 +438,9 @@ class VCardDB implements VCardRepository
                                 \PDO::PARAM_STR );
         }
 
-        // HACK: #53, #54, #55: VCard and the spec think URL,
-        // NICKNAME, etc. are multiple.
+        // HACK: #53, #54: VCard and the spec think these are multiple.
         // Database doesn't. Arbitrarily take the first value.
-        foreach ( [ 'role', 'title', 'tz', 'fn', 'bday', 'anniversary' ]
+        foreach ( [ 'role', 'title', 'fn', 'bday', 'anniversary' ]
                     as $hackMultiple )
         {
             assert(!($vcard->getSpecification($hackMultiple)->requiresSingleProperty()),
@@ -623,7 +623,7 @@ class VCardDB implements VCardRepository
         }
         
         // Basic Properties
-        foreach ( [ 'nickname', 'url', 'note', 'email', 'tel', 'categories',
+        foreach ( [ 'tz', 'nickname', 'url', 'note', 'email', 'tel', 'categories',
                     'geo', 'logo', 'photo', 'sound', 'key', 'related' ]
                     as $property )
         {
