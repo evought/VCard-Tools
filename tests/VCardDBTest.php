@@ -906,6 +906,33 @@ class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
      * @group default
      * @depends testStoreAndRetrieveVCard
      */
+    public function testStoreAndRetrieveWRole(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts([ 'CONTACT'=>0,
+                                'CONTACT_ROLE'=>0, 'CONTACT_ROLE_REL_TYPES'=>0 ]);
+
+        $expected = [
+                        'fn'          => 'Whatever',
+			'role' => 'crescent'
+                     ];
+        $vcard = new VCard();
+	$vcard->push(VCard::builder('fn')->setValue($expected['fn'])->build());
+        VCard::builder('role')->setValue($expected['role'])
+                            ->addType('work')->pushTo($vcard);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_ROLE'=>1, 'CONTACT_ROLE_REL_TYPES'=>1 ],
+                               $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+	$this->compareVCards($vcard, $resultVCard);
+    }
+    
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
     public function testStoreAndRetrieveWCategory(VCardDB $vcardDB)
     {
     	$this->checkRowCounts(['CONTACT'=>0]);
