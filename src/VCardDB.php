@@ -143,9 +143,9 @@ class VCardDB implements VCardRepository
                 }
             }
         
-            foreach ( [ 'role', 'tz', 'nickname', 'url' ,'photo', 'logo', 'sound',
-                        'key', 'note', 'tel', 'geo', 'email', 'categories',
-                        'related' ]
+            foreach ( [ 'title', 'role', 'tz', 'nickname', 'url' ,'photo',
+                        'logo', 'sound', 'key', 'note', 'tel', 'geo', 'email',
+                        'categories', 'related' ]
                     as $propertyName )
             {
                 if (empty($vcard->$propertyName)) continue;
@@ -438,10 +438,9 @@ class VCardDB implements VCardRepository
                                 \PDO::PARAM_STR );
         }
 
-        // HACK: #53: VCard and the spec think these are multiple.
+        // HACK: #104, #105, #106 VCard and the spec think these are multiple.
         // Database doesn't. Arbitrarily take the first value.
-        foreach ( [ 'title', 'fn', 'bday', 'anniversary' ]
-                    as $hackMultiple )
+        foreach ( [ 'fn', 'bday', 'anniversary' ] as $hackMultiple )
         {
             assert(!($vcard->getSpecification($hackMultiple)->requiresSingleProperty()),
                     $simpleProperty . ' must NOT be a single value element');
@@ -601,8 +600,7 @@ class VCardDB implements VCardRepository
         $vcard->setUID($row["UID"]);
 
         // FIXME: fetch columns explicitly instead of "SELECT *" and map
-        $simpleCols = [ 'KIND', 'FN', 'BDAY', 'ANNIVERSARY', 'TITLE',
-                        'REV', 'VERSION' ];
+        $simpleCols = [ 'KIND', 'FN', 'BDAY', 'ANNIVERSARY', 'REV', 'VERSION' ];
         foreach ($simpleCols as $col)
         {
             if (!empty($row[$col]))
@@ -623,8 +621,8 @@ class VCardDB implements VCardRepository
         }
         
         // Basic Properties
-        foreach ( [ 'role', 'tz', 'nickname', 'url', 'note', 'email', 'tel',
-                    'categories', 'geo', 'logo', 'photo', 'sound', 'key',
+        foreach ( [ 'title', 'role', 'tz', 'nickname', 'url', 'note', 'email',
+                    'tel', 'categories', 'geo', 'logo', 'photo', 'sound', 'key',
                     'related' ]
                     as $property )
         {

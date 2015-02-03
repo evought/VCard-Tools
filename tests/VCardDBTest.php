@@ -929,6 +929,34 @@ class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
 	$this->compareVCards($vcard, $resultVCard);
     }
     
+    
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWTitle(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts([ 'CONTACT'=>0,
+                                'CONTACT_TITLE'=>0, 'CONTACT_TITLE_REL_TYPES'=>0 ]);
+
+        $expected = [
+                        'fn'          => 'Whatever',
+			'title' => 'magnifico'
+                     ];
+        $vcard = new VCard();
+	$vcard->push(VCard::builder('fn')->setValue($expected['fn'])->build());
+        VCard::builder('title')->setValue($expected['title'])
+                            ->addType('work')->pushTo($vcard);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1,
+                                 'CONTACT_TITLE'=>1, 'CONTACT_TITLE_REL_TYPES'=>1 ],
+                               $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+	$this->compareVCards($vcard, $resultVCard);
+    }
+    
     /**
      * @group default
      * @depends testStoreAndRetrieveVCard
