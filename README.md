@@ -99,10 +99,8 @@ Composer will locate and install two other php libraries required by VCardTools,
 * [rhumsaa/uuid](https://github.com/ramsey/uuid): A tool for generating
 RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).
 
-* [evought/data-uri](https://gist.github.com/evought/b817103313f5ddff5817): 
-A convenient class for working with Data URIs in PHP. This class is loaded from
-a Gist and currently requires a custom repostory definition
-([Issue #103](https://github.com/evought/VCard-Tools/issues/103), see below.)
+* [evought/data-uri](https://github.com/evought/DataURI): 
+A convenient class for working with Data URIs in PHP.
 
 To develop and run tests, composer will also install:
 
@@ -120,27 +118,11 @@ Ubuntu Linux environment.
 
 To include this library in a larger project via Composer, you first must have
 a [composer.json](https://getcomposer.org/doc/00-intro.md) for your project.
-That file must include the following extra settings:
+That file must include the following extra setting:
 
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/evought/DataURI.git"
-        }
-    ],
     "require": {
-            "evought/data-uri": "*@dev",
             "evought/vcard-tools": "dev-master"
         }
-
-The repositories section is required to fetch the data-uri package directly from
-github because it is not yet available through packagist, Composer's default
-repository ([Issue #103](https://github.com/evought/VCard-Tools/issues/103)).
-For security reasons, Composer will not automatically load a package from a
-non-standard repository unless you tell it explicitly to do so.
-For the same reason, your require section has to include both evought/data-uri
-and evought/vcard-tools along with any other dependencies your package may
-require.
 
 If you are only using the non-database portions of VCard-Tools, this should
 be sufficient to get you going and a "composer install" should fetch and install
