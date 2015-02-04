@@ -4,20 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "fa76c4987c24f674a0ac1150f9d6065e",
+    "hash": "0d6cfa6b0c86e2aed153c0844f139dc3",
     "packages": [
         {
             "name": "evought/data-uri",
-            "version": "dev-master",
+            "version": "v1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/evought/DataURI.git",
-                "reference": "dbf2d14a5f1dae41a1d20de8b144c6546eb11539"
+                "reference": "f5f1df57f7ece889d64e9c6f951fb3880720fce3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/evought/DataURI/zipball/dbf2d14a5f1dae41a1d20de8b144c6546eb11539",
-                "reference": "dbf2d14a5f1dae41a1d20de8b144c6546eb11539",
+                "url": "https://api.github.com/repos/evought/DataURI/zipball/f5f1df57f7ece889d64e9c6f951fb3880720fce3",
+                "reference": "f5f1df57f7ece889d64e9c6f951fb3880720fce3",
                 "shasum": ""
             },
             "require": {
@@ -32,18 +32,24 @@
                     "EVought\\DataUri\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
             "authors": [
+                {
+                    "name": "Eric Vought",
+                    "email": "evought@pobox.com",
+                    "homepage": "http://radishsaltant.blogspot.com",
+                    "role": "Developer"
+                },
                 {
                     "name": "Lucas",
                     "email": "flyingtophat@outlook.com"
                 }
             ],
             "description": "A convenient class for working with Data URIs in PHP.",
-            "support": {
-                "source": "https://github.com/evought/DataURI/tree/master",
-                "issues": "https://github.com/evought/DataURI/issues"
-            },
-            "time": "2015-01-29 02:54:30"
+            "time": "2015-02-03 22:28:39"
         },
         {
             "name": "rhumsaa/uuid",
@@ -4398,7 +4404,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "evought/data-uri": 20,
         "phpmd/phpmd": 0
     },
     "prefer-stable": false,

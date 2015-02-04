@@ -13,12 +13,6 @@
         }
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/evought/DataURI.git"
-        }
-    ],
     "require-dev": {
         "phing/phing": "2.*",
         "phpmd/phpmd" : "@stable",
@@ -34,7 +28,7 @@
     "require": {
         "php": ">=5.5.0",
         "rhumsaa/uuid": "~2.8",
-        "evought/data-uri": "*@dev"
+        "evought/data-uri": "~1.0"
     },
     "suggest": {
         "pecl-weakref": "Permits caching of prepared statements."
