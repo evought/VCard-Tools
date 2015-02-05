@@ -479,7 +479,10 @@ class VCardDB implements VCardRepository
         $stmt->bindValue(':uid', $uid);
         $stmt->bindValue(':valuetype', $property->getValueType(false));
         if ($property->getSpecification()->isCardinalityToN())
+        {
             $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
+            $stmt->bindValue(':propGroup', $property->getGroup());
+        }
     	foreach($property->getAllowedFields() as $key)
     	{
             $stmt->bindValue(':'.$key, $property->getField($key), \PDO::PARAM_STR);
@@ -545,7 +548,11 @@ class VCardDB implements VCardRepository
         $stmt->bindValue(':uid', $uid);
     	$stmt->bindValue(':value', $property->getValue());
         $stmt->bindValue(':valuetype', $property->getValueType(false));
-        $stmt->bindValue(':pref', $property->getPref(false), \PDO::PARAM_INT);
+        if ($property->getSpecification()->isCardinalityToN())
+        {
+            $stmt->bindValue(':propGroup', $property->getGroup());
+            $stmt->bindValue(':pref', $property->getPref(false), \PDO::PARAM_INT);
+        }
         if ($property instanceof MediaTypeProperty)
             $stmt->bindValue (':mediatype', $property->getMediaType());
     	$stmt->execute();
@@ -578,6 +585,7 @@ class VCardDB implements VCardRepository
         $stmt->bindValue(':valuetype', $property->getValueType(false));
         $stmt->bindValue('pref', $property->getPref(false), \PDO::PARAM_INT);
         $stmt->bindValue (':mediatype', $property->getMediaType());
+        $stmt->bindValue(':propGroup', $property->getGroup());
     	$stmt->execute();
     	$propertyID = $this->connection->lastInsertId();
         
@@ -708,6 +716,11 @@ class VCardDB implements VCardRepository
                 $builder->setMediaType($result['mediatype']);
             unset($result['mediatype']);
             
+            if ( array_key_exists('propGroup', $result)
+                 && (null !== $result['propGroup']) )
+                $builder->setGroup ($result['propGroup']);
+            unset($result['propGroup']);
+            
             if (null !== $result['valuetype'])
                 $builder->setValueType($result['valuetype']);
             unset($result['valuetype']);
@@ -763,7 +776,9 @@ class VCardDB implements VCardRepository
             if ( array_key_exists('mediatype', $result)
                  && (null !== $result['mediatype']) )
                 $builder->setMediaType($result['mediatype']);
-            
+            if ( array_key_exists('propGroup', $result)
+                 && (null !== $result['propGroup']) )
+                $builder->setGroup ($result['propGroup']);
             if ($builder instanceof TypedPropertyBuilder)
                 $this->fetchTypesForPropertyID($builder, $propertyID);
 
@@ -808,6 +823,8 @@ class VCardDB implements VCardRepository
                 $builder->setMediaType($result['mediatype']);
             if (null !== $result['valuetype'])
                 $builder->setValueType($result['valuetype']);
+            if (null !== $result['propGroup'])
+                $builder->setGroup($result['propGroup']);
             $this->fetchTypesForPropertyID($builder, $propertyID, 'xtended');
 
             $properties[] = $builder->build();            

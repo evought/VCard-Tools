@@ -30,7 +30,7 @@ class VcardToolsAddGroupColumn extends AbstractMigration
                 as $tableName )
         {
             $table = $this->table($tableName);
-            $table  ->addColumn('GROUP', 'string', ['null'=>true])
+            $table  ->addColumn('PROP_GROUP', 'string', ['null'=>true])
                     ->update();
         }
     }
@@ -48,7 +48,7 @@ class VcardToolsAddGroupColumn extends AbstractMigration
                 as $tableName )
         {
             $table = $this->table($tableName);
-            $table  ->removeColumn('GROUP')
+            $table  ->removeColumn('PROP_GROUP')
                     ->update();
         }
     }

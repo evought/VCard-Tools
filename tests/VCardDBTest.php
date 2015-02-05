@@ -435,6 +435,37 @@ class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
 
         return $vcardDB;
     } //testStoreAndRetrieveWAddress()
+    
+     /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWAddressGroup(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+        
+        $n = VCard::builder('n')
+                ->setValue(['GivenName'=>'Fred', 'FamilyName'=>'Jones'])
+                ->build();
+        $adr = VCard::builder('adr')
+                ->setValue(['StreetAddress'=>'47 Some Street',
+                            'Locality'=>'Birmingham',
+                            'Region'=>'AL'])
+                ->setGroup('shmoo')
+                ->build();
+        $fn = VCard::builder('fn')->setValue('Fred Jones')->build();
+        $vcard = new VCard();
+	$vcard->push($fn)->push($n)->push($adr);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_N'=>1, 'CONTACT_ADR'=>1],
+                               $vcard );
+        $resultVCard = $vcardDB->fetchOne($contactID);
+
+        $this->compareVCards($vcard, $resultVCard);
+
+        return $vcardDB;
+    }
 
     /**
      * @group default
@@ -558,6 +589,29 @@ class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
      * @group default
      * @depends testStoreAndRetrieveVCard
      */
+    public function testStoreAndRetrieveWXtendedGroup(VCardDB $vcardDB)
+    {
+    	$this->checkRowCounts(['CONTACT'=>0, 'CONTACT_XTENDED'=>0]);
+    
+    	$vcard = new vCard();
+    	VCard::builder('undefined', false)
+                            ->setValue('someValue')->addType('work')
+                            ->setGroup('shmoo')
+                            ->pushTo($vcard);
+    	VCard::builder('fn')->setValue('nothingInteresting')->pushTo($vcard);
+    
+    	$contactID = $vcardDB->store($vcard);
+    	$this->checkRowCounts( ['CONTACT'=>1, 'CONTACT_XTENDED'=>1,
+                                'CONTACT_XTENDED_REL_TYPES'=>1 ], $vcard );
+    	$resultVCard = $vcardDB->fetchOne($contactID);
+    
+    	$this->compareVCards($vcard, $resultVCard);
+    }
+    
+    /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
     public function testFetchByID(VCardDB $vcardDB)
     {
     	$this->checkRowCounts(['CONTACT'=>0]);
@@ -640,6 +694,39 @@ class VCardDBTest extends \PHPUnit_Extensions_Database_TestCase
         $resultVCard = $vcardDB->fetchOne($contactID);
         $this->compareVCards($vcard, $resultVCard);
     } //testStoreAndRetrieveWEmail()
+    
+     /**
+     * @group default
+     * @depends testStoreAndRetrieveVCard
+     */
+    public function testStoreAndRetrieveWEmailAndGroup(VCardDB $vcardDB)
+    {
+        $this->checkRowCounts(['CONTACT'=>0]);
+
+        $expected = [
+                        'n_GivenName' => 'Fred',
+                        'n_FamilyName' => 'Jones',
+                        'email' => 'noone@nowhere.org',
+                        'group' => 'shmoo',
+                        'fn' => 'Fred Jones'
+                     ];
+        $vcard = new VCard();
+	VCard::builder('fn')->setValue($expected['fn'])->pushTo($vcard);
+        VCard::builder('n')
+                ->setField('GivenName', $expected['n_GivenName'])
+                ->setField('FamilyName', $expected['n_FamilyName'])
+                ->pushTo($vcard);
+        VCard::builder('email')->setValue($expected['email'])
+                               ->setGroup($expected['group'])->pushTo($vcard);
+
+        $contactID = $vcardDB->store($vcard);
+        $this->checkRowCounts( [ 'CONTACT'=>1, 'CONTACT_N'=>1,
+                                 'CONTACT_EMAIL'=>1 ],
+                               $vcard );
+
+        $resultVCard = $vcardDB->fetchOne($contactID);
+        $this->compareVCards($vcard, $resultVCard);
+    }
 
     /**
      * @group default
