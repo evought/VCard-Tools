@@ -1440,5 +1440,33 @@ class VCardTest extends \PHPUnit_Framework_TestCase
     	sort($expected);
         
     	$this->assertEquals($expected, $lines);
-    }   
+    }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     */
+    public function testListGroupsEmpty(VCard $vcard)
+    {
+        $this->assertEmpty($vcard->listGroups());
+    }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     */
+    public function testListGroups(VCard $vcard)
+    {
+        $vcard->builder('fn')->setValue('foo')->pushTo($vcard);
+        
+        $vcard->builder('tel')->setValue('555-1212')->setGroup('a')
+                              ->pushTo($vcard);
+        $vcard->builder('tel')->setValue('555-1213')
+                              ->pushTo($vcard);
+        $vcard->builder('note')->setValue('A note.')->setGroup('b')
+                              ->pushTo($vcard);
+        $vcard->builder('note')->setValue('Another note.')->setGroup('a')
+                              ->pushTo($vcard);
+        $this->assertEquals(['a', 'b'], $vcard->listGroups());
+    }
 }

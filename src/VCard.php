@@ -1217,6 +1217,27 @@ class VCard implements PropertyContainer
         }
         return $count;
     }
+    
+    /**
+     * Return a list of all property groupings in this vcard, or an empty list
+     * if none are present.
+     * @return string[]
+     */
+    public function listGroups()
+    {
+        $groups = [];
+        
+        foreach ($this as $property)
+        {
+            if ( (null !== $property->getGroup())
+                 && (!(in_array($property->getGroup(), $groups))) )
+            {
+                $groups[] = $property->getGroup();
+            }
+        }
+        
+        return $groups;
+    }
 
 } // VCard
 
