@@ -89,11 +89,6 @@ installs the components needed to build and use VCardTools.
 Composer also provides the autoloading script required to use the vCardTools
 classes in an application.
 
-_NOTE_: Due to issue [#94](https://github.com/evought/VCard-Tools/issues/94) the
-latest Composer snapshot is required.
-The underlying defect in Composer has been fixed but has not yet been packaged
-in a regular release.
-
 Composer will locate and install two other php libraries required by VCardTools,
 
 * [rhumsaa/uuid](https://github.com/ramsey/uuid): A tool for generating
