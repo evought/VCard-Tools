@@ -1238,6 +1238,19 @@ class VCard implements PropertyContainer
         
         return $groups;
     }
+    
+    /**
+     * Returns an iterator over all properties in a named grouping.
+     * @param string|null $group The name of the group. If $group is null, will
+     * iterate over all properties not part of any grouping.
+     * @return \CallbackFilterIterator
+     */
+    public function getGroupMembers($group)
+    {
+        return new \CallbackFilterIterator($this, function ($current) use ($group) {
+            return ($current->getGroup() === $group);
+        });
+    }
 
 } // VCard
 

@@ -1468,5 +1468,41 @@ class VCardTest extends \PHPUnit_Framework_TestCase
         $vcard->builder('note')->setValue('Another note.')->setGroup('a')
                               ->pushTo($vcard);
         $this->assertEquals(['a', 'b'], $vcard->listGroups());
+        
+        return $vcard->clear();
+    }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     */
+    public function testgetGroupMembersEmpty(VCard $vcard)
+    {
+        $iter = $vcard->getGroupMembers("properties-anonymous");
+        $this->assertFalse($iter->valid());
+    }
+    
+    /**
+     * @group default
+     * @depends testConstructEmptyVCard
+     */
+    public function testGetGroupMembers(VCard $vcard)
+    {
+        $vcard->builder('fn')->setValue('foo')->pushTo($vcard);
+        
+        $vcard->builder('tel')->setValue('555-1212')->setGroup('a')
+                              ->pushTo($vcard);
+        $vcard->builder('tel')->setValue('555-1213')
+                              ->pushTo($vcard);
+        $vcard->builder('note')->setValue('A note.')->setGroup('b')
+                              ->pushTo($vcard);
+        $vcard->builder('note')->setValue('Another note.')->setGroup('a')
+                              ->pushTo($vcard);
+        $properties = [];
+        foreach ($vcard->getGroupMembers('a') as $property)
+        {
+            $properties[] = $property;
+        }
+        $this->assertCount(2, $properties, print_r($properties, true));
     }
 }
