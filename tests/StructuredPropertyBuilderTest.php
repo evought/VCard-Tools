@@ -152,6 +152,67 @@ class StructuredPropertyBuilderTest extends \PHPUnit_Framework_TestCase
     
     /**
      * @group default
+     */
+    public function testSetConstrainedField()
+    {
+        $specification = new PropertySpecification(
+                'adr',
+                PropertySpecification::MULTIPLE_PROPERTY,
+                __NAMESPACE__ . '\StructuredPropertyBuilderImpl',
+                PropertySpecification::$cardinalities['Zero To N'],
+                [
+                    'allowedFields'=>['Unconstrained', 'Constrained'],
+                    'allowedFieldValues'=>[
+                        'Unconstrained'=>null,
+                        'Constrained'=>['a', 'b', null]
+                        ]
+                ]
+            );
+        $builder = $specification->getBuilder();
+        $builder->setField('Constrained', 'b');
+        $this->assertEquals('b', $builder->getField('Constrained'));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testSetConstrainedField
+     */
+    public function testSetConstrainedFieldNull(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setField('Constrained', null);
+        $this->assertNull($builder->getField('Constrained'));
+        
+        return $specification;
+    }
+    
+    /**
+     * @group default
+     * @depends testSetConstrainedField
+     */
+    public function testUnconstrainedField(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setField('Unconstrained', 'whatever');
+        $this->assertEquals('whatever', $builder->getField('Unconstrained'));
+    }
+    
+    /**
+     * @group default
+     * @depends testSetConstrainedField
+     * @expectedException \DomainException
+     * @expectedExceptionMessage c
+     */
+    public function testSetInvalidFieldValue(PropertySpecification $specification)
+    {
+        $builder = $specification->getBuilder();
+        $builder->setField('Constrained', 'c');
+    }
+    
+    /**
+     * @group default
      * @depends testConstruct
      */
     public function testOutput(PropertySpecification $specification)

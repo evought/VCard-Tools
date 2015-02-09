@@ -197,7 +197,11 @@ class VCard implements PropertyContainer
                 [
                     'allowedValueTypes'=>['text'],
                     'valueTypeDefault'=>'text',
-                    'allowedFields'=>['Sex', 'Text']
+                    'allowedFields'=>['Sex', 'Text'],
+                    'allowedFieldValues'=>[
+                        'Sex'=>['M', 'F', 'O', 'N', 'U', null],
+                        'Text'=>null
+                    ]
                 ]
             )
         );

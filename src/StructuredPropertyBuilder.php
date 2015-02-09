@@ -41,6 +41,16 @@ interface StructuredPropertyBuilder extends PropertyBuilder
     public function fields();
     
     /**
+     * Returns a list of permitted values for a field, or null if values are
+     * not constrained. Useful for populating a drop-down or UI hint.
+     * Constraints are specified by AllowedFieldValues in the
+     * PropertySpecification.
+     * @param string $field
+     * @return null|string[]
+     */
+    public function fieldAllowedValues($field);
+    
+    /**
      * Sets the value of the requested field, overriding any existing value.
      * @param string $field The name of the field to set.
      * @param string $value The value to set for the field. If null, the field

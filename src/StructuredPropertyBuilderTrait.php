@@ -76,6 +76,21 @@ trait StructuredPropertyBuilderTrait
     {
         return $this->getSpecification()->getConstraints()['allowedFields'];
     }
+    
+    public function fieldAllowedValues($field)
+    {
+        $constraints = $this->getSpecification()->getConstraints();
+        if (!array_key_exists('allowedFieldValues', $constraints))
+            return null;
+        $allowedValues = $constraints['allowedFieldValues'];
+        
+        if (!array_key_exists($field, $allowedValues))
+        {
+            return null;
+        } else {
+            return $allowedValues[$field];
+        }
+    }
 
     /**
      * Return the value of the named field, if set.
@@ -94,25 +109,33 @@ trait StructuredPropertyBuilderTrait
     
     /**
      * Returns true if $field is one of the allowed fields for this property
-     * and throws an exception otherwise.
-     * @param type $field The field name to check.
+     * and its value is permitted, throws an exception otherwise.
+     * @param string $field The field name to check.
+     * @param mixed $value The value to check.
      * @return boolean
-     * @throws \DomainException If the field is not allowed.
+     * @throws \DomainException If the field/value is not allowed.
      */
-    protected function checkField($field)
+    protected function checkField($field, $value)
     {
         \assert(null !== $field);
         \assert(is_string($field));
         if (!(in_array($field, $this->fields())))
             throw new \DomainException( $field . ' is not an allowed field for '
                                         . $this->getName() );
+        
+        $allowedValues = $this->fieldAllowedValues($field);
+        if (null === $allowedValues) return true;
+        
+        if (!(in_array($value, $allowedValues)))
+            throw new \DomainException( $value . ' is not an allowed value for '
+                                        . $field . ' in ' . $this->getName() );
         return true;
     }
 
     public function setField($field, $value)
     {
         \assert(is_array($this->value));
-        $this->checkField($field);
+        $this->checkField($field, $value);
         if (null === $value)
             unset ($this->value[$field]);
         else
