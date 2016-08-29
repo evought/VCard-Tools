@@ -75,9 +75,9 @@ from vendor/autoload.php.
 
 ##Requirements##
 
-The project was developed against
-* PHP 5.5 (5.5.20)
-* MySQL 5.5 (5.5.38)
+The project is being developed against
+* PHP 7.0
+* MySQL 5.7 (5.7.1.13)
 
 The library is known to _not_ work with PHP 5.4, but the Continuous Integration
 server does regularly test against [hhvm](http://hhvm.com/) (Hip Hop Virtual
@@ -108,6 +108,19 @@ and their dependencies.
 I am doing most of my development on a Intel-based Fedora Linux 20 workstation
 and the Continuous Integration server regularly tests the code in a clean
 Ubuntu Linux environment.
+
+NOTE: I have found that in order to get composer working on a bare Linux Mint
+18 install (php7 already present), I had to install php-dom (a PHP extension)
+and the composer packages. php-xdebug is needed for unit testing:
+
+	$ sudo apt-get install php-dom php-xdebug composer
+
+TIP: It is best *not* to install other php packages via apt on Linux Mint/Ubuntu in
+order to let composer itself manage the versions, matching them correctly to
+whatever version of this library you happen to be using. That way you can use
+multiple versions of dependencies simultaneously and independently if
+necessary.
+
 
 # Including Via Composer #
 
@@ -189,7 +202,10 @@ You may then create the desired account and grant it privileges:
     mysql> create user 'developer'@'localhost' identified by 'password';
     mysql> grant all on VCARD.* to 'developer'@'localhost' with grant option;
 
-Substituting whatever is appropriate for 'developer' and 'password'.
+Substituting whatever is appropriate for 'developer' and 'password'. If you will
+use the script to create a unit test user below, you will also need:
+
+	mysql> grant create user on *.* to developer@localhost;
 
 Create a ${env.USER}.properties file in your project folder, copying and editing
 values from db.properties to set the username, password, host, database name,
