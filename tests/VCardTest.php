@@ -9,8 +9,8 @@
 
 namespace EVought\vCardTools;
 
-use Rhumsaa\Uuid\Uuid;
-use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 class VCardTest extends \PHPUnit_Framework_TestCase
 {

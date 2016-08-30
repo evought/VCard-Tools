@@ -9,8 +9,8 @@
  */
 namespace EVought\vCardTools;
 
-use Rhumsaa\Uuid\Uuid;
-use Rhumsaa\Uuid\Exception\UnsatisfiedDependencyException;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 
 /**
  * Representation of a vCard record exposing properties and parameters of a
